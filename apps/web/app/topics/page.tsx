@@ -162,24 +162,28 @@ export default function TopicsPage() {
             <li key={topic.id} aria-label={`${index + 1}번째 토픽`}>
               <Link
                 href={`/topics/${topic.id}`}
-                className="relative block p-1 bg-white"
+                className="relative block p-4 bg-white"
               >
-                <caption className="text-caption-default">
-                  <span className="작성일">
-                    {topic.createdAt.toLocaleDateString()}
-                  </span>
-                  <span className="작성자">{topic.creator}</span>
-                </caption>
+                <div className="flex gap-2">
+                  <div className="flex-1 space-y-1">
+                    <h1 aria-label="토픽 제목" className="text-title-default">
+                      {topic.title}
+                    </h1>
+                    <p
+                      aria-label="토픽 설명"
+                      className="text-body-default truncate"
+                    >
+                      {topic.description}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end text-caption-default text-muted-foreground gap-0.5">
+                    <span className="작성일">
+                      {topic.createdAt.toLocaleDateString()}
+                    </span>
+                    <span className="작성자">{topic.creator}</span>
+                  </div>
+                </div>
                 <div className="space-y-1">
-                  <h1 aria-label="토픽 제목" className="text-title-default">
-                    {topic.title}
-                  </h1>
-                  <p
-                    aria-label="토픽 설명"
-                    className="text-body-default truncate"
-                  >
-                    {topic.description}
-                  </p>
                   <div className="flex items-center gap-x-1 mt-2">
                     <div className="flex items-center gap-x-1">
                       <span role="img" aria-label="찬성">
