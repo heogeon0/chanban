@@ -66,6 +66,10 @@ export class Post {
   commentCount: number;
 
   @Index()
+  @Column({ type: 'integer', default: 0 })
+  viewCount: number;
+
+  @Index()
   @Column({ type: 'float', default: 0 })
   popularityScore: number;
 
