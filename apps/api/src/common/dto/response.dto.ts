@@ -1,7 +1,6 @@
-export interface ApiResponse<T> {
-  data: T;
-  meta?: any;
-}
+import type { ApiResponse } from '@chanban/shared-types';
+
+export type { ApiResponse };
 
 export class ResponseWithMeta<T, M = any> {
   data: T;

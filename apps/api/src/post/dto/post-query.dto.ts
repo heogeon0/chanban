@@ -1,15 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, Min, Max } from 'class-validator';
-
-export enum PostSortBy {
-  RECENT = 'recent',
-  POPULAR = 'popular',
-}
-
-export enum SortOrder {
-  ASC = 'ASC',
-  DESC = 'DESC',
-}
+import { PostSortBy, SortOrder } from '@chanban/shared-types';
 
 export class PostQueryDto {
   @IsOptional()

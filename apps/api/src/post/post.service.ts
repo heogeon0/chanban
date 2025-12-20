@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
+import { PostTag, PostSortBy, SortOrder, PaginationMeta } from '@chanban/shared-types';
 import { ResponseWithMeta } from '../common/dto/response.dto';
-import { PostTag } from '../entities/enums';
 import { Post } from '../entities/post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
-import { PostQueryDto, PostSortBy, SortOrder } from './dto/post-query.dto';
+import { PostQueryDto } from './dto/post-query.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
@@ -16,7 +16,9 @@ export class PostService {
     private readonly postRepository: Repository<Post>,
   ) {}
 
-  async findRecentPosts(paginationQuery: PaginationQueryDto) {
+  async findRecentPosts(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<ResponseWithMeta<Post[], PaginationMeta>> {
     const { page = 1, limit = 20 } = paginationQuery;
     const skip = (page - 1) * limit;
 
@@ -38,7 +40,10 @@ export class PostService {
     });
   }
 
-  async findPostsByTag(tag: PostTag, queryDto: PostQueryDto) {
+  async findPostsByTag(
+    tag: PostTag,
+    queryDto: PostQueryDto,
+  ): Promise<ResponseWithMeta<Post[], PaginationMeta>> {
     const {
       page = 1,
       limit = 20,

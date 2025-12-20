@@ -8,13 +8,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { PostTag } from '@chanban/shared-types';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostService } from './post.service';
-import { ParsePostTagPipe } from '../common/pipes/parse-post-tag.pipe';
-import { PostTag } from '../entities/enums';
+import { ParsePostTagPipe } from './pipes/parse-post-tag.pipe';
 
 @Controller('posts')
 export class PostController {

@@ -1,4 +1,4 @@
-export * from './enums';
+export * from '@chanban/shared-types';
 export * from './user.entity';
 export * from './post.entity';
 export * from './vote.entity';

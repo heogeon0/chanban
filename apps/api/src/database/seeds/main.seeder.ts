@@ -1,10 +1,10 @@
 import { DataSource } from 'typeorm';
 import { Seeder } from 'typeorm-extension';
+import { PostTag, VoteStatus } from '@chanban/shared-types';
 import { User } from '../../entities/user.entity';
 import { Post } from '../../entities/post.entity';
 import { Vote } from '../../entities/vote.entity';
 import { Comment } from '../../entities/comment.entity';
-import { PostTag, VoteStatus } from '../../entities/enums';
 
 export class MainSeeder implements Seeder {
   public async run(dataSource: DataSource): Promise<void> {

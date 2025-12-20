@@ -13,3 +13,13 @@ export enum VoteStatus {
   DISAGREE = 'disagree',
   NEUTRAL = 'neutral',
 }
+
+export enum PostSortBy {
+  RECENT = 'recent',
+  POPULAR = 'popular',
+}
+
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}

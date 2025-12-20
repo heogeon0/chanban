@@ -1,5 +1,5 @@
-import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
-import { PostTag } from '../../entities/enums';
+import { ErrorCode, PostTag } from '@chanban/shared-types';
+import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 
 @Injectable()
 export class ParsePostTagPipe implements PipeTransform {
@@ -7,9 +7,9 @@ export class ParsePostTagPipe implements PipeTransform {
     const upperValue = value.toUpperCase();
 
     if (!Object.keys(PostTag).includes(upperValue)) {
-      throw new BadRequestException(
-        `Invalid tag: ${value}. Available tags: ${Object.values(PostTag).join(', ')}`,
-      );
+      throw new BadRequestException({
+        code: ErrorCode.INVALID_POST_TAG,
+      });
     }
 
     return PostTag[upperValue as keyof typeof PostTag];

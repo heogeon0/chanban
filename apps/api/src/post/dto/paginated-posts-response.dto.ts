@@ -1,17 +1,8 @@
-import { Post } from '../../entities/post.entity';
+import type { PaginationMeta, PostResponse } from '@chanban/shared-types';
 
-export class PaginationMeta {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+export type { PaginationMeta };
 
 export class PaginatedPostsResponseDto {
-  data: Post[];
+  data: PostResponse[];
   meta: PaginationMeta;
-}
-
-export class PostsData {
-  items: Post[];
 }
