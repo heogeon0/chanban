@@ -3,6 +3,10 @@ export enum ErrorCode {
   INVALID_POST_TAG = 'INVALID_POST_TAG',
   POST_NOT_FOUND = 'POST_NOT_FOUND',
 
+  // Comment 관련
+  COMMENT_NOT_FOUND = 'COMMENT_NOT_FOUND',
+  INVALID_COMMENT_NESTING = 'INVALID_COMMENT_NESTING',
+
   // Common
   BAD_REQUEST = 'BAD_REQUEST',
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -25,6 +29,16 @@ export const ERROR_METADATA: Record<ErrorCode, ErrorMetadata> = {
   [ErrorCode.POST_NOT_FOUND]: {
     message: '포스트를 찾을 수 없습니다',
     status: 404,
+  },
+
+  // Comment 관련
+  [ErrorCode.COMMENT_NOT_FOUND]: {
+    message: '댓글을 찾을 수 없습니다',
+    status: 404,
+  },
+  [ErrorCode.INVALID_COMMENT_NESTING]: {
+    message: '답글에는 답글을 작성할 수 없습니다',
+    status: 400,
   },
 
   // Common

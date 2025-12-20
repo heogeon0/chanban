@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, IsNull } from 'typeorm';
 import {
@@ -6,6 +6,7 @@ import {
   CommentReplyResponse,
   VoteHistoryResponse,
   PaginationMeta,
+  ErrorCode,
 } from '@chanban/shared-types';
 import { Comment } from '../entities/comment.entity';
 import { Vote } from '../entities/vote.entity';
@@ -285,8 +286,102 @@ export class CommentService {
     });
   }
 
-  create(createCommentDto: CreateCommentDto) {
-    return 'This action adds a new comment';
+  async create(createCommentDto: CreateCommentDto): Promise<Comment> {
+    // TODO: JWT 토큰에서 userId 가져오기
+    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
+
+    const { content, postId, parentId } = createCommentDto;
+
+    // parentId가 있으면 답글 작성
+    if (parentId) {
+      // 부모 댓글 존재 확인
+      const parentComment = await this.commentRepository.findOne({
+        where: { id: parentId, deletedAt: IsNull() },
+      });
+
+      if (!parentComment) {
+        throw new NotFoundException({
+          code: ErrorCode.COMMENT_NOT_FOUND,
+        });
+      }
+
+      // 부모 댓글이 이미 답글인지 확인 (2단계 중첩 방지)
+      if (parentComment.parentId !== null) {
+        throw new BadRequestException({
+          code: ErrorCode.INVALID_COMMENT_NESTING,
+        });
+      }
+
+      // 부모 댓글의 postId와 일치하는지 확인
+      if (parentComment.postId !== postId) {
+        throw new BadRequestException({
+          code: ErrorCode.BAD_REQUEST,
+        });
+      }
+    }
+
+    // 댓글/답글 생성
+    const comment = this.commentRepository.create({
+      content,
+      postId,
+      parentId: parentId || null,
+      userId: MOCK_USER_ID,
+    });
+
+    const savedComment = await this.commentRepository.save(comment);
+
+    // user 정보 포함해서 반환
+    const commentWithUser = await this.commentRepository.findOne({
+      where: { id: savedComment.id },
+      relations: ['user'],
+    });
+
+    if (!commentWithUser) {
+      throw new Error('Failed to retrieve created comment');
+    }
+
+    return commentWithUser;
+  }
+
+  async remove(id: string): Promise<void> {
+    // TODO: JWT 토큰에서 userId 가져오기
+    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
+
+    // 댓글 존재 확인
+    const comment = await this.commentRepository.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+
+    if (!comment) {
+      throw new NotFoundException({
+        code: ErrorCode.COMMENT_NOT_FOUND,
+      });
+    }
+
+    // 본인 댓글인지 확인
+    if (comment.userId !== MOCK_USER_ID) {
+      throw new BadRequestException({
+        code: ErrorCode.FORBIDDEN,
+      });
+    }
+
+    const now = new Date();
+
+    // 원댓글인 경우 (parentId가 null) 하위 답글도 모두 삭제
+    if (comment.parentId === null) {
+      // 하위 답글 모두 soft delete
+      await this.commentRepository
+        .createQueryBuilder()
+        .update(Comment)
+        .set({ deletedAt: now })
+        .where('parentId = :parentId', { parentId: id })
+        .andWhere('deletedAt IS NULL')
+        .execute();
+    }
+
+    // 댓글 자체 soft delete
+    comment.deletedAt = now;
+    await this.commentRepository.save(comment);
   }
 
   findAll() {
@@ -299,9 +394,5 @@ export class CommentService {
 
   update(id: number, updateCommentDto: UpdateCommentDto) {
     return `This action updates a #${id} comment`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} comment`;
   }
 }
