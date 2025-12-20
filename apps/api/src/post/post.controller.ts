@@ -1,3 +1,4 @@
+import { PostTag } from '@chanban/shared-types';
 import {
   Body,
   Controller,
@@ -8,13 +9,12 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { PostTag } from '@chanban/shared-types';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { PostService } from './post.service';
 import { ParsePostTagPipe } from './pipes/parse-post-tag.pipe';
+import { PostService } from './post.service';
 
 @Controller('posts')
 export class PostController {
@@ -25,7 +25,7 @@ export class PostController {
     return this.postService.findRecentPosts(paginationQuery);
   }
 
-  @Get(':tag')
+  @Get('/tags/:tag')
   findPostsByTag(
     @Param('tag', ParsePostTagPipe) tag: PostTag,
     @Query() queryDto: PostQueryDto,
@@ -33,7 +33,7 @@ export class PostController {
     return this.postService.findPostsByTag(tag, queryDto);
   }
 
-  @Post()
+  @Post('/create')
   create(@Body() createPostDto: CreatePostDto) {
     return this.postService.create(createPostDto);
   }
@@ -45,7 +45,7 @@ export class PostController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.postService.findOne(+id);
+    return this.postService.findOne(id);
   }
 
   @Patch(':id')

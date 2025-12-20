@@ -8,6 +8,8 @@ export enum PostTag {
   OTHER = 'other',
 }
 
+export const TAGS = Object.values(PostTag);
+
 export enum VoteStatus {
   AGREE = 'agree',
   DISAGREE = 'disagree',

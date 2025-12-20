@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import databaseConfig from './config/database.config';
 import { PostModule } from './post/post.module';
+import { CommentModule } from './comment/comment.module';
+import { VoteModule } from './vote/vote.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { PostModule } from './post/post.module';
         configService.get('database')!,
     }),
     PostModule,
+    CommentModule,
+    VoteModule,
   ],
   controllers: [AppController],
   providers: [AppService],
