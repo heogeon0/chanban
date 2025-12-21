@@ -1,8 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { PaginationQueryDto } from '../post/dto/pagination-query.dto';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { PaginationQueryDto } from '../post/dto/pagination-query.dto';
 
 @Controller('comments')
 export class CommentController {
@@ -45,6 +54,16 @@ export class CommentController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
     return this.commentService.update(+id, updateCommentDto);
+  }
+
+  @Post(':commentId/like')
+  likeComment(@Param('commentId') commentId: string) {
+    return this.commentService.likeComment(commentId);
+  }
+
+  @Delete(':commentId/like')
+  unlikeComment(@Param('commentId') commentId: string) {
+    return this.commentService.unlikeComment(commentId);
   }
 
   @Delete(':id')

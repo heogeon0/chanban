@@ -1,36 +1,74 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, IsNull } from 'typeorm';
 import {
-  CommentResponse,
   CommentReplyResponse,
-  VoteHistoryResponse,
-  PaginationMeta,
+  CommentResponse,
   ErrorCode,
+  PaginationMeta,
+  VoteHistoryResponse,
+  VoteStatus,
 } from '@chanban/shared-types';
-import { Comment } from '../entities/comment.entity';
-import { Vote } from '../entities/vote.entity';
-import { VoteHistory } from '../entities/vote-history.entity';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, In, IsNull, Repository } from 'typeorm';
+import { z } from 'zod';
 import { ResponseWithMeta } from '../common/dto/response.dto';
+import { CommentLike } from '../entities/comment-like.entity';
+import { Comment } from '../entities/comment.entity';
+import { VoteHistory } from '../entities/vote-history.entity';
+import { Vote } from '../entities/vote.entity';
 import { PaginationQueryDto } from '../post/dto/pagination-query.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+
+const ReplyRawSchema = z.object({
+  reply_id: z.string(),
+  reply_content: z.string(),
+  reply_createdAt: z.date(),
+  reply_updatedAt: z.date(),
+  reply_deletedAt: z.date().nullable(),
+  reply_postId: z.string(),
+  reply_parentId: z.string(),
+  user_id: z.string(),
+  user_nickname: z.string(),
+  row_num: z.string(),
+});
+
+const ReplyCountRawSchema = z.object({
+  parentId: z.string(),
+  count: z.string(),
+});
+
+const VoteHistoryRawSchema = z.object({
+  vh_fromStatus: z.nativeEnum(VoteStatus).nullable(),
+  vh_toStatus: z.nativeEnum(VoteStatus),
+  vh_changedAt: z.date(),
+  v_userId: z.string(),
+});
 
 @Injectable()
 export class CommentService {
   constructor(
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
+    @InjectRepository(CommentLike)
+    private readonly commentLikeRepository: Repository<CommentLike>,
     @InjectRepository(Vote)
     private readonly voteRepository: Repository<Vote>,
     @InjectRepository(VoteHistory)
     private readonly voteHistoryRepository: Repository<VoteHistory>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async findByPostId(
     postId: string,
     paginationQuery: PaginationQueryDto,
   ): Promise<ResponseWithMeta<CommentResponse[], PaginationMeta>> {
+    // TODO: JWT 토큰에서 userId 가져오기
+    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
+
     const { page = 1, limit = 20 } = paginationQuery;
     const skip = (page - 1) * limit;
     const REPLY_LIMIT = 3;
@@ -81,31 +119,40 @@ export class CommentService {
       .andWhere('reply.deletedAt IS NULL')
       .getRawMany();
 
+    const parsedReplies = repliesRaw.map((rawData) =>
+      ReplyRawSchema.parse(rawData),
+    );
+
     // 답글을 parentId별로 그룹핑 (최신 3개만)
-    const repliesByParentId = new Map<string, any[]>();
-    repliesRaw.forEach((raw) => {
-      if (parseInt(raw.row_num) <= REPLY_LIMIT) {
-        const parentId = raw.reply_parentId;
+    const repliesByParentId = new Map<
+      string,
+      Omit<CommentReplyResponse, 'voteHistory' | 'isLiked'>[]
+    >();
+    parsedReplies.forEach((reply) => {
+      if (parseInt(reply.row_num) <= REPLY_LIMIT) {
+        const parentId = reply.reply_parentId;
         if (!repliesByParentId.has(parentId)) {
           repliesByParentId.set(parentId, []);
         }
+
         repliesByParentId.get(parentId)!.push({
-          id: raw.reply_id,
-          content: raw.reply_content,
-          createdAt: raw.reply_createdAt,
-          updatedAt: raw.reply_updatedAt,
-          deletedAt: raw.reply_deletedAt,
-          postId: raw.reply_postId,
+          id: reply.reply_id,
+          content: reply.reply_content,
+          createdAt: reply.reply_createdAt,
+          updatedAt: reply.reply_updatedAt,
+          deletedAt: reply.reply_deletedAt,
+          postId: reply.reply_postId,
           user: {
-            id: raw.user_id,
-            nickname: raw.user_nickname,
+            id: reply.user_id,
+            nickname: reply.user_nickname,
+            voteHistory: [],
           },
         });
       }
     });
 
     // 쿼리 3: 각 댓글의 전체 답글 개수 조회
-    const replyCounts = await this.commentRepository
+    const replyCountsRaw = await this.commentRepository
       .createQueryBuilder('reply')
       .select('reply.parentId', 'parentId')
       .addSelect('COUNT(*)', 'count')
@@ -115,39 +162,41 @@ export class CommentService {
       .getRawMany();
 
     const replyCountMap = new Map<string, number>();
-    replyCounts.forEach((rc) => {
+    replyCountsRaw.forEach((rawData) => {
+      const rc = ReplyCountRawSchema.parse(rawData);
       replyCountMap.set(rc.parentId, parseInt(rc.count));
     });
 
     // 모든 댓글/답글 작성자 ID 수집
     const allUserIds = new Set<string>();
+    const allCommentIds = new Set<string>();
     comments.forEach((comment) => {
       allUserIds.add(comment.user.id);
+      allCommentIds.add(comment.id);
       const replies = repliesByParentId.get(comment.id) || [];
       replies.forEach((reply) => {
         allUserIds.add(reply.user.id);
+        allCommentIds.add(reply.id);
       });
     });
 
-    // 쿼리 2: 투표 이력 조회
+    // 쿼리 4: 투표 이력 조회
     const voteHistoryMap = new Map<string, VoteHistoryResponse[]>();
 
     if (allUserIds.size > 0) {
-      const voteHistories = await this.voteHistoryRepository
+      const voteHistoriesRaw = await this.voteHistoryRepository
         .createQueryBuilder('vh')
         .innerJoin('vh.vote', 'v')
         .where('v.postId = :postId', { postId })
-        .andWhere('v.userId IN (:...userIds)', { userIds: Array.from(allUserIds) })
-        .select([
-          'vh.fromStatus',
-          'vh.toStatus',
-          'vh.changedAt',
-          'v.userId',
-        ])
+        .andWhere('v.userId IN (:...userIds)', {
+          userIds: Array.from(allUserIds),
+        })
+        .select(['vh.fromStatus', 'vh.toStatus', 'vh.changedAt', 'v.userId'])
         .orderBy('vh.changedAt', 'ASC')
         .getRawMany();
 
-      voteHistories.forEach((history) => {
+      voteHistoriesRaw.forEach((rawData) => {
+        const history = VoteHistoryRawSchema.parse(rawData);
         const userId = history.v_userId;
         if (!voteHistoryMap.has(userId)) {
           voteHistoryMap.set(userId, []);
@@ -160,21 +209,35 @@ export class CommentService {
       });
     }
 
+    // 쿼리 5: 현재 사용자의 좋아요 여부 조회
+    const likedCommentIds = new Set<string>();
+
+    if (allCommentIds.size > 0) {
+      const likes = await this.commentLikeRepository.find({
+        where: {
+          commentId: In(Array.from(allCommentIds)),
+          userId: MOCK_USER_ID,
+        },
+        select: ['commentId'],
+      });
+
+      likes.forEach((like) => {
+        likedCommentIds.add(like.commentId);
+      });
+    }
+
     // 응답 데이터 구성
     const items = comments.map((comment) => {
       const voteHistory = voteHistoryMap.get(comment.user.id) || [];
       const replyList = repliesByParentId.get(comment.id) || [];
 
-      const replies: CommentReplyResponse[] = replyList.map((reply) => ({
-        id: reply.id,
-        content: reply.content,
-        createdAt: reply.createdAt,
-        updatedAt: reply.updatedAt,
-        deletedAt: reply.deletedAt,
-        user: reply.user,
-        postId: reply.postId,
-        voteHistory: voteHistoryMap.get(reply.user.id) || [],
-      }));
+      const replies: CommentReplyResponse[] = replyList.map((reply) => {
+        return {
+          ...reply,
+          isLiked: likedCommentIds.has(reply.id),
+          voteHistory: voteHistoryMap.get(reply.user.id) || [],
+        };
+      });
 
       return {
         id: comment.id,
@@ -185,12 +248,13 @@ export class CommentService {
         user: {
           id: comment.user.id,
           nickname: comment.user.nickname,
+          voteHistory: voteHistory,
         },
         postId: comment.postId,
         parentId: comment.parentId,
         replies,
         totalReplies: replyCountMap.get(comment.id) || 0,
-        voteHistory,
+        isLiked: likedCommentIds.has(comment.id),
       };
     });
 
@@ -208,6 +272,9 @@ export class CommentService {
     commentId: string,
     paginationQuery: PaginationQueryDto,
   ): Promise<ResponseWithMeta<CommentReplyResponse[], PaginationMeta>> {
+    // TODO: JWT 토큰에서 userId 가져오기
+    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
+
     const { page = 1, limit = 10 } = paginationQuery;
     const skip = (page - 1) * limit;
 
@@ -236,11 +303,12 @@ export class CommentService {
 
     // 답글 작성자들의 투표 이력 조회
     const userIds = replies.map((r) => r.user.id);
+    const replyIds = replies.map((r) => r.id);
     const postId = replies[0].postId;
 
     const voteHistoryMap = new Map<string, VoteHistoryResponse[]>();
 
-    const voteHistories = await this.voteHistoryRepository
+    const voteHistoriesRaw = await this.voteHistoryRepository
       .createQueryBuilder('vh')
       .innerJoin('vh.vote', 'v')
       .where('v.postId = :postId', { postId })
@@ -249,7 +317,8 @@ export class CommentService {
       .orderBy('vh.changedAt', 'ASC')
       .getRawMany();
 
-    voteHistories.forEach((history) => {
+    voteHistoriesRaw.forEach((rawData) => {
+      const history = VoteHistoryRawSchema.parse(rawData);
       const userId = history.v_userId;
       if (!voteHistoryMap.has(userId)) {
         voteHistoryMap.set(userId, []);
@@ -259,6 +328,20 @@ export class CommentService {
         toStatus: history.vh_toStatus,
         changedAt: history.vh_changedAt,
       });
+    });
+
+    // 현재 사용자의 좋아요 여부 조회
+    const likedCommentIds = new Set<string>();
+    const likes = await this.commentLikeRepository.find({
+      where: {
+        commentId: In(replyIds),
+        userId: MOCK_USER_ID,
+      },
+      select: ['commentId'],
+    });
+
+    likes.forEach((like) => {
+      likedCommentIds.add(like.commentId);
     });
 
     // 응답 데이터 구성
@@ -271,9 +354,10 @@ export class CommentService {
       user: {
         id: reply.user.id,
         nickname: reply.user.nickname,
+        voteHistory: voteHistoryMap.get(reply.user.id) || [],
       },
       postId: reply.postId,
-      voteHistory: voteHistoryMap.get(reply.user.id) || [],
+      isLiked: likedCommentIds.has(reply.id),
     }));
 
     const totalPages = Math.ceil(total / limit);
@@ -382,6 +466,77 @@ export class CommentService {
     // 댓글 자체 soft delete
     comment.deletedAt = now;
     await this.commentRepository.save(comment);
+  }
+
+  async likeComment(commentId: string): Promise<void> {
+    // TODO: JWT 토큰에서 userId 가져오기
+    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
+
+    // 댓글 존재 확인
+    const comment = await this.commentRepository.findOne({
+      where: { id: commentId, deletedAt: IsNull() },
+    });
+
+    if (!comment) {
+      throw new NotFoundException({
+        code: ErrorCode.COMMENT_NOT_FOUND,
+      });
+    }
+
+    // 이미 좋아요 했는지 확인
+    const existingLike = await this.commentLikeRepository.findOne({
+      where: { commentId, userId: MOCK_USER_ID },
+    });
+
+    if (existingLike) {
+      // 이미 좋아요한 경우
+      throw new BadRequestException({
+        code: ErrorCode.BAD_REQUEST,
+        message: '이미 좋아요한 댓글입니다',
+      });
+    }
+
+    // Transaction으로 좋아요 생성 + 카운트 증가
+    await this.dataSource.transaction(async (manager) => {
+      // 좋아요 생성
+      const like = manager.create(CommentLike, {
+        commentId,
+        userId: MOCK_USER_ID,
+      });
+
+      await manager.save(like);
+      await manager.increment(Comment, { id: commentId }, 'likeCount', 1);
+    });
+  }
+
+  async unlikeComment(commentId: string): Promise<void> {
+    // TODO: JWT 토큰에서 userId 가져오기
+    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
+
+    /** 좋아요 존재하는지 확인 */
+    const existingLike = await this.commentLikeRepository.findOne({
+      where: { commentId, userId: MOCK_USER_ID },
+    });
+
+    if (!existingLike) {
+      throw new NotFoundException({
+        code: ErrorCode.BAD_REQUEST,
+        message: '좋아요한 댓글이 아닙니다',
+      });
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      // 좋아요 삭제
+      const result = await manager.delete(CommentLike, {
+        commentId,
+        userId: MOCK_USER_ID,
+      });
+
+      // 삭제된 좋아요가 있으면 카운트 감소
+      if (result.affected && result.affected > 0) {
+        await manager.decrement(Comment, { id: commentId }, 'likeCount', 1);
+      }
+    });
   }
 
   findAll() {

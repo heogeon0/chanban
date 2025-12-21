@@ -1,34 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { VoteService } from './vote.service';
 import { CreateVoteDto } from './dto/create-vote.dto';
-import { UpdateVoteDto } from './dto/update-vote.dto';
 
-@Controller('vote')
+@Controller('votes')
 export class VoteController {
   constructor(private readonly voteService: VoteService) {}
 
   @Post()
-  create(@Body() createVoteDto: CreateVoteDto) {
-    return this.voteService.create(createVoteDto);
+  upsertVote(@Body() createVoteDto: CreateVoteDto) {
+    return this.voteService.upsertVote(createVoteDto);
   }
 
-  @Get()
-  findAll() {
-    return this.voteService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.voteService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVoteDto: UpdateVoteDto) {
-    return this.voteService.update(+id, updateVoteDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.voteService.remove(+id);
+  @Get('posts/:postId/me')
+  getMyVote(@Param('postId') postId: string) {
+    return this.voteService.getMyVote(postId);
   }
 }

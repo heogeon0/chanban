@@ -15,9 +15,10 @@ export interface CommentReplyResponse {
   user: {
     id: string;
     nickname: string;
+    voteHistory: VoteHistoryResponse[];
   };
   postId: string;
-  voteHistory: VoteHistoryResponse[];
+  isLiked: boolean;
 }
 
 export interface CommentResponse {
@@ -29,10 +30,11 @@ export interface CommentResponse {
   user: {
     id: string;
     nickname: string;
+    voteHistory: VoteHistoryResponse[];
   };
   postId: string;
   parentId: string | null;
   replies: CommentReplyResponse[];
   totalReplies: number;
-  voteHistory: VoteHistoryResponse[];
+  isLiked: boolean;
 }
