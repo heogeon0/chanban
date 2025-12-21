@@ -67,6 +67,7 @@ class HttpClient {
   }
 
   get<T>(url: string, config?: RequestConfig): Promise<T> {
+    console.log(url, 'url');
     return this.request<T>(url, { ...config, method: 'GET' });
   }
 
@@ -118,7 +119,7 @@ export const createHttpClient = (config?: HttpClientConfig) => {
 
 // Default instance
 export const httpClient = createHttpClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+  baseURL: process.env.NEXT_PUBLIC_CAHNBAN_API || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },

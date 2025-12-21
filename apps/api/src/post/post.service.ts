@@ -3,7 +3,7 @@ import {
   PaginationMeta,
   PostSortBy,
   PostTag,
-  SortOrder
+  SortOrder,
 } from '@chanban/shared-types';
 import {
   BadRequestException,
@@ -29,12 +29,15 @@ export class PostService {
   async findRecentPosts(
     paginationQuery: PaginationQueryDto,
   ): Promise<ResponseWithMeta<Post[], PaginationMeta>> {
-    const { page = 1, limit = 20 } = paginationQuery;
+    const { page = 1, limit = 20, sort = PostSortBy.RECENT } = paginationQuery;
     const skip = (page - 1) * limit;
 
     const [items, total] = await this.postRepository.findAndCount({
       where: { deletedAt: IsNull() },
-      order: { createdAt: 'DESC' },
+      order:
+        sort === PostSortBy.POPULAR
+          ? { popularityScore: 'DESC' }
+          : { createdAt: 'DESC' },
       skip,
       take: limit,
       relations: ['creator'],
@@ -61,6 +64,8 @@ export class PostService {
       order = SortOrder.DESC,
     } = queryDto;
     const skip = (page - 1) * limit;
+
+    console.log(tag, 'tag');
 
     const orderBy =
       sort === PostSortBy.POPULAR

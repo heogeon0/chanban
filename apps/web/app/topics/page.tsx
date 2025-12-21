@@ -1,234 +1,191 @@
 
+import { httpClient } from "@/lib/httpClient";
+import { PaginatedResponse, PostResponse, PostTag, TAGS } from "@chanban/shared-types";
 import { Badge } from "@workspace/ui/components/badge";
-
-
 import Link from "next/link";
 
-import { TAGS } from "@chanban/shared-types";
+
+const TAG_MAP = {
+  'hot': {
+    id: 'hot',
+    name: "인기",
+    variant: 'agree' as const,
+  },
+  'recent': {
+    id: 'recent',
+    name: "최신",
+    variant: 'disagree' as const,
+  },
+  [PostTag.POLITICS]: {
+    id: PostTag.POLITICS,
+    name: "정치",
+    variant: 'default' as const,
+  },
+  [PostTag.SOCIETY]: {
+    id: PostTag.SOCIETY,
+    name: "사회",
+    variant: 'default' as const,
+  },
+  [PostTag.ECONOMY]: {
+    id: PostTag.ECONOMY,
+    name: "경제",
+    variant: 'default' as const,
+  },
+  [PostTag.TECHNOLOGY]: {
+    id: PostTag.TECHNOLOGY,
+    name: "기술",
+    variant: 'default' as const,
+  },
+  [PostTag.ENTERTAINMENT]: {
+    id: PostTag.ENTERTAINMENT,
+    name: "연예",
+    variant: 'default' as const,
+  },
+    [PostTag.SPORTS]: {
+    id: PostTag.SPORTS,
+    name: "스포츠",
+    variant: 'default' as const,
+  },
+  [PostTag.OTHER]: {
+    id: PostTag.OTHER,
+    name: "기타",
+    variant: 'default' as const,
+  },
+}
+
+/**
+ * 찬성/반대 비율을 퍼센트로 계산합니다.
+ * @param agreeCount 찬성 투표 수
+ * @param disagreeCount 반대 투표 수
+ * @returns 찬성 비율 (0-100)
+ */
+function getAgreePercentage(agreeCount: number, disagreeCount: number): number {
+  const total = agreeCount + disagreeCount;
+  if (total === 0) return 50; // 투표가 없으면 중립
+  return (agreeCount / total) * 100;
+}
+
+/**
+ * 날짜를 상대적인 시간으로 포맷합니다.
+ * @param date 날짜 문자열 또는 Date 객체
+ * @returns 포맷된 날짜 문자열 (예: "2시간 전", "3일 전")
+ */
+function formatRelativeTime(date: Date | string): string {
+  const now = new Date();
+  const target = new Date(date);
+  const diffInSeconds = Math.floor((now.getTime() - target.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return '방금 전';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}분 전`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}시간 전`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}일 전`;
+
+  // 일주일 이상이면 날짜 표시
+  return target.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+async function getPosts(tag?: PostTag | 'recent' | 'hot') {
+
+  if (tag === 'recent') {
+    return await httpClient.get<PaginatedResponse<PostResponse>>(`/api/posts/recent`);
+  }
+
+  if (tag === 'hot') {
+    return await httpClient.get<PaginatedResponse<PostResponse>>(`/api/posts/recent?sort=popular`);
+  }
+
+  return await httpClient.get<PaginatedResponse<PostResponse>>(`/api/posts/tags/${tag}`);
+}
 
 
-console.log(TAGS)
-const DUMMY_CATEGORIES = [
-  { id: "c1", title: "정치", color: "#f5428d" },
-  { id: "c2", title: "사회", color: "#f5a442" },
-];
-
-const DUMMY_TOPICS = {
-  c1: [
-    {
-      id: "t1",
-      title: "대통령 선거",
-      description: "대통령 선거 토픽",
-      approve: 4,
-      reject: 1,
-      commentCount: 10,
-      creator: "user1",
-      createdAt: new Date(),
-    },
-    {
-      id: "t2",
-      title: "국회 의원 선거",
-      description: "국회 의원 선거 토픽",
-      approve: 3,
-      reject: 2,
-      commentCount: 10,
-      creator: "user2",
-      createdAt: new Date(),
-    },
-    {
-      id: "t3",
-      title: "시도지사 선거",
-      description: "시도지사 선거 토픽",
-      approve: 2,
-      reject: 3,
-      commentCount: 10,
-      creator: "user3",
-      createdAt: new Date(),
-    },
-    {
-      id: "t4",
-      title: "시군구의회 의원 선거",
-      description: "시군구의회 의원 선거 토픽",
-      approve: 1,
-      reject: 4,
-      commentCount: 10,
-      creator: "user4",
-      createdAt: new Date(),
-    },
-    {
-      id: "t5",
-      title: "시장 선거",
-      description: "시장 선거 토픽",
-      approve: 0,
-      reject: 5,
-      commentCount: 10,
-      creator: "user5",
-      createdAt: new Date(),
-    },
-    {
-      id: "t6",
-      title: "교육 정책",
-      description: "교육 정책 토픽",
-      approve: 0,
-      reject: 6,
-      commentCount: 10,
-      creator: "user6",
-      createdAt: new Date(),
-    },
-  ],
-  c2: [
-    {
-      id: "t1",
-      title: "위치",
-      description: "위치 토픽",
-      approve: 4,
-      reject: 1,
-      commentCount: 10,
-      creator: "user1",
-      createdAt: new Date(),
-    },
-    {
-      id: "t2",
-      title: "소득",
-      description: "소득 토픽",
-      approve: 3,
-      reject: 2,
-      commentCount: 10,
-      creator: "user2",
-      createdAt: new Date(),
-    },
-    {
-      id: "t3",
-      title: "교육",
-      description: "교육 토픽",
-      approve: 2,
-      reject: 3,
-      commentCount: 10,
-      creator: "user3",
-      createdAt: new Date(),
-    },
-    {
-      id: "t4",
-      title: "복지",
-      description: "복지 토픽",
-      approve: 1,
-      reject: 4,
-      commentCount: 10,
-      creator: "user4",
-      createdAt: new Date(),
-    },
-    {
-      id: "t5",
-      title: "보건",
-      description: "보건 토픽",
-      approve: 0,
-      reject: 5,
-      commentCount: 10,
-      creator: "user5",
-      createdAt: new Date(),
-    },
-    {
-      id: "t6",
-      title: "환경",
-      description: "환경 토픽",
-      approve: 0,
-      reject: 6,
-      commentCount: 10,
-      creator: "user6",
-      createdAt: new Date(),
-    },
-  ],
-};
-
-export default function TopicsPage() {
-  
 
 
+
+
+
+
+
+export default async function TopicsPage({ searchParams }: { searchParams: { tag: string } }) {
+ const { tag } = await searchParams;
+  const posts = await getPosts(TAGS.includes(tag as PostTag) ? tag as PostTag : 'hot');
 
   return (
     <div>
       <header>
         <ul className="flex flex-wrap gap-x-2 border-b py-4">
-          {DUMMY_CATEGORIES.map((category, index) => (
-            <li key={category.id} aria-label={`${index + 1}번째 카테고리`}>
-              <Badge asChild>
-                <Link href={`/topics?category=${category.id}`}>
-                  {category.title}
+          {Object.values(TAG_MAP).map((tag, index) => (
+            <li key={tag.id} aria-label={`${index + 1}번째 카테고리`}>
+              <Badge asChild variant={tag.variant}>
+                <Link href={`/topics?tag=${tag.id}`}>
+                  {tag.name}
                 </Link>
               </Badge>
             </li>
           ))}
         </ul>
       </header>
-      <main className="bg-green-50">
-        <ul className="flex flex-wrap gap-x-2 flex-col gap-y-1">
-          {DUMMY_TOPICS.c1.map((topic, index) => (
-            <li key={topic.id} aria-label={`${index + 1}번째 토픽`}>
-              <Link
-                href={`/topics/${topic.id}`}
-                className="relative block p-4 bg-white"
-              >
-                <div className="flex gap-2">
-                  <div className="flex-1 space-y-1">
-                    <h1 aria-label="토픽 제목" className="text-title-default">
-                      {topic.title}
-                    </h1>
-                    <p
-                      aria-label="토픽 설명"
-                      className="text-body-default truncate"
-                    >
-                      {topic.description}
+      <main className="p-4">
+        <ul className="flex flex-col gap-y-3">
+          {posts.data.map((post) => {
+            const agreePercent = getAgreePercentage(post.agreeCount, post.disagreeCount);
+
+            return (
+              <li key={post.id}>
+                <Link
+                  href={`/topics/${post.id}`}
+                  className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden relative"
+                >
+                  {/* 상단 프로그레스 바 - 비스듬하게 섞이는 그라디언트 */}
+                  <div
+                    className="absolute top-0 left-0 right-0 h-[50%] pointer-events-none"
+                      style={{
+                      background: `linear-gradient(95deg,
+                        #a7c7e7 0%,
+                        #7eb3dd ${Math.max(0, agreePercent - 10)}%,
+                        #c4a8d8 ${agreePercent}%,
+                        #e8a8a8 ${Math.min(100, agreePercent + 10)}%,
+                        #ff9999 100%)`,
+                      opacity: 0.25,
+                      maskImage: 'linear-gradient(to bottom, black 0%, black 1%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 10%, transparent 100%)'
+                      }}
+                    />
+
+                  {/* 카드 본문 */}
+                  <div className="p-4 relative">
+                    <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {post.title}
+                    </h3>
+
+                    {/* 내용 미리보기 */}
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-1">
+                      {post.content}
                     </p>
-                  </div>
-                  <div className="flex flex-col items-end text-caption-default text-muted-foreground gap-0.5">
-                    <span className="작성일">
-                      {topic.createdAt.toLocaleDateString()}
-                    </span>
-                    <span className="작성자">{topic.creator}</span>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-x-1 mt-2">
-                    <div className="flex items-center gap-x-1">
-                      <span role="img" aria-label="찬성">
-                        👍
-                      </span>
-                      <span
-                        aria-label="찬성 수"
-                        className="text-caption-default"
-                      >
-                        {topic.approve}
-                      </span>
-                    </div>
 
-                    <div className="flex items-center gap-x-1">
-                      <span role="img" aria-label="반대">
-                        👎
+                    {/* 투표 통계 */}
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="text-blue-600 font-medium">
+                        👍 {post.agreeCount}
                       </span>
-                      <span
-                        aria-label="찬성 수"
-                        className="text-caption-default"
-                      >
-                        {topic.reject}
+                      <span className="text-red-600 font-medium">
+                        👎 {post.disagreeCount}
                       </span>
-                    </div>
-
-                    <div className="flex items-center gap-x-1">
-                      <span role="img" aria-label="댓글 수">
-                        💬
+                      <span className="text-gray-500">
+                        ○ {post.neutralCount}
                       </span>
-                      <span
-                        aria-label="찬성 수"
-                        className="text-caption-default"
-                      >
-                        {topic.commentCount}
+                      <span className="ml-auto text-gray-400 text-xs">
+                        💬 {post.commentCount}
                       </span>
                     </div>
                   </div>
-                </div>
-              </Link>
-            </li>
-          ))}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </main>
     </div>
