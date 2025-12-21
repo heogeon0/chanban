@@ -1,6 +1,7 @@
 
 import { Providers } from "@/components/providers"
 import "@workspace/ui/globals.css"
+import Link from "next/link"
 
 
 export default function RootLayout({
@@ -13,7 +14,16 @@ export default function RootLayout({
       <body
         className={`font-sans antialiased w-[375px] mx-auto`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+        <header className="border-b p-4">
+        <Link
+          href="/topics"
+          className="text-body-default text-muted-foreground hover:text-foreground"
+        >
+          ← 목록으로
+        </Link>
+      </header>
+          {children}</Providers>
       </body>
     </html>
   )

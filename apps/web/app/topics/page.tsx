@@ -1,9 +1,13 @@
-"use client";
 
 import { Badge } from "@workspace/ui/components/badge";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
+
+import Link from "next/link";
+
+import { TAGS } from "@chanban/shared-types";
+
+
+console.log(TAGS)
 const DUMMY_CATEGORIES = [
   { id: "c1", title: "정치", color: "#f5428d" },
   { id: "c2", title: "사회", color: "#f5a442" },
@@ -137,9 +141,9 @@ const DUMMY_TOPICS = {
 };
 
 export default function TopicsPage() {
-  const searchParams = useSearchParams();
-  const categoryId =
-    (searchParams.get("category") as keyof typeof DUMMY_TOPICS) || "c1";
+  
+
+
 
   return (
     <div>
@@ -158,7 +162,7 @@ export default function TopicsPage() {
       </header>
       <main className="bg-green-50">
         <ul className="flex flex-wrap gap-x-2 flex-col gap-y-1">
-          {DUMMY_TOPICS[categoryId].map((topic, index) => (
+          {DUMMY_TOPICS.c1.map((topic, index) => (
             <li key={topic.id} aria-label={`${index + 1}번째 토픽`}>
               <Link
                 href={`/topics/${topic.id}`}
