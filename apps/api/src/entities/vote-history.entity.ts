@@ -7,8 +7,8 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
+import { VoteStatus } from '@chanban/shared-types';
 import { Vote } from './vote.entity';
-import { VoteStatus } from './enums';
 
 @Entity('vote_history')
 @Index(['voteId'])

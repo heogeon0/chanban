@@ -8,8 +8,22 @@ export enum PostTag {
   OTHER = 'other',
 }
 
+export const TAGS = Object.values(PostTag);
+
 export enum VoteStatus {
   AGREE = 'agree',
   DISAGREE = 'disagree',
   NEUTRAL = 'neutral',
+}
+
+
+
+export enum PostSortBy {
+  RECENT = 'recent',
+  POPULAR = 'popular',
+}
+
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
 }

@@ -9,10 +9,10 @@ import {
   Index,
   Unique,
 } from 'typeorm';
+import { VoteStatus } from '@chanban/shared-types';
 import { User } from './user.entity';
 import { Post } from './post.entity';
 import { VoteHistory } from './vote-history.entity';
-import { VoteStatus } from './enums';
 
 @Entity('votes')
 @Unique(['postId', 'userId'])

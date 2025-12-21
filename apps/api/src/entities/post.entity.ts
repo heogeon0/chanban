@@ -10,10 +10,10 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
+import { PostTag, VoteStatus } from '@chanban/shared-types';
 import { User } from './user.entity';
 import { Vote } from './vote.entity';
 import { Comment } from './comment.entity';
-import { PostTag, VoteStatus } from './enums';
 
 @Entity('posts')
 @Index(['createdAt'])
@@ -64,6 +64,10 @@ export class Post {
 
   @Column({ type: 'integer', default: 0 })
   commentCount: number;
+
+  @Index()
+  @Column({ type: 'integer', default: 0 })
+  viewCount: number;
 
   @Index()
   @Column({ type: 'float', default: 0 })
