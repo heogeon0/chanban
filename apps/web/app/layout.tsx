@@ -1,5 +1,5 @@
 
-import { Providers } from "@/components/providers"
+import { Providers } from "@/shared/providers"
 import "@workspace/ui/globals.css"
 import Link from "next/link"
 

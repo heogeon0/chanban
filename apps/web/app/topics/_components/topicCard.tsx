@@ -1,4 +1,4 @@
-import { VoteProgressBar } from "@/components/voteProgressBar";
+import { VoteProgressBar } from "@/shared/ui/voteProgressBar";
 import { PostResponse } from "@chanban/shared-types";
 import Link from "next/link";
 

@@ -4,6 +4,7 @@ import { PaginatedResponse, PostResponse, PostTag, TAGS } from "@chanban/shared-
 import { Badge } from "@workspace/ui/components/badge";
 import Link from "next/link";
 import { TopicCard } from "./_components/topicCard";
+import { TopicList } from "./_components/topicList";
 
 
 const TAG_MAP = {
@@ -70,14 +71,10 @@ async function getPosts(tag?: PostTag | 'recent' | 'hot') {
 
 
 
-
-
-
-
-
-export default async function TopicsPage({ searchParams }: { searchParams: { tag: string } }) {
- const { tag } = await searchParams;
-  const posts = await getPosts(TAGS.includes(tag as PostTag) ? tag as PostTag : 'hot');
+export default async function TopicsPage({ searchParams }: { searchParams: Promise<{ tag: string }> }) {
+  const { tag } = await searchParams;
+  const selectedTag = (TAGS.includes(tag as PostTag) ? tag as PostTag : 'hot') as PostTag | 'recent' | 'hot';
+  const initialPosts = await getPosts(selectedTag);
 
   return (
     <div>
@@ -96,12 +93,15 @@ export default async function TopicsPage({ searchParams }: { searchParams: { tag
       </header>
       <main className="p-4">
         <ul className="flex flex-col gap-y-3">
-          {posts.data.map((post) => (
+          {/* SSR로 렌더링된 첫 페이지 데이터 */}
+          {initialPosts.data.map((post) => (
             <li key={post.id}>
               <TopicCard post={post} />
             </li>
           ))}
         </ul>
+        {/* 클라이언트 컴포넌트에서 메타정보 기반 무한스크롤 */}
+        <TopicList tag={selectedTag} initialMeta={initialPosts.meta} />
       </main>
     </div>
   );
