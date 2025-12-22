@@ -4,8 +4,36 @@ import { AppModule } from './app.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
+/**
+ * 환경별 허용할 origin 목록
+ */
+const getAllowedOrigins = () => {
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+
+  if (isDevelopment) {
+    return [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+    ];
+  }
+
+  // 프로덕션 환경에서는 환경변수로 허용할 origin 설정
+  const productionOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+  return productionOrigins;
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // CORS 설정
+  app.enableCors({
+    origin: getAllowedOrigins(),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
