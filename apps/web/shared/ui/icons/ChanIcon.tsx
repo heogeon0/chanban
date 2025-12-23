@@ -1,0 +1,37 @@
+interface ChanIconProps {
+  className?: string;
+  size?: number;
+}
+
+/**
+ * 찬성(동의) 아이콘 컴포넌트
+ *
+ * @param className - 추가 CSS 클래스
+ * @param size - 아이콘 크기 (기본값: 24)
+ */
+export function ChanIcon({ className, size = 24 }: ChanIconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <rect
+        x="1.25"
+        y="1.25"
+        width="21.5"
+        height="21.5"
+        rx="10.75"
+        stroke="currentColor"
+        strokeWidth="2.5"
+      />
+      <path
+        d="M10.851 5.355H14.319V7.429H10.851V8.398C10.851 8.653 10.834 8.891 10.8 9.129L14.574 11.56L13.299 13.362L9.916 11.203C9.1 12.206 7.672 12.937 5.632 13.413L4.493 11.543C5.173 11.407 5.734 11.237 6.21 11.05C6.669 10.88 7.043 10.659 7.349 10.404C7.638 10.166 7.859 9.877 7.995 9.537C8.114 9.214 8.182 8.823 8.182 8.381V7.429H4.884V5.355H8.182V3.944H10.851V5.355ZM8.488 14.382V17.17H18.399V19.227H5.819V14.382H8.488ZM18.229 9.588V14.824H15.56V4.675H18.229V7.514H19.708V9.588H18.229Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}

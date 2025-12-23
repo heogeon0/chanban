@@ -1,3 +1,4 @@
+import { BanIcon, ChanIcon, ChongIcon } from "@/shared/ui/icons";
 import { VoteProgressBar } from "@/shared/ui/voteProgressBar";
 import { PostResponse } from "@chanban/shared-types";
 import Link from "next/link";
@@ -36,14 +37,17 @@ export function TopicCard({ post }: TopicCardProps) {
 
         {/* 투표 통계 */}
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-blue-600 font-medium">
-            👍 {post.agreeCount}
+          <span className="flex items-center gap-1 text-blue-600 font-medium">
+            <ChanIcon size={16} />
+            {post.agreeCount}
           </span>
-          <span className="text-red-600 font-medium">
-            👎 {post.disagreeCount}
+          <span className="flex items-center gap-1 text-red-600 font-medium">
+            <BanIcon size={16} />
+            {post.disagreeCount}
           </span>
-          <span className="text-gray-500">
-            ○ {post.neutralCount}
+          <span className="flex items-center gap-1 text-gray-500">
+            <ChongIcon size={16} />
+            {post.neutralCount}
           </span>
           <span className="ml-auto text-gray-400 text-xs">
             💬 {post.commentCount}

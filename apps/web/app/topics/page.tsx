@@ -89,6 +89,7 @@ export default async function TopicsPage({ searchParams }: { searchParams: Promi
               </Badge>
             </li>
           ))}
+          
         </ul>
       </header>
       <main className="p-4">
