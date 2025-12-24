@@ -1,6 +1,7 @@
 import { BanIcon, ChanIcon, ChongIcon } from "@/shared/ui/icons";
 import { VoteProgressBar } from "@/shared/ui/voteProgressBar";
 import { PostResponse } from "@chanban/shared-types";
+import CommentIcon from '@mui/icons-material/Comment';
 import Link from "next/link";
 
 interface TopicCardProps {
@@ -49,8 +50,9 @@ export function TopicCard({ post }: TopicCardProps) {
             <ChongIcon size={16} />
             {post.neutralCount}
           </span>
-          <span className="ml-auto text-gray-400 text-xs">
-            💬 {post.commentCount}
+          <span className="ml-auto flex items-center gap-1 text-gray-500">
+            <CommentIcon sx={{ fontSize: 16 }} />
+            {post.commentCount}
           </span>
         </div>
       </div>

@@ -119,7 +119,7 @@ export const createHttpClient = (config?: HttpClientConfig) => {
 
 // Default instance
 export const httpClient = createHttpClient({
-  baseURL: process.env.NEXT_PUBLIC_CAHNBAN_API || 'http://localhost:3000',
+  baseURL: process.env.NEXT_PUBLIC_CAHNBAN_API || 'http://localhost:3001',
   headers: {
     'Content-Type': 'application/json',
   },
