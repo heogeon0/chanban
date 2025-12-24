@@ -67,7 +67,6 @@ class HttpClient {
   }
 
   get<T>(url: string, config?: RequestConfig): Promise<T> {
-    console.log(url, 'url');
     return this.request<T>(url, { ...config, method: 'GET' });
   }
 

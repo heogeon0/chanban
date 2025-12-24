@@ -4,6 +4,7 @@ interface VoteProgressBarProps {
   agreeCount: number;
   disagreeCount: number;
   className?: string;
+  height?: string;
 }
 
 /**
@@ -16,7 +17,8 @@ interface VoteProgressBarProps {
 export const VoteProgressBar = memo(function VoteProgressBar({
   agreeCount,
   disagreeCount,
-  className = ''
+  className = '',
+  height = '50%'
 }: VoteProgressBarProps) {
   const total = agreeCount + disagreeCount;
   const agreePercent = total === 0 ? 50 : (agreeCount / total) * 100;
@@ -24,7 +26,7 @@ export const VoteProgressBar = memo(function VoteProgressBar({
 
   return (
     <div
-      className={`absolute top-0 left-0 right-0 h-[50%] pointer-events-none ${className}`}
+      className={`absolute top-0 left-0 right-0  pointer-events-none ${className}`}
       role="meter"
       aria-label={`투표 비율: 찬성 ${Math.round(agreePercent)}%, 반대 ${Math.round(disagreePercent)}%`}
       aria-valuenow={agreePercent}
@@ -40,7 +42,8 @@ export const VoteProgressBar = memo(function VoteProgressBar({
           #ff9999 100%)`,
         opacity: 0.25,
         maskImage: 'linear-gradient(to bottom, black 0%, black 1%, transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 10%, transparent 100%)'
+        WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 10%, transparent 100%)',
+        height: height
       }}
     />
   );
