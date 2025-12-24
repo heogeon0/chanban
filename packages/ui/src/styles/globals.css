@@ -42,6 +42,14 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Opinion Colors */
+  --opinion-agree: oklch(0.532 0.159 251.406); /* blue-600 */
+  --opinion-agree-light: oklch(0.85 0.08 251.406); /* blue-100 */
+  --opinion-disagree: oklch(0.578 0.218 27.325); /* red-600 */
+  --opinion-disagree-light: oklch(0.85 0.1 27.325); /* red-100 */
+  --opinion-neutral: oklch(0.556 0.014 264.052); /* gray-600 */
+  --opinion-neutral-light: oklch(0.922 0.005 264.052); /* gray-100 */
 }
 
 .dark {
@@ -77,6 +85,14 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+
+  /* Opinion Colors - Dark Mode */
+  --opinion-agree: oklch(0.65 0.18 251.406); /* lighter blue for dark mode */
+  --opinion-agree-light: oklch(0.35 0.1 251.406);
+  --opinion-disagree: oklch(0.68 0.25 27.325); /* lighter red for dark mode */
+  --opinion-disagree-light: oklch(0.35 0.12 27.325);
+  --opinion-neutral: oklch(0.65 0.014 264.052); /* lighter gray for dark mode */
+  --opinion-neutral-light: oklch(0.35 0.005 264.052);
 }
 
 @theme inline {
@@ -116,6 +132,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Opinion Colors */
+  --color-opinion-agree: var(--opinion-agree);
+  --color-opinion-agree-light: var(--opinion-agree-light);
+  --color-opinion-disagree: var(--opinion-disagree);
+  --color-opinion-disagree-light: var(--opinion-disagree-light);
+  --color-opinion-neutral: var(--opinion-neutral);
+  --color-opinion-neutral-light: var(--opinion-neutral-light);
 }
 
 @layer base {

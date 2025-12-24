@@ -86,7 +86,7 @@ export default async function TopicDetailPage(props: {
               />
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
-                  <ChanIcon size={32} className="text-blue-600" />
+                  <ChanIcon size={32} className="text-opinion-agree" />
 
                   <div className="flex flex-col">
                     <span className="text-caption-default text-muted-foreground">
@@ -101,7 +101,7 @@ export default async function TopicDetailPage(props: {
                 <div className="w-px h-12 bg-border" />
 
                 <div className="flex items-center gap-3">
-                  <ChongIcon size={32} className="text-gray-600" />
+                  <ChongIcon size={32} className="text-opinion-neutral" />
                   <div className="flex flex-col">
                     <span className="text-caption-default text-muted-foreground">
                       중립
@@ -113,7 +113,7 @@ export default async function TopicDetailPage(props: {
                 </div>
                 <div className="w-px h-12 bg-border" />
                 <div className="flex items-center gap-3">
-                  <BanIcon size={32} className="text-red-600" />
+                  <BanIcon size={32} className="text-opinion-disagree" />
                   <div className="flex flex-col">
                     <span className="text-caption-default text-muted-foreground">
                       반대
