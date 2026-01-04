@@ -1,6 +1,6 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { httpClient } from "@/lib/httpClient";
-import { PaginatedResponse, PostResponse, PostTag, PaginationMeta } from "@chanban/shared-types";
+import { PaginatedResponse, PaginationMeta, PostResponse, PostTag } from "@chanban/shared-types";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 /**
  * 무한스크롤을 위한 토픽 목록 조회 훅
@@ -10,7 +10,7 @@ import { PaginatedResponse, PostResponse, PostTag, PaginationMeta } from "@chanb
  * @param initialMeta - 서버에서 받아온 초기 데이터의 메타정보
  * @returns useInfiniteQuery 결과
  */
-export function useInfiniteTopics(
+export function useGetInfiniteTopics(
   tag: PostTag | 'recent' | 'hot',
   initialMeta: PaginationMeta
 ) {

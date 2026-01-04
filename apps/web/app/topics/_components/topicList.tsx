@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { PostTag, PaginationMeta } from "@chanban/shared-types";
-import { TopicCard } from "./topicCard";
 import useIntersectionObserver from "@/hooks/useIntersectionObserver";
-import { useInfiniteTopics } from "@/hooks/useInfiniteTopics";
+import { PaginationMeta, PostTag } from "@chanban/shared-types";
+import { useEffect, useRef } from "react";
+import { useGetInfiniteTopics } from "../_queries/useGetInfiniteTopics";
+import { TopicCard } from "./topicCard";
 
 interface TopicListProps {
   tag: PostTag | 'recent' | 'hot';
@@ -26,7 +26,7 @@ export function TopicList({ tag, initialMeta }: TopicListProps) {
     isFetchingNextPage,
     isError,
     error,
-  } = useInfiniteTopics(tag, initialMeta);
+  } = useGetInfiniteTopics(tag, initialMeta);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { entries } = useIntersectionObserver(loadMoreRef, {
