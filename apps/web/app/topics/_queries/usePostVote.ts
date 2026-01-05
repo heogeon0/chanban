@@ -30,9 +30,14 @@ export function usePostVote() {
       );
     },
     onSuccess: (_, variables) => {
-      // 토픽 상세 정보 쿼리 무효화하여 새로고침 (투표 수 업데이트)
+      // 토픽 상세 정보 쿼리 무효화하여 새로고침
       queryClient.invalidateQueries({
         queryKey: ["topic", variables.postId],
+      });
+
+      // 투표 수 쿼리 무효화하여 실시간 업데이트
+      queryClient.invalidateQueries({
+        queryKey: ["voteCount", variables.postId],
       });
 
       // 내 투표 정보 쿼리 무효화

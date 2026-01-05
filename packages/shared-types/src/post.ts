@@ -24,3 +24,9 @@ export interface PostResponse {
   createdAt: Date | string;
   updatedAt: Date | string;
 }
+
+export interface VoteCountResponse {
+  agreeCount: number;
+  disagreeCount: number;
+  neutralCount: number;
+}

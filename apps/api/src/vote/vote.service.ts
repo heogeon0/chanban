@@ -1,10 +1,10 @@
+import { ErrorCode, VoteStatus } from '@chanban/shared-types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { ErrorCode } from '@chanban/shared-types';
-import { Vote } from '../entities/vote.entity';
-import { VoteHistory } from '../entities/vote-history.entity';
 import { Post } from '../entities/post.entity';
+import { VoteHistory } from '../entities/vote-history.entity';
+import { Vote } from '../entities/vote.entity';
 import { CreateVoteDto } from './dto/create-vote.dto';
 import { UpdateVoteDto } from './dto/update-vote.dto';
 
@@ -37,12 +37,27 @@ export class VoteService {
       });
     }
 
+    /**
+     *
+     * !!!!!!!!!!!!!!!!! TODO: 게시글 집계 업데이트 로직 추가
+     *
+     */
     // Transaction으로 투표 생성/수정 + 이력 추가
     return await this.dataSource.transaction(async (manager) => {
       // 기존 투표 확인
       let vote = await manager.findOne(Vote, {
         where: { postId, userId: MOCK_USER_ID },
       });
+
+      const post = await manager.findOne(Post, {
+        where: { id: postId },
+      });
+
+      if (!post) {
+        throw new NotFoundException({
+          code: ErrorCode.POST_NOT_FOUND,
+        });
+      }
 
       if (vote) {
         // 투표 수정
@@ -65,6 +80,15 @@ export class VoteService {
           fromStatus: previousStatus,
           toStatus: status,
         });
+
+        if (previousStatus === VoteStatus.AGREE) {
+          post.agreeCount -= 1;
+        } else if (previousStatus === VoteStatus.DISAGREE) {
+          post.disagreeCount -= 1;
+        } else if (previousStatus === VoteStatus.NEUTRAL) {
+          post.neutralCount -= 1;
+        }
+
         await manager.save(history);
       } else {
         // 새로운 투표 생성
@@ -83,9 +107,20 @@ export class VoteService {
           fromStatus: null,
           toStatus: status,
         });
+
+        // 게시글 집계 업데이트
         await manager.save(history);
       }
 
+      if (status === VoteStatus.AGREE) {
+        post.agreeCount += 1;
+      } else if (status === VoteStatus.DISAGREE) {
+        post.disagreeCount += 1;
+      } else if (status === VoteStatus.NEUTRAL) {
+        post.neutralCount += 1;
+      }
+
+      await manager.save(post);
       return vote;
     });
   }

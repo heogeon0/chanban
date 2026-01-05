@@ -1,10 +1,10 @@
 import { httpClient } from "@/lib/httpClient";
-import { BanIcon, ChanIcon, ChongIcon } from "@/shared/ui/icons";
 import { VoteProgressBar } from "@/shared/ui/voteProgressBar";
 import { ApiResponse, PostResponse } from "@chanban/shared-types";
 import { Badge } from "@workspace/ui/components/badge";
-import { TAG_MAP } from "../_constants";
 import { TopicDetailContent } from "../_components/topicDetailContent";
+import { VoteCounts } from "../_components/voteCounts";
+import { TAG_MAP } from "../_constants";
 
 /**
  * 특정 토픽의 상세 정보를 조회합니다.
@@ -70,63 +70,7 @@ export default async function TopicDetailPage(props: {
           </p>
 
           {/* 통계 섹션 */}
-          <section className="space-y-3">
-            <h4 className="text-title-default">
-              총{" "}
-              {topic.agreeCount +
-                topic.disagreeCount +
-                (topic.neutralCount || 0)}
-              명 참여
-            </h4>
-            {/* 동의/반대/중립 통계 카드 */}
-            <div className="bg-card border rounded-lg p-4 relative">
-              <VoteProgressBar
-                agreeCount={topic.agreeCount}
-                disagreeCount={topic.disagreeCount}
-                height="100%"
-              />
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <ChanIcon size={32} className="text-opinion-agree" />
-
-                  <div className="flex flex-col">
-                    <span className="text-caption-default text-muted-foreground">
-                      찬성
-                    </span>
-                    <span className="text-title-default font-semibold">
-                      {topic.agreeCount}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="w-px h-12 bg-border" />
-
-                <div className="flex items-center gap-3">
-                  <ChongIcon size={32} className="text-opinion-neutral" />
-                  <div className="flex flex-col">
-                    <span className="text-caption-default text-muted-foreground">
-                      중립
-                    </span>
-                    <span className="text-title-default font-semibold">
-                      {topic.neutralCount || 0}
-                    </span>
-                  </div>
-                </div>
-                <div className="w-px h-12 bg-border" />
-                <div className="flex items-center gap-3">
-                  <BanIcon size={32} className="text-opinion-disagree" />
-                  <div className="flex flex-col">
-                    <span className="text-caption-default text-muted-foreground">
-                      반대
-                    </span>
-                    <span className="text-title-default font-semibold">
-                      {topic.disagreeCount}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+          <VoteCounts postId={id} />
         </article>
 
         {/* 투표 및 댓글 섹션 */}

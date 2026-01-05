@@ -4,6 +4,7 @@ import {
   PostSortBy,
   PostTag,
   SortOrder,
+  VoteCountResponse,
 } from '@chanban/shared-types';
 import {
   BadRequestException,
@@ -64,8 +65,6 @@ export class PostService {
       order = SortOrder.DESC,
     } = queryDto;
     const skip = (page - 1) * limit;
-
-    console.log(tag, 'tag');
 
     const orderBy =
       sort === PostSortBy.POPULAR
@@ -155,5 +154,16 @@ export class PostService {
 
   remove(id: number) {
     return `This action removes a #${id} post`;
+  }
+
+  async getVoteCount(id: string): Promise<VoteCountResponse> {
+    const post = await this.postRepository.findOne({ where: { id } });
+
+    console.log(post, 'post');
+    return {
+      agreeCount: post?.agreeCount || 0,
+      disagreeCount: post?.disagreeCount || 0,
+      neutralCount: post?.neutralCount || 0,
+    };
   }
 }

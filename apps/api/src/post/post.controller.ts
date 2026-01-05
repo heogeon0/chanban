@@ -57,4 +57,9 @@ export class PostController {
   remove(@Param('id') id: string) {
     return this.postService.remove(+id);
   }
+
+  @Get(':id/vote-count')
+  getVoteCount(@Param('id') id: string) {
+    return this.postService.getVoteCount(id);
+  }
 }

@@ -46,7 +46,7 @@ export function VoteButtons({
         size="lg"
         className="flex-1 flex flex-col items-center gap-2 h-auto py-4 border-opinion-agree hover:bg-opinion-agree/10 hover:border-opinion-agree"
         onClick={() => handleVote(VoteStatus.AGREE)}
-        disabled={isPending || hasVoted}
+        disabled={isPending}
       >
         <ChanIcon size={32} className="text-opinion-agree" />
         <span className="text-title-default font-semibold">찬성</span>
@@ -57,7 +57,7 @@ export function VoteButtons({
         size="lg"
         className="flex-1 flex flex-col items-center gap-2 h-auto py-4 border-opinion-neutral hover:bg-opinion-neutral/10 hover:border-opinion-neutral"
         onClick={() => handleVote(VoteStatus.NEUTRAL)}
-        disabled={isPending || hasVoted}
+        disabled={isPending}
       >
         <ChongIcon size={32} className="text-opinion-neutral" />
         <span className="text-title-default font-semibold">중립</span>
@@ -68,7 +68,7 @@ export function VoteButtons({
         size="lg"
         className="flex-1 flex flex-col items-center gap-2 h-auto py-4 border-opinion-disagree hover:bg-opinion-disagree/10 hover:border-opinion-disagree"
         onClick={() => handleVote(VoteStatus.DISAGREE)}
-        disabled={isPending || hasVoted}
+        disabled={isPending}
       >
         <BanIcon size={32} className="text-opinion-disagree" />
         <span className="text-title-default font-semibold">반대</span>
