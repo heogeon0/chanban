@@ -59,8 +59,9 @@ export function TopicDetailContent({
    * 좋아요 버튼 클릭 핸들러
    * 댓글에 좋아요를 추가하거나 취소합니다.
    */
-  const handleLike = (commentId: string) => {
+  const handleLike = (commentId: string, isLiked: boolean) => {
     likeComment({
+      isLiked,
       commentId,
       postId: topicId,
     });

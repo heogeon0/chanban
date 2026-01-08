@@ -1,7 +1,7 @@
 "use client";
 
+import { BanIcon, ChanIcon, ChongIcon } from "@/shared/ui/icons";
 import { CommentResponse, VoteStatus } from "@chanban/shared-types";
-import { ChanIcon, BanIcon, ChongIcon } from "@/shared/ui/icons";
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar";
 import { Button } from "@workspace/ui/components/button";
 import { Heart, MessageCircle } from "lucide-react";
@@ -10,7 +10,7 @@ import { useState } from "react";
 interface CommentProps {
   comment: CommentResponse;
   onReply?: (commentId: string) => void;
-  onLike?: (commentId: string) => void;
+  onLike?: (commentId: string, isLiked: boolean) => void;
 }
 
 /**
@@ -106,7 +106,7 @@ function CommentItem({
    * 좋아요 버튼 클릭 핸들러
    */
   const handleLikeClick = () => {
-    onLike?.(comment.id);
+    onLike?.(comment.id, comment.isLiked);
   };
 
   /**
@@ -252,6 +252,7 @@ function CommentItem({
  * @param comment - 댓글 데이터
  * @param onReply - 답글 버튼 클릭 시 호출될 콜백 함수
  * @param onLike - 좋아요 버튼 클릭 시 호출될 콜백 함수
+ * 
  */
 export function Comment({ comment, onReply, onLike }: CommentProps) {
   return <CommentItem comment={comment} onReply={onReply} onLike={onLike} />;

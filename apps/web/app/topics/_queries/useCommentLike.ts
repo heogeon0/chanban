@@ -1,9 +1,10 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { httpClient } from "@/lib/httpClient";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface CommentLikeDto {
   commentId: string;
   postId: string;
+  isLiked: boolean;
 }
 
 /**
@@ -24,7 +25,10 @@ export function useCommentLike() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ commentId }: CommentLikeDto) => {
+    mutationFn: async ({ commentId, isLiked }: CommentLikeDto) => {
+      if (isLiked) {
+        return await httpClient.delete<void>(`/api/comments/${commentId}/like`);
+      }
       return await httpClient.post<void>(`/api/comments/${commentId}/like`);
     },
     onSuccess: (_, variables) => {

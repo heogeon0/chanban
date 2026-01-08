@@ -6,7 +6,7 @@ import { Comment } from "./comment";
 interface CommentListProps {
   comments: CommentResponse[];
   onReply?: (commentId: string) => void;
-  onLike?: (commentId: string) => void;
+  onLike?: (commentId: string, isLiked: boolean) => void;
   isLoading?: boolean;
 }
 

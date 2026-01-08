@@ -16,7 +16,7 @@ export function useGetComments(postId: string) {
   return useQuery({
     queryKey: ["comments", postId],
     queryFn: async () => {
-      return await httpClient.get<PaginatedResponse<CommentResponse[]>>(`/api/comments/posts/${postId}`).then(response => response.data);
+      return await httpClient.get<PaginatedResponse<CommentResponse>>(`/api/comments/posts/${postId}`).then(response => response.data);
     },
     enabled: !!postId,
   });
