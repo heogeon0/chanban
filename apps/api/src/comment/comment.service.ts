@@ -231,13 +231,16 @@ export class CommentService {
       const voteHistory = voteHistoryMap.get(comment.user.id) || [];
       const replyList = repliesByParentId.get(comment.id) || [];
 
-      const replies: CommentReplyResponse[] = replyList.map((reply) => {
-        return {
-          ...reply,
-          isLiked: likedCommentIds.has(reply.id),
-          voteHistory: voteHistoryMap.get(reply.user.id) || [],
-        };
-      });
+      // 답글을 오래된 순서로 정렬 (가장 오래된 답글이 위로, 최신 답글이 아래로)
+      const replies: CommentReplyResponse[] = replyList
+        .map((reply) => {
+          return {
+            ...reply,
+            isLiked: likedCommentIds.has(reply.id),
+            voteHistory: voteHistoryMap.get(reply.user.id) || [],
+          };
+        })
+        .reverse();
 
       return {
         id: comment.id,
@@ -278,7 +281,7 @@ export class CommentService {
     const { page = 1, limit = 10 } = paginationQuery;
     const skip = (page - 1) * limit;
 
-    // 답글 조회
+    // 답글 조회 (오래된 순서로 정렬)
     const [replies, total] = await this.commentRepository.findAndCount({
       where: {
         parentId: commentId,
@@ -286,7 +289,7 @@ export class CommentService {
       },
       relations: ['user'],
       order: {
-        createdAt: 'DESC',
+        createdAt: 'ASC',
       },
       skip,
       take: limit,
