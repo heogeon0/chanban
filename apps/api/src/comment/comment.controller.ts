@@ -18,7 +18,7 @@ export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   @Get('posts/:postId')
-  findByPostId(
+  async findByPostId(
     @Param('postId') postId: string,
     @Query() paginationQuery: PaginationQueryDto,
   ) {

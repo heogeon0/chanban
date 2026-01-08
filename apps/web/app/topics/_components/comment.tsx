@@ -1,11 +1,13 @@
 "use client";
 
-import { BanIcon, ChanIcon, ChongIcon } from "@/shared/ui/icons";
-import { CommentResponse, VoteStatus } from "@chanban/shared-types";
+import { CommentReplyResponse, CommentResponse } from "@chanban/shared-types";
 import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar";
 import { Button } from "@workspace/ui/components/button";
-import { Heart, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, Heart, MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useGetReplies } from "../_queries/useGetReplies";
+import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
+import { ReplyComment } from "./replyComment";
 
 interface CommentProps {
   comment: CommentResponse;
@@ -14,86 +16,43 @@ interface CommentProps {
 }
 
 /**
- * 투표 상태에 따른 뱃지 컴포넌트
- * 사용자의 투표 히스토리를 시각적으로 표시합니다.
- *
- * @param status - 투표 상태 (찬성/중립/반대)
- */
-function VoteHistoryBadge({ status }: { status: VoteStatus }) {
-  const voteConfig = {
-    [VoteStatus.AGREE]: {
-      icon: ChanIcon,
-      label: "찬성",
-      className: "bg-opinion-agree/10 text-opinion-agree border-opinion-agree",
-    },
-    [VoteStatus.NEUTRAL]: {
-      icon: ChongIcon,
-      label: "중립",
-      className: "bg-opinion-neutral/10 text-opinion-neutral border-opinion-neutral",
-    },
-    [VoteStatus.DISAGREE]: {
-      icon: BanIcon,
-      label: "반대",
-      className: "bg-opinion-disagree/10 text-opinion-disagree border-opinion-disagree",
-    },
-  };
-
-  const config = voteConfig[status];
-  const Icon = config.icon;
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-caption-default font-medium ${config.className}`}
-    >
-      <Icon size={12} />
-      {config.label}
-    </span>
-  );
-}
-
-/**
- * 날짜를 상대적인 시간 형식으로 포맷팅합니다.
- * 예: "방금 전", "5분 전", "2시간 전", "3일 전"
- *
- * @param date - 포맷팅할 날짜
- * @returns 상대적 시간 문자열
- */
-function formatRelativeTime(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - new Date(date).getTime();
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (seconds < 60) return "방금 전";
-  if (minutes < 60) return `${minutes}분 전`;
-  if (hours < 24) return `${hours}시간 전`;
-  if (days < 7) return `${days}일 전`;
-
-  return new Date(date).toLocaleDateString("ko-KR");
-}
-
-/**
- * 개별 댓글 아이템 컴포넌트
- * 댓글 내용, 사용자 정보, 투표 히스토리, 액션 버튼을 표시합니다.
+ * 댓글 컴포넌트
+ * CommentResponse 데이터를 받아 원댓글 UI를 렌더링합니다.
+ * 답글 목록, 답글 더보기, 좋아요, 답글 작성 기능을 제공합니다.
  *
  * @param comment - 댓글 데이터
- * @param onReply - 답글 버튼 클릭 시 호출될 콜백
- * @param onLike - 좋아요 버튼 클릭 시 호출될 콜백
- * @param isReply - 대댓글 여부 (들여쓰기 스타일 적용)
+ * @param onReply - 답글 버튼 클릭 시 호출될 콜백 함수
+ * @param onLike - 좋아요 버튼 클릭 시 호출될 콜백 함수
  */
-function CommentItem({
-  comment,
-  onReply,
-  onLike,
-  isReply = false,
-}: CommentProps & { isReply?: boolean }) {
+export function Comment({ comment, onReply, onLike }: CommentProps) {
   const [showReplies, setShowReplies] = useState(true);
+  const [additionalReplies, setAdditionalReplies] = useState<CommentReplyResponse[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loadMoreEnabled, setLoadMoreEnabled] = useState(false);
 
   const isDeleted = comment.deletedAt !== null;
   const hasReplies = comment.replies && comment.replies.length > 0;
   const latestVote = comment.user.voteHistory[0]?.toStatus;
+
+  // 답글 더보기를 위한 쿼리
+  const { data: moreReplies, isLoading: isLoadingMoreReplies } = useGetReplies({
+    commentId: comment.id,
+    page: currentPage,
+    enabled: loadMoreEnabled,
+  });
+
+  // 추가 답글 로드 완료 시 상태 업데이트
+  useEffect(() => {
+    if (moreReplies && moreReplies.length > 0) {
+      setAdditionalReplies((prev) => [...prev, ...moreReplies]);
+      setLoadMoreEnabled(false);
+    }
+  }, [moreReplies]);
+
+  const INITIAL_REPLY_LIMIT = 3;
+  const currentReplyCount = comment.replies.length + additionalReplies.length;
+  const hasMoreReplies = comment.totalReplies > currentReplyCount;
+  const remainingReplies = comment.totalReplies - currentReplyCount;
 
   /**
    * 답글 버튼 클릭 핸들러
@@ -116,10 +75,19 @@ function CommentItem({
     setShowReplies((prev) => !prev);
   };
 
+  /**
+   * 이전 답글 더보기 핸들러
+   * 다음 페이지의 답글 10개를 추가로 로드합니다.
+   */
+  const handleLoadMoreReplies = () => {
+    setCurrentPage((prev) => prev + 1);
+    setLoadMoreEnabled(true);
+  };
+
   // 삭제된 댓글 표시
   if (isDeleted) {
     return (
-      <div className={`${isReply ? "ml-12" : ""}`}>
+      <div>
         <div className="bg-muted/50 border border-dashed rounded-lg p-4">
           <p className="text-muted-foreground text-body-default">
             삭제된 댓글입니다.
@@ -129,13 +97,41 @@ function CommentItem({
         {/* 대댓글은 삭제된 댓글에도 표시 */}
         {hasReplies && showReplies && (
           <div className="mt-3 space-y-3">
-            {comment.replies.map((reply) => (
-              <CommentItem
+            {/* 추가로 로드된 답글 */}
+            {additionalReplies.map((reply) => (
+              <ReplyComment
                 key={reply.id}
-                comment={reply as CommentResponse}
-                onReply={onReply}
+                reply={reply}
                 onLike={onLike}
-                isReply
+              />
+            ))}
+
+            {/* 이전 답글 더보기 버튼 */}
+            {hasMoreReplies && (
+              <div className="ml-12">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-3 text-muted-foreground hover:text-foreground"
+                  onClick={handleLoadMoreReplies}
+                  disabled={isLoadingMoreReplies}
+                >
+                  <ChevronDown size={16} className="mr-1" />
+                  <span className="text-caption-default">
+                    {isLoadingMoreReplies
+                      ? "로딩 중..."
+                      : `이전 답글 ${remainingReplies}개 더보기`}
+                  </span>
+                </Button>
+              </div>
+            )}
+
+            {/* 초기 답글 */}
+            {comment.replies.map((reply) => (
+              <ReplyComment
+                key={reply.id}
+                reply={reply}
+                onLike={onLike}
               />
             ))}
           </div>
@@ -145,7 +141,7 @@ function CommentItem({
   }
 
   return (
-    <div className={`${isReply ? "ml-12" : ""}`}>
+    <div>
       <div className="bg-card border rounded-lg p-4">
         {/* 헤더: 사용자 정보 및 메타데이터 */}
         <div className="flex items-start gap-3 mb-3">
@@ -200,17 +196,15 @@ function CommentItem({
             <span className="text-caption-default">좋아요</span>
           </Button>
 
-          {!isReply && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 gap-1.5"
-              onClick={handleReplyClick}
-            >
-              <MessageCircle size={16} />
-              <span className="text-caption-default">답글</span>
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 gap-1.5"
+            onClick={handleReplyClick}
+          >
+            <MessageCircle size={16} />
+            <span className="text-caption-default">답글</span>
+          </Button>
 
           {hasReplies && (
             <Button
@@ -230,30 +224,45 @@ function CommentItem({
       {/* 대댓글 목록 */}
       {hasReplies && showReplies && (
         <div className="mt-3 space-y-3">
-          {comment.replies.map((reply) => (
-            <CommentItem
+          {/* 추가로 로드된 답글 (오래된 답글) */}
+          {additionalReplies.map((reply) => (
+            <ReplyComment
               key={reply.id}
-              comment={reply as CommentResponse}
-              onReply={onReply}
+              reply={reply}
               onLike={onLike}
-              isReply
+            />
+          ))}
+
+          {/* 이전 답글 더보기 버튼 */}
+          {hasMoreReplies && (
+            <div className="ml-12">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-3 text-muted-foreground hover:text-foreground"
+                onClick={handleLoadMoreReplies}
+                disabled={isLoadingMoreReplies}
+              >
+                <ChevronDown size={16} className="mr-1" />
+                <span className="text-caption-default">
+                  {isLoadingMoreReplies
+                    ? "로딩 중..."
+                    : `이전 답글 ${remainingReplies}개 더보기`}
+                </span>
+              </Button>
+            </div>
+          )}
+
+          {/* 초기 답글 (최신 3개) */}
+          {comment.replies.map((reply) => (
+            <ReplyComment
+              key={reply.id}
+              reply={reply}
+              onLike={onLike}
             />
           ))}
         </div>
       )}
     </div>
   );
-}
-
-/**
- * 댓글 컴포넌트
- * CommentResponse 데이터를 받아 댓글 UI를 렌더링합니다.
- *
- * @param comment - 댓글 데이터
- * @param onReply - 답글 버튼 클릭 시 호출될 콜백 함수
- * @param onLike - 좋아요 버튼 클릭 시 호출될 콜백 함수
- * 
- */
-export function Comment({ comment, onReply, onLike }: CommentProps) {
-  return <CommentItem comment={comment} onReply={onReply} onLike={onLike} />;
 }

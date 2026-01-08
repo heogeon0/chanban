@@ -255,7 +255,7 @@ export class CommentService {
         },
         postId: comment.postId,
         parentId: comment.parentId,
-        replies,
+        replies: replies.reverse(),
         totalReplies: replyCountMap.get(comment.id) || 0,
         isLiked: likedCommentIds.has(comment.id),
       };
