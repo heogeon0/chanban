@@ -18,7 +18,6 @@ import { Post } from '../entities/post.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
 export class PostService {
@@ -148,7 +147,7 @@ export class PostService {
     return post;
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
+  update(id: number) {
     return `This action updates a #${id} post`;
   }
 

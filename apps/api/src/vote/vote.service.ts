@@ -6,7 +6,6 @@ import { Post } from '../entities/post.entity';
 import { VoteHistory } from '../entities/vote-history.entity';
 import { Vote } from '../entities/vote.entity';
 import { CreateVoteDto } from './dto/create-vote.dto';
-import { UpdateVoteDto } from './dto/update-vote.dto';
 
 @Injectable()
 export class VoteService {
@@ -144,7 +143,7 @@ export class VoteService {
     return `This action returns a #${id} vote`;
   }
 
-  update(id: number, updateVoteDto: UpdateVoteDto) {
+  update(id: number) {
     return `This action updates a #${id} vote`;
   }
 
