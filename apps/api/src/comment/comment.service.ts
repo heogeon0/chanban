@@ -237,7 +237,11 @@ export class CommentService {
           return {
             ...reply,
             isLiked: likedCommentIds.has(reply.id),
-            voteHistory: voteHistoryMap.get(reply.user.id) || [],
+            user: {
+              id: reply.user.id,
+              nickname: reply.user.nickname,
+              voteHistory: voteHistoryMap.get(reply.user.id) || [],
+            },
           };
         })
         .reverse();
@@ -255,7 +259,7 @@ export class CommentService {
         },
         postId: comment.postId,
         parentId: comment.parentId,
-        replies: replies.reverse(),
+        replies,
         totalReplies: replyCountMap.get(comment.id) || 0,
         isLiked: likedCommentIds.has(comment.id),
       };

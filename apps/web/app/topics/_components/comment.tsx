@@ -27,7 +27,7 @@ interface CommentProps {
 export function Comment({ comment, onReply, onLike }: CommentProps) {
   const [showReplies, setShowReplies] = useState(true);
   const [additionalReplies, setAdditionalReplies] = useState<CommentReplyResponse[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [loadMoreEnabled, setLoadMoreEnabled] = useState(false);
 
   const isDeleted = comment.deletedAt !== null;
@@ -41,13 +41,24 @@ export function Comment({ comment, onReply, onLike }: CommentProps) {
     enabled: loadMoreEnabled,
   });
 
-  // 추가 답글 로드 완료 시 상태 업데이트
+  // 추가 답글 로드 완료 시 상태 업데이트 (중복 제거)
   useEffect(() => {
     if (moreReplies && moreReplies.length > 0) {
-      setAdditionalReplies((prev) => [...prev, ...moreReplies]);
+      setAdditionalReplies((prev) => {
+        // 기존에 표시된 모든 답글 ID 수집
+        const existingIds = new Set([
+          ...prev.map((r) => r.id),
+          ...comment.replies.map((r) => r.id),
+        ]);
+
+        // 중복되지 않은 새로운 답글만 필터링
+        const newReplies = moreReplies.filter((r) => !existingIds.has(r.id));
+
+        return [...prev, ...newReplies];
+      });
       setLoadMoreEnabled(false);
     }
-  }, [moreReplies]);
+  }, [moreReplies, comment.replies]);
 
   const INITIAL_REPLY_LIMIT = 3;
   const currentReplyCount = comment.replies.length + additionalReplies.length;
