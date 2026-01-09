@@ -8,10 +8,11 @@ import { useEffect, useState } from "react";
 import { useGetReplies } from "../_queries/useGetReplies";
 import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
 import { ReplyComment } from "./replyComment";
+import { CommentForm } from "./commentForm";
 
 interface CommentProps {
   comment: CommentResponse;
-  onReply?: (commentId: string) => void;
+  topicId: string;
   onLike?: (commentId: string, isLiked: boolean) => void;
 }
 
@@ -21,11 +22,12 @@ interface CommentProps {
  * 답글 목록, 답글 더보기, 좋아요, 답글 작성 기능을 제공합니다.
  *
  * @param comment - 댓글 데이터
- * @param onReply - 답글 버튼 클릭 시 호출될 콜백 함수
+ * @param topicId - 토픽 ID (답글 작성에 필요)
  * @param onLike - 좋아요 버튼 클릭 시 호출될 콜백 함수
  */
-export function Comment({ comment, onReply, onLike }: CommentProps) {
+export function Comment({ comment, topicId, onLike }: CommentProps) {
   const [showReplies, setShowReplies] = useState(true);
+  const [showReplyForm, setShowReplyForm] = useState(false);
   const [additionalReplies, setAdditionalReplies] = useState<CommentReplyResponse[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [loadMoreEnabled, setLoadMoreEnabled] = useState(false);
@@ -67,9 +69,14 @@ export function Comment({ comment, onReply, onLike }: CommentProps) {
 
   /**
    * 답글 버튼 클릭 핸들러
+   * 답글 작성 폼을 토글하고, 답글 목록을 펼칩니다.
    */
   const handleReplyClick = () => {
-    onReply?.(comment.id);
+    setShowReplyForm((prev) => !prev);
+    // 답글 폼을 열 때 답글 목록도 자동으로 펼침
+    if (!showReplyForm) {
+      setShowReplies(true);
+    }
   };
 
   /**
@@ -272,6 +279,17 @@ export function Comment({ comment, onReply, onLike }: CommentProps) {
               onLike={onLike}
             />
           ))}
+
+          {/* 답글 작성 폼 */}
+          {showReplyForm && (
+            <div className="ml-12">
+              <CommentForm
+                topicId={topicId}
+                parentId={comment.id}
+                onSubmit={() => setShowReplyForm(false)}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

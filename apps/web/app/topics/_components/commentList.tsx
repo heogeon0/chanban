@@ -5,7 +5,7 @@ import { Comment } from "./comment";
 
 interface CommentListProps {
   comments: CommentResponse[];
-  onReply?: (commentId: string) => void;
+  topicId: string;
   onLike?: (commentId: string, isLiked: boolean) => void;
   isLoading?: boolean;
 }
@@ -15,13 +15,13 @@ interface CommentListProps {
  * 댓글 배열을 받아 각 댓글을 렌더링합니다.
  *
  * @param comments - 댓글 데이터 배열
- * @param onReply - 답글 버튼 클릭 시 호출될 콜백 함수
+ * @param topicId - 토픽 ID (답글 작성에 필요)
  * @param onLike - 좋아요 버튼 클릭 시 호출될 콜백 함수
  * @param isLoading - 로딩 상태
  */
 export function CommentList({
   comments,
-  onReply,
+  topicId,
   onLike,
   isLoading = false,
 }: CommentListProps) {
@@ -66,7 +66,7 @@ export function CommentList({
         <Comment
           key={comment.id}
           comment={comment}
-          onReply={onReply}
+          topicId={topicId}
           onLike={onLike}
         />
       ))}

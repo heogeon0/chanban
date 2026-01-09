@@ -23,7 +23,6 @@ export function TopicDetailContent({
   topicId,
 }: TopicDetailContentProps) {
   const [showCommentForm, setShowCommentForm] = useState(false);
-  const [replyToCommentId, setReplyToCommentId] = useState<string | null>(null);
 
   const { mutate: postVote, isPending } = usePostVote();
   const { data: comments = [], isLoading: isLoadingComments } = useGetComments(topicId);
@@ -45,14 +44,6 @@ export function TopicDetailContent({
         },
       }
     );
-  };
-
-  /**
-   * 답글 버튼 클릭 핸들러
-   * 해당 댓글에 대한 답글 작성 폼을 표시합니다.
-   */
-  const handleReply = (commentId: string) => {
-    setReplyToCommentId(commentId);
   };
 
   /**
@@ -98,21 +89,10 @@ export function TopicDetailContent({
           />
         )}
 
-        {/* 답글 작성 폼 */}
-        {replyToCommentId && (
-          <div className="ml-12">
-            <CommentForm
-              topicId={topicId}
-              parentId={replyToCommentId}
-              onSubmit={() => setReplyToCommentId(null)}
-            />
-          </div>
-        )}
-
         {/* 댓글 목록 */}
         <CommentList
           comments={comments}
-          onReply={handleReply}
+          topicId={topicId}
           onLike={handleLike}
           isLoading={isLoadingComments}
         />
