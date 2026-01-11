@@ -7,6 +7,8 @@ import databaseConfig from './config/database.config';
 import { PostModule } from './post/post.module';
 import { CommentModule } from './comment/comment.module';
 import { VoteModule } from './vote/vote.module';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { VoteModule } from './vote/vote.module';
     PostModule,
     CommentModule,
     VoteModule,
+    AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

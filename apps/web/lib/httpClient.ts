@@ -1,5 +1,8 @@
+import { getAccessToken, getRefreshToken, setAccessToken, clearTokens } from './auth/token';
+
 type RequestConfig = RequestInit & {
   params?: Record<string, string | number | boolean>;
+  skipAuth?: boolean;
 };
 
 interface HttpClientConfig {
@@ -37,22 +40,60 @@ class HttpClient {
     url: string,
     config: RequestConfig = {}
   ): Promise<T> {
-    const { params, ...fetchConfig } = config;
+    const { params, skipAuth, ...fetchConfig } = config;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
+      // JWT 토큰을 헤더에 추가
+      const headers: HeadersInit = {
+        ...this.defaultHeaders,
+        ...fetchConfig.headers,
+      };
+
+      if (!skipAuth) {
+        const token = getAccessToken();
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+      }
+
       const response = await fetch(this.buildURL(url, params), {
         ...fetchConfig,
-        headers: {
-          ...this.defaultHeaders,
-          ...fetchConfig.headers,
-        },
+        headers,
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
+
+      // 401 Unauthorized 에러 처리 (토큰 갱신)
+      if (response.status === 401 && !skipAuth) {
+        const refreshToken = getRefreshToken();
+        if (refreshToken) {
+          try {
+            // 토큰 갱신 시도
+            const refreshResponse = await this.post<{ accessToken: string }>(
+              '/auth/refresh',
+              { refreshToken },
+              { skipAuth: true }
+            );
+
+            // 새로운 액세스 토큰 저장
+            setAccessToken(refreshResponse.accessToken);
+
+            // 원래 요청 재시도
+            return this.request<T>(url, config);
+          } catch (refreshError) {
+            // 토큰 갱신 실패 시 로그아웃 처리
+            clearTokens();
+            if (typeof window !== 'undefined') {
+              window.location.href = '/auth/login';
+            }
+            throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+          }
+        }
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
