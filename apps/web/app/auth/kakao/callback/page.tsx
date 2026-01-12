@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { httpClient } from '@/lib/httpClient';
 import { setTokens } from '@/lib/auth/token';
-import { useAuth } from '@/shared/contexts/auth-context';
 import { AuthResponse } from '@/lib/auth/types';
+import { httpClient } from '@/lib/httpClient';
+import { useAuth } from '@/shared/contexts/auth-context';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function KakaoCallbackPage() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function KakaoCallbackPage() {
       try {
         // 백엔드로 인가 코드 전송 및 JWT 토큰 받기
         const response = await httpClient.post<AuthResponse>(
-          '/auth/kakao/login',
+          '/api/auth/kakao/login',
           { code },
           { skipAuth: true }
         );

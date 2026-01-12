@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { KakaoService } from './kakao.service';
+import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { CustomJwtPayload } from './interfaces/jwt-payload.interface';
+import { KakaoService } from './kakao.service';
 
 @Injectable()
 export class AuthService {
@@ -33,9 +33,9 @@ export class AuthService {
     let user = await this.userService.findByKakaoId(kakaoId);
 
     if (!user) {
-      const nickname = kakaoUserInfo.kakao_account.profile.nickname;
-      const profileImageUrl =
-        kakaoUserInfo.kakao_account.profile.profile_image_url || null;
+      console.log('kakaoUserInfo', kakaoUserInfo);
+      const nickname = '사용자';
+      const profileImageUrl = null;
 
       user = await this.userService.create(kakaoId, nickname, profileImageUrl);
     }
@@ -49,8 +49,9 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: (this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ||
-        '7d') as string,
+      expiresIn:
+        this.configService.getOrThrow<number>('JWT_REFRESH_EXPIRES_IN') ||
+        7 * 24 * 60 * 60,
     });
 
     return {
@@ -69,7 +70,7 @@ export class AuthService {
    * @param refreshToken - JWT 리프레시 토큰
    * @returns 새로운 액세스 토큰
    */
-  async refreshAccessToken(refreshToken: string) {
+  refreshAccessToken(refreshToken: string) {
     try {
       const payload = this.jwtService.verify<CustomJwtPayload>(refreshToken);
 
@@ -83,7 +84,10 @@ export class AuthService {
 
       return { accessToken };
     } catch (error) {
-      throw new Error('유효하지 않은 리프레시 토큰입니다.');
+      throw new UnauthorizedException(
+        '유효하지 않은 리프레시 토큰입니다.',
+        error,
+      );
     }
   }
 }
