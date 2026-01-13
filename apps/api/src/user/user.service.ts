@@ -47,4 +47,13 @@ export class UserService {
   async findById(id: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { id } });
   }
+
+  /**
+   * 닉네임으로 사용자를 조회합니다.
+   * @param nickname - 닉네임
+   * @returns 사용자 정보 또는 null
+   */
+  async findByNickname(nickname: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { nickname } });
+  }
 }

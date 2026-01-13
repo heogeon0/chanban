@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@/lib/auth/types';
-import { getAccessToken, clearTokens } from '@/lib/auth/token';
+import { getAccessToken, getRefreshToken, clearTokens } from '@/lib/auth/token';
 import { httpClient } from '@/lib/httpClient';
 
 interface AuthContextType {
@@ -48,7 +48,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   /**
    * 로그아웃 처리를 수행합니다.
    */
-  const logout = () => {
+  const logout = async () => {
+    const refreshToken = getRefreshToken();
+
+    // 백엔드에 로그아웃 요청 (DB에서 refresh token 삭제)
+    if (refreshToken) {
+      try {
+        await httpClient.post('/api/auth/logout', { refreshToken }, { skipAuth: true });
+      } catch (error) {
+        console.error('Logout request failed:', error);
+        // 에러가 나도 로컬 토큰은 삭제
+      }
+    }
+
+    // 로컬 스토리지에서 토큰 삭제
     clearTokens();
     setUser(null);
   };

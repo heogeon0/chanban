@@ -47,11 +47,6 @@ export class KakaoService {
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('=== 카카오 토큰 발급 실패 ===');
-        console.error('Status:', error.response?.status);
-        console.error('Error Data:', error.response?.data);
-        console.error('Error Message:', error.message);
-
         throw new UnauthorizedException(
           `카카오 토큰 발급에 실패했습니다: ${JSON.stringify(error.response?.data)}`,
         );

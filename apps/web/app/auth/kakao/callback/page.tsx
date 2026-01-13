@@ -4,6 +4,7 @@ import { setTokens } from '@/lib/auth/token';
 import { AuthResponse } from '@/lib/auth/types';
 import { httpClient } from '@/lib/httpClient';
 import { useAuth } from '@/shared/contexts/auth-context';
+import { ApiResponse } from '@chanban/shared-types';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -29,21 +30,24 @@ export default function KakaoCallbackPage() {
       }
 
       try {
-        // 백엔드로 인가 코드 전송 및 JWT 토큰 받기
-        const response = await httpClient.post<AuthResponse>(
+        // 백엔드로 인가 코드 전송
+        const response = await httpClient.post<ApiResponse<AuthResponse>>(
           '/api/auth/kakao/login',
           { code },
           { skipAuth: true }
-        );
+        ).then((res) => res.data);
 
-        // 토큰 저장
-        setTokens(response.accessToken, response.refreshToken);
-
-        // 사용자 정보 저장
-        setUser(response.user);
-
-        // 메인 페이지로 리다이렉트
-        router.push('/topics');
+        // 회원가입 필요 여부에 따라 분기 처리
+        if (response.needsSignup) {
+          // 신규 사용자: 임시 토큰 저장 후 회원가입 페이지로 이동
+          localStorage.setItem('tempToken', response.tempToken);
+          router.push('/auth/signup');
+        } else {
+          // 기존 사용자: 토큰 저장 후 메인 페이지로 이동
+          setTokens(response.accessToken, response.refreshToken);
+          setUser(response.user);
+          router.push('/topics');
+        }
       } catch (err) {
         console.error('Login failed:', err);
         setError('로그인 처리 중 오류가 발생했습니다.');
