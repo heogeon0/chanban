@@ -1,4 +1,4 @@
-import { getAccessToken, getRefreshToken, setAccessToken, clearTokens } from './auth/token';
+import { clearTokens, getAccessToken, getRefreshToken, setAccessToken } from './auth/token';
 
 type RequestConfig = RequestInit & {
   params?: Record<string, string | number | boolean>;
@@ -47,7 +47,7 @@ class HttpClient {
 
     try {
       // JWT 토큰을 헤더에 추가
-      const headers: HeadersInit = {
+      const headers: HeadersInit & { Authorization?: string } = {
         ...this.defaultHeaders,
         ...fetchConfig.headers,
       };

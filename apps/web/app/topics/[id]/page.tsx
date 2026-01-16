@@ -74,7 +74,7 @@ export default async function TopicDetailPage(props: {
         </article>
 
         {/* 투표 및 댓글 섹션 */}
-        <TopicDetailContent topicId={id} commentCount={topic.commentCount} />
+        <TopicDetailContent topicId={id}  />
       </main>
     </div>
   );
