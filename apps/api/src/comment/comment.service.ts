@@ -65,9 +65,8 @@ export class CommentService {
   async findByPostId(
     postId: string,
     paginationQuery: PaginationQueryDto,
+    userId: string,
   ): Promise<ResponseWithMeta<CommentResponse[], PaginationMeta>> {
-    // TODO: JWT 토큰에서 userId 가져오기
-    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
 
     const { page = 1, limit = 20 } = paginationQuery;
     const skip = (page - 1) * limit;
@@ -216,7 +215,7 @@ export class CommentService {
       const likes = await this.commentLikeRepository.find({
         where: {
           commentId: In(Array.from(allCommentIds)),
-          userId: MOCK_USER_ID,
+          userId: userId,
         },
         select: ['commentId'],
       });
@@ -278,9 +277,8 @@ export class CommentService {
   async findRepliesByCommentId(
     commentId: string,
     paginationQuery: PaginationQueryDto,
+    userId: string,
   ): Promise<ResponseWithMeta<CommentReplyResponse[], PaginationMeta>> {
-    // TODO: JWT 토큰에서 userId 가져오기
-    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
 
     const { page = 1, limit = 10 } = paginationQuery;
     const skip = (page - 1) * limit;
@@ -342,7 +340,7 @@ export class CommentService {
     const likes = await this.commentLikeRepository.find({
       where: {
         commentId: In(replyIds),
-        userId: MOCK_USER_ID,
+        userId: userId,
       },
       select: ['commentId'],
     });
@@ -377,10 +375,7 @@ export class CommentService {
     });
   }
 
-  async create(createCommentDto: CreateCommentDto): Promise<Comment> {
-    // TODO: JWT 토큰에서 userId 가져오기
-    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
-
+  async create(createCommentDto: CreateCommentDto, userId: string): Promise<Comment> {
     const { content, postId, parentId } = createCommentDto;
 
     // parentId가 있으면 답글 작성
@@ -416,7 +411,7 @@ export class CommentService {
       content,
       postId,
       parentId: parentId || null,
-      userId: MOCK_USER_ID,
+      userId: userId,
     });
 
     const savedComment = await this.commentRepository.save(comment);
@@ -434,10 +429,7 @@ export class CommentService {
     return commentWithUser;
   }
 
-  async remove(id: string): Promise<void> {
-    // TODO: JWT 토큰에서 userId 가져오기
-    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
-
+  async remove(id: string, userId: string): Promise<void> {
     // 댓글 존재 확인
     const comment = await this.commentRepository.findOne({
       where: { id, deletedAt: IsNull() },
@@ -450,7 +442,7 @@ export class CommentService {
     }
 
     // 본인 댓글인지 확인
-    if (comment.userId !== MOCK_USER_ID) {
+    if (comment.userId !== userId) {
       throw new BadRequestException({
         code: ErrorCode.FORBIDDEN,
       });
@@ -475,10 +467,7 @@ export class CommentService {
     await this.commentRepository.save(comment);
   }
 
-  async likeComment(commentId: string): Promise<void> {
-    // TODO: JWT 토큰에서 userId 가져오기
-    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
-
+  async likeComment(commentId: string, userId: string): Promise<void> {
     // 댓글 존재 확인
     const comment = await this.commentRepository.findOne({
       where: { id: commentId, deletedAt: IsNull() },
@@ -492,7 +481,7 @@ export class CommentService {
 
     // 이미 좋아요 했는지 확인
     const existingLike = await this.commentLikeRepository.findOne({
-      where: { commentId, userId: MOCK_USER_ID },
+      where: { commentId, userId: userId },
     });
 
     if (existingLike) {
@@ -508,7 +497,7 @@ export class CommentService {
       // 좋아요 생성
       const like = manager.create(CommentLike, {
         commentId,
-        userId: MOCK_USER_ID,
+        userId: userId,
       });
 
       await manager.save(like);
@@ -516,13 +505,10 @@ export class CommentService {
     });
   }
 
-  async unlikeComment(commentId: string): Promise<void> {
-    // TODO: JWT 토큰에서 userId 가져오기
-    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
-
+  async unlikeComment(commentId: string, userId: string): Promise<void> {
     /** 좋아요 존재하는지 확인 */
     const existingLike = await this.commentLikeRepository.findOne({
-      where: { commentId, userId: MOCK_USER_ID },
+      where: { commentId, userId: userId },
     });
 
     if (!existingLike) {
@@ -536,7 +522,7 @@ export class CommentService {
       // 좋아요 삭제
       const result = await manager.delete(CommentLike, {
         commentId,
-        userId: MOCK_USER_ID,
+        userId: userId,
       });
 
       // 삭제된 좋아요가 있으면 카운트 감소

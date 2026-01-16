@@ -8,7 +8,11 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { User } from 'src/entities';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
@@ -33,9 +37,10 @@ export class PostController {
     return this.postService.findPostsByTag(tag, queryDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('/create')
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto);
+  create(@Body() createPostDto: CreatePostDto, @CurrentUser() user: User) {
+    return this.postService.create(createPostDto, user);
   }
 
   @Get()

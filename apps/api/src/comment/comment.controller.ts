@@ -7,7 +7,11 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { User } from 'src/entities';
 import { PaginationQueryDto } from '../post/dto/pagination-query.dto';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -17,28 +21,34 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('posts/:postId')
   async findByPostId(
     @Param('postId') postId: string,
     @Query() paginationQuery: PaginationQueryDto,
+    @CurrentUser() user: User,
   ) {
-    return this.commentService.findByPostId(postId, paginationQuery);
+    return this.commentService.findByPostId(postId, paginationQuery, user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':commentId/replies')
   findRepliesByCommentId(
     @Param('commentId') commentId: string,
     @Query() paginationQuery: PaginationQueryDto,
+    @CurrentUser() user: User,
   ) {
     return this.commentService.findRepliesByCommentId(
       commentId,
       paginationQuery,
+      user.id,
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentService.create(createCommentDto);
+  create(@Body() createCommentDto: CreateCommentDto, @CurrentUser() user: User) {
+    return this.commentService.create(createCommentDto, user.id);
   }
 
   @Get()
@@ -56,18 +66,21 @@ export class CommentController {
     return this.commentService.update(+id, updateCommentDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post(':commentId/like')
-  likeComment(@Param('commentId') commentId: string) {
-    return this.commentService.likeComment(commentId);
+  likeComment(@Param('commentId') commentId: string, @CurrentUser() user: User) {
+    return this.commentService.likeComment(commentId, user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':commentId/like')
-  unlikeComment(@Param('commentId') commentId: string) {
-    return this.commentService.unlikeComment(commentId);
+  unlikeComment(@Param('commentId') commentId: string, @CurrentUser() user: User) {
+    return this.commentService.unlikeComment(commentId, user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.commentService.remove(id, user.id);
   }
 }

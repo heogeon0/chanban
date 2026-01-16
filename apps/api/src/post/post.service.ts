@@ -15,6 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { ResponseWithMeta } from '../common/dto/response.dto';
 import { Post } from '../entities/post.entity';
+import { User } from '../entities/user.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
@@ -91,12 +92,7 @@ export class PostService {
     });
   }
 
-  async create(createPostDto: CreatePostDto): Promise<Post> {
-    // TODO: JWT 토큰에서 userId 가져오기
-    // const userId = req.user.id;
-    // 임시 목데이터 (시드 데이터의 첫 번째 사용자 ID 사용)
-    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b'; // 실제로는 시드된 사용자 ID를 사용하세요
-
+  async create(createPostDto: CreatePostDto, user: User): Promise<Post> {
     // 비즈니스 로직 검증: 작성자 의견 공개 시 의견 필수
     if (createPostDto.showCreatorOpinion && !createPostDto.creatorOpinion) {
       throw new BadRequestException({
@@ -106,7 +102,7 @@ export class PostService {
 
     const post = this.postRepository.create({
       ...createPostDto,
-      creatorId: MOCK_USER_ID,
+      creatorId: user.id,
     });
 
     const savedPost = await this.postRepository.save(post);
