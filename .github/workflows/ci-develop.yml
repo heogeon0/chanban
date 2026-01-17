@@ -35,8 +35,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Debug - Check TURBO_TOKEN
+        run: |
+          if [ -z "$TURBO_TOKEN" ]; then
+            echo "❌ TURBO_TOKEN is empty or not set"
+          else
+            echo "✅ TURBO_TOKEN is set (length: ${#TURBO_TOKEN})"
+          fi
+
       - name: Build
-        run: pnpm build
+        run: pnpm build --summarize
 
   deploy-web:
     needs: ci
