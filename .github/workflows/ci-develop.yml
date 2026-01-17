@@ -60,5 +60,4 @@ jobs:
 
       - name: Deploy to Vercel (Preview)
         run: |
-          cd apps/web
           vercel deploy --token=$VERCEL_TOKEN
