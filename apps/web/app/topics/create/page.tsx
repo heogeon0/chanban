@@ -7,6 +7,7 @@ import { TopicCreateForm } from "../_components/topicCreateForm";
  * 새로운 토픽을 작성하는 페이지입니다.
  */
 export default function CreateTopicPage() {
+  console.log('develop 환경 배포')
   return (
     <div className="min-h-screen bg-background">
       {/* 헤더 */}
