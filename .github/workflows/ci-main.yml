@@ -1,12 +1,12 @@
-name: CI - Develop
+name: CI - Main
 
 on:
   push:
     branches:
-      - develop
+      - main
   pull_request:
     branches:
-      - develop
+      - main
 
 env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
