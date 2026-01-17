@@ -36,37 +36,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Debug - Check TURBO_TOKEN
-        run: |
-          if [ -z "$TURBO_TOKEN" ]; then
-            echo "❌ TURBO_TOKEN is empty or not set"
-          else
-            echo "✅ TURBO_TOKEN is set (length: ${#TURBO_TOKEN})"
-          fi
-
       - name: Build
         run: pnpm build --summarize
 
   deploy-web:
     needs: ci
     runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.PROJECT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.4.1
+      - name: Install Vercel CLI
+        run: npm install -g vercel
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build Web
-        run: pnpm build --filter=web
+      - name: Deploy to Vercel (Preview)
+        run: |
+          cd apps/web
+          vercel deploy --token=$VERCEL_TOKEN
