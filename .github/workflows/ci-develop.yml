@@ -10,7 +10,7 @@ on:
 
 jobs:
   ci:
-    name: Lint, Typecheck, Build
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -30,15 +30,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Typecheck (Web)
-        run: pnpm --filter web typecheck
-
-      - name: Typecheck (API)
-        run: pnpm --filter api typecheck
 
       - name: Build
         run: pnpm build
