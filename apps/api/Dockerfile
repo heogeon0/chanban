@@ -26,10 +26,13 @@ RUN pnpm install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
 RUN pnpm turbo build --filter=api
 
+# pnpm deploy로 production 의존성만 추출 (심볼릭 링크 없이)
+RUN pnpm deploy --filter=api --prod --legacy /prod/api
+
 # ============================================
 # Stage 4: Runner
 # ============================================
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -39,11 +42,10 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs
 USER nestjs
 
-# 빌드 결과물만 복사
+# pnpm deploy 결과물 복사 (node_modules + package.json)
+COPY --from=builder --chown=nestjs:nodejs /prod/api .
+# 빌드된 dist 폴더 별도 복사
 COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./package.json
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/apps/api/node_modules ./app_node_modules
 
 EXPOSE 3001
 
