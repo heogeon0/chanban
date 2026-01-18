@@ -18,11 +18,21 @@ RUN pnpm dlx turbo prune api --docker
 FROM base AS builder
 WORKDIR /app
 
+# Turborepo Remote Cache 설정
+ARG TURBO_TOKEN
+ARG TURBO_TEAM
+ENV TURBO_TOKEN=$TURBO_TOKEN
+ENV TURBO_TEAM=$TURBO_TEAM
+
+# 디버깅: 환경변수 설정 여부 확인 (값은 마스킹)
+RUN echo "TURBO_TEAM: ${TURBO_TEAM:-NOT_SET}" && \
+    echo "TURBO_TOKEN: ${TURBO_TOKEN:+SET}" || echo "TURBO_TOKEN: NOT_SET"
+
 # 의존성 설치 (캐싱 최적화)
 COPY --from=pruner /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 
-# 소스 복사 및 빌드
+# 소스 복사 및 빌드 (remote cache 사용)
 COPY --from=pruner /app/out/full/ .
 RUN pnpm turbo build --filter=api
 
