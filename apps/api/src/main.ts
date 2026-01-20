@@ -1,8 +1,8 @@
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 /**
  * 환경별 허용할 origin 목록
@@ -11,12 +11,7 @@ const getAllowedOrigins = () => {
   const isDevelopment = process.env.NODE_ENV !== 'production';
 
   if (isDevelopment) {
-    return [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001',
-    ];
+    return ['https://chanban.local.com:3000'];
   }
 
   // 프로덕션 환경에서는 환경변수로 허용할 origin 설정
