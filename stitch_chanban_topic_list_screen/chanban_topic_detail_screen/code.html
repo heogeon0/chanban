@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CHANBAN - Topic Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#195de6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                        "disagree": "#ef4444",
+                        "neutral-gray": "#64748b",
+                        "card-dark": "#1b2231",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 w-full border-b border-solid border-slate-200 dark:border-[#292e38] bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="max-w-[1200px] mx-auto flex items-center justify-between px-6 py-3">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-xl font-black leading-tight tracking-tight">CHANBAN</h2>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors" href="#">Explore</a>
+<a class="text-slate-600 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors" href="#">Trending</a>
+<a class="text-slate-600 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors" href="#">Categories</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<label class="hidden lg:flex flex-col min-w-64 !h-10">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full bg-slate-200/50 dark:bg-[#292e38]">
+<div class="text-slate-500 dark:text-[#9da6b8] flex items-center justify-center pl-4">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="form-input flex w-full border-none bg-transparent focus:ring-0 text-sm placeholder:text-slate-500 dark:placeholder:text-[#9da6b8]" placeholder="Search topics..." value=""/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-200 dark:bg-[#292e38] hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-cover bg-center border-2 border-primary" data-alt="User profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdzqspXbEMdM98uy9XSR50FLjS5glUy4nd5_VOfwosky9orQ71nT_XKVJAklSVNKVMeK8X59XsMMn-ul7sHR6GfXLBwzV2OsQpxAkEANqQmjg4iwFDUUyXH9mAO_DtgqM71lr3W7TEwy25GO1HuCZ_Vu1sO7EjI4f_z7Az6dG6dPp2Y5cOk8cfjaCAFc_89zeweSTP73-sqlLXmClcHzalPmTEpKumXACG2LEjuF7qCiK5mN9ArSjXb-4f19nE6TU1a-z49TxnJIMy");'></div>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[840px] mx-auto px-6 py-8">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 mb-6">
+<a class="text-slate-500 dark:text-[#9da6b8] text-sm font-medium hover:underline" href="#">Home</a>
+<span class="text-slate-400 dark:text-[#9da6b8] material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="text-slate-500 dark:text-[#9da6b8] text-sm font-medium hover:underline" href="#">Technology</a>
+<span class="text-slate-400 dark:text-[#9da6b8] material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary text-sm font-semibold">AI Ethics</span>
+</nav>
+<!-- PageHeading -->
+<div class="mb-8">
+<h1 class="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] mb-4">
+                Should Artificial Intelligence be granted personhood status?
+            </h1>
+<div class="flex items-center gap-3">
+<div class="size-6 rounded-full bg-slate-300 dark:bg-slate-700" data-alt="Topic author avatar"></div>
+<p class="text-slate-500 dark:text-[#9da6b8] text-sm">
+                    Posted by <span class="text-primary font-medium">@debate_master</span> • 2 hours ago in <span class="text-slate-700 dark:text-slate-300 font-medium">#AI_Ethics</span>
+</p>
+</div>
+</div>
+<!-- BodyText -->
+<article class="prose dark:prose-invert max-w-none mb-12">
+<p class="text-slate-700 dark:text-slate-300 text-lg leading-relaxed mb-6">
+                The debate over AI personhood has intensified as LLMs exhibit increasingly complex reasoning. Proponents argue that high-level cognitive function warrants legal rights, while critics maintain that simulation is not sentience. This topic explores the legal, ethical, and social ramifications of such a shift in our legal framework.
+            </p>
+<p class="text-slate-700 dark:text-slate-300 text-lg leading-relaxed mb-6">
+                If an entity can suffer, reason, and express a desire for self-preservation, does it matter if that entity is biological or silicon-based? We must consider if granting rights is a protective measure for the AI, or a safeguard for human morality.
+            </p>
+</article>
+<!-- Voting Section -->
+<section class="bg-white dark:bg-card-dark rounded-xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm mb-12">
+<h3 class="text-center text-slate-900 dark:text-white font-bold text-xl mb-8 uppercase tracking-widest">Cast Your Vote</h3>
+<!-- ButtonGroup -->
+<div class="flex flex-col sm:flex-row gap-4 mb-10">
+<button class="flex-1 flex flex-col items-center justify-center gap-2 py-6 rounded-xl bg-primary hover:bg-primary/90 text-white transition-all transform hover:scale-[1.02] shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-3xl">thumb_up</span>
+<span class="text-lg font-bold">Agree</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-2 py-6 rounded-xl bg-disagree hover:bg-disagree/90 text-white transition-all transform hover:scale-[1.02] shadow-lg shadow-disagree/20">
+<span class="material-symbols-outlined text-3xl">thumb_down</span>
+<span class="text-lg font-bold">Disagree</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-2 py-6 rounded-xl bg-slate-200 dark:bg-[#292e38] hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white transition-all transform hover:scale-[1.02]">
+<span class="material-symbols-outlined text-3xl">balance</span>
+<span class="text-lg font-bold">Neutral</span>
+</button>
+</div>
+<!-- Detailed Progress Bar -->
+<div class="space-y-4">
+<div class="flex justify-between items-end mb-2">
+<span class="text-sm font-bold text-slate-500 dark:text-slate-400">Current Distribution</span>
+<span class="text-xs text-slate-400">Total Votes: 12,482</span>
+</div>
+<div class="w-full h-10 flex rounded-full overflow-hidden border-4 border-slate-100 dark:border-slate-900">
+<div class="bg-primary h-full flex items-center justify-center text-xs font-black text-white" style="width: 42%;">42%</div>
+<div class="bg-disagree h-full flex items-center justify-center text-xs font-black text-white" style="width: 38%;">38%</div>
+<div class="bg-neutral-gray h-full flex items-center justify-center text-xs font-black text-white" style="width: 20%;">20%</div>
+</div>
+<div class="flex justify-center gap-8 mt-4">
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-primary"></div>
+<span class="text-xs text-slate-500 dark:text-slate-400">Agree</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-disagree"></div>
+<span class="text-xs text-slate-500 dark:text-slate-400">Disagree</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-neutral-gray"></div>
+<span class="text-xs text-slate-500 dark:text-slate-400">Neutral</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Comment Section Header -->
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+<span class="material-symbols-outlined">forum</span>
+                Discussion (128)
+            </h2>
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+<button class="px-3 py-1 text-xs font-bold bg-white dark:bg-slate-700 rounded shadow-sm">Hot</button>
+<button class="px-3 py-1 text-xs font-bold text-slate-500 dark:text-slate-400">Newest</button>
+</div>
+</div>
+<!-- New Comment Input -->
+<div class="mb-10 flex gap-4">
+<div class="size-10 rounded-full bg-slate-300 dark:bg-slate-700 flex-shrink-0" data-alt="User avatar for commenting"></div>
+<div class="flex-1">
+<textarea class="w-full bg-white dark:bg-card-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-primary focus:border-primary text-sm p-4 min-h-[100px]" placeholder="Add to the debate..."></textarea>
+<div class="flex justify-end mt-2">
+<button class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-bold text-sm">Post Comment</button>
+</div>
+</div>
+</div>
+<!-- Comments List -->
+<div class="space-y-8">
+<!-- Root Comment -->
+<div class="flex gap-4">
+<div class="size-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold flex-shrink-0">JS</div>
+<div class="flex-1">
+<div class="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-xl">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-bold text-sm text-slate-900 dark:text-white">John_Smith</span>
+<span class="text-xs text-slate-500">45m ago</span>
+<span class="ml-auto px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase">Voted Agree</span>
+</div>
+<p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                            Legally, personhood is often a fiction designed to protect interests (like corporations). Granting it to AI could be a way to ensure liability and ethical treatment simultaneously.
+                        </p>
+</div>
+<div class="flex items-center gap-4 mt-2 px-2">
+<button class="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">thumb_up</span> 24
+                        </button>
+<button class="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">reply</span> Reply
+                        </button>
+</div>
+<!-- Nested Reply -->
+<div class="mt-4 flex gap-4 border-l-2 border-slate-200 dark:border-slate-800 ml-4 pl-4">
+<div class="size-8 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">AR</div>
+<div class="flex-1">
+<div class="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-xl">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-bold text-sm text-slate-900 dark:text-white">Alice_R</span>
+<span class="text-xs text-slate-500">12m ago</span>
+</div>
+<p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                                    But corporations are owned by humans. Who "owns" a personhood-status AI? That's where the liability gets messy.
+                                </p>
+</div>
+<div class="flex items-center gap-4 mt-2 px-2">
+<button class="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-primary">
+<span class="material-symbols-outlined text-[18px]">thumb_up</span> 8
+                                </button>
+<button class="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-primary">
+<span class="material-symbols-outlined text-[18px]">reply</span> Reply
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Second Root Comment -->
+<div class="flex gap-4">
+<div class="size-10 rounded-full bg-rose-500 flex items-center justify-center text-white font-bold flex-shrink-0">KD</div>
+<div class="flex-1">
+<div class="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-xl">
+<div class="flex items-center gap-2 mb-2">
+<span class="font-bold text-sm text-slate-900 dark:text-white">KevinD88</span>
+<span class="text-xs text-slate-500">1h ago</span>
+<span class="ml-auto px-2 py-0.5 bg-disagree/10 text-disagree text-[10px] font-bold rounded uppercase">Voted Disagree</span>
+</div>
+<p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                            We are conflating intelligence with consciousness. A calculator is intelligent in its niche, but it doesn't deserve rights. AI is just a more complex calculator.
+                        </p>
+</div>
+<div class="flex items-center gap-4 mt-2 px-2">
+<button class="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-primary">
+<span class="material-symbols-outlined text-[18px]">thumb_up</span> 156
+                        </button>
+<button class="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-primary">
+<span class="material-symbols-outlined text-[18px]">reply</span> Reply
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- View More -->
+<div class="mt-12 flex justify-center">
+<button class="text-primary font-bold text-sm hover:underline">Load 42 more comments...</button>
+</div>
+</main>
+<footer class="mt-20 border-t border-slate-200 dark:border-slate-800 py-10 bg-slate-50 dark:bg-background-dark/50">
+<div class="max-w-[840px] mx-auto px-6 text-center">
+<div class="flex items-center justify-center gap-2 text-slate-400 dark:text-slate-500 mb-4">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-black">CHANBAN</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400">© 2024 CHANBAN Debate Platform. All rights reserved. Participate responsibly.</p>
+</div>
+</footer>
+</body></html>

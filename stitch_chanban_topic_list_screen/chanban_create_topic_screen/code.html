@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CHANBAN - Create New Topic</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#195de6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0a0a0a",
+                        "surface-dark": "#111621",
+                        "border-dark": "#292e38"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editor-toolbar-btn:hover {
+            background-color: rgba(255,255,255,0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #292e38;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- TopNavBar Component -->
+<header class="sticky top-0 z-50 w-full border-b border-solid border-slate-200 dark:border-border-dark bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="size-8 text-primary">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-xl font-bold tracking-tight">CHANBAN</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Explore</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Trending</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">My Debates</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-border-dark transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200 dark:bg-border-dark mx-2"></div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 border border-slate-200 dark:border-border-dark" data-alt="User profile avatar with professional photo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBxVA19BUvNzJJ9KLP5nak12BBSPau4l2CJF5z25xersderl510E0k5wRA2aHTL-nYpmeNRlvdY9TLBPoffIls1THfJTauyxp1h1A3rzoxF94YqWDMsklZb6AtF6qejfjrKNqP5CaHcFgPceR0CW1-KGscOZLrBL7J8heG9Q57x9gf9q2SM5sJOrzdUL7OtSB3-6hfblBhBzmOsN0iIBmg2LYyYzcBCgAdhXdJl8gdKvYqJKXE3gDEDENi4DLWzektBg1nt2MgrNWsH");'>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[840px] mx-auto px-6 py-12">
+<!-- PageHeading Component -->
+<div class="mb-10">
+<div class="flex flex-col gap-2">
+<h1 class="text-4xl font-black tracking-tight text-slate-900 dark:text-white">Create New Topic</h1>
+<p class="text-slate-500 dark:text-[#9da6b8] text-lg font-normal">Present your thesis and set the stage for a constructive debate.</p>
+</div>
+</div>
+<div class="flex flex-col gap-8">
+<!-- TextField (Title) -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold uppercase tracking-wider text-slate-400">Topic Title</label>
+<input class="w-full bg-transparent border-none p-0 text-3xl font-bold focus:ring-0 placeholder:text-slate-300 dark:placeholder:text-zinc-800" placeholder="Enter a compelling title..." type="text" value=""/>
+<div class="h-[1px] w-full bg-slate-200 dark:bg-border-dark"></div>
+</div>
+<!-- Chips / Category Selection Combined -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<label class="block text-sm font-semibold uppercase tracking-wider text-slate-400">Select Category</label>
+<span class="text-xs text-slate-500">Required</span>
+</div>
+<div class="flex gap-2 flex-wrap">
+<button class="flex h-9 items-center justify-center px-4 rounded-full bg-primary text-white text-sm font-medium border border-primary">
+                        Politics
+                    </button>
+<button class="flex h-9 items-center justify-center px-4 rounded-full bg-transparent dark:hover:bg-surface-dark text-slate-600 dark:text-slate-300 text-sm font-medium border border-slate-200 dark:border-border-dark transition-all">
+                        Society
+                    </button>
+<button class="flex h-9 items-center justify-center px-4 rounded-full bg-transparent dark:hover:bg-surface-dark text-slate-600 dark:text-slate-300 text-sm font-medium border border-slate-200 dark:border-border-dark transition-all">
+                        Economy
+                    </button>
+<button class="flex h-9 items-center justify-center px-4 rounded-full bg-transparent dark:hover:bg-surface-dark text-slate-600 dark:text-slate-300 text-sm font-medium border border-slate-200 dark:border-border-dark transition-all">
+                        Tech
+                    </button>
+<button class="flex h-9 items-center justify-center px-4 rounded-full bg-transparent dark:hover:bg-surface-dark text-slate-600 dark:text-slate-300 text-sm font-medium border border-slate-200 dark:border-border-dark transition-all">
+                        Entertainment
+                    </button>
+<button class="flex h-9 items-center justify-center px-4 rounded-full bg-transparent dark:hover:bg-surface-dark text-slate-600 dark:text-slate-300 text-sm font-medium border border-slate-200 dark:border-border-dark transition-all">
+                        Science
+                    </button>
+<button class="flex h-9 items-center justify-center px-4 rounded-full bg-transparent dark:hover:bg-surface-dark text-slate-600 dark:text-slate-300 text-sm font-medium border border-slate-200 dark:border-border-dark transition-all">
+                        Sports
+                    </button>
+</div>
+</div>
+<!-- Rich-Text Editor Area (Lexical Style) -->
+<div class="space-y-4">
+<label class="block text-sm font-semibold uppercase tracking-wider text-slate-400">Context &amp; Argument</label>
+<div class="rounded-xl border border-slate-200 dark:border-border-dark bg-white dark:bg-[#111621] overflow-hidden shadow-sm">
+<!-- Editor Toolbar -->
+<div class="flex items-center gap-1 p-2 border-b border-slate-200 dark:border-border-dark bg-slate-50/50 dark:bg-white/5">
+<button class="editor-toolbar-btn p-1.5 rounded flex items-center justify-center text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">format_bold</span>
+</button>
+<button class="editor-toolbar-btn p-1.5 rounded flex items-center justify-center text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">format_italic</span>
+</button>
+<button class="editor-toolbar-btn p-1.5 rounded flex items-center justify-center text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">format_list_bulleted</span>
+</button>
+<button class="editor-toolbar-btn p-1.5 rounded flex items-center justify-center text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">format_list_numbered</span>
+</button>
+<div class="w-[1px] h-4 bg-slate-300 dark:bg-border-dark mx-1"></div>
+<button class="editor-toolbar-btn p-1.5 rounded flex items-center justify-center text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">format_quote</span>
+</button>
+<button class="editor-toolbar-btn p-1.5 rounded flex items-center justify-center text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">link</span>
+</button>
+<button class="editor-toolbar-btn p-1.5 rounded flex items-center justify-center text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">image</span>
+</button>
+<div class="flex-1"></div>
+<button class="editor-toolbar-btn p-1.5 rounded flex items-center justify-center text-slate-400">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+</button>
+</div>
+<!-- Editor Content -->
+<div class="min-h-[400px] p-6 focus:outline-none custom-scrollbar overflow-y-auto">
+<textarea class="w-full h-full min-h-[350px] bg-transparent border-none resize-none focus:ring-0 p-0 text-lg leading-relaxed placeholder:text-slate-400 dark:placeholder:text-zinc-700" placeholder="State your thesis and provide context for the debate..."></textarea>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-border-dark">
+<div class="flex items-center gap-2 text-slate-500 text-sm">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span>All changes auto-saved to drafts</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 h-11 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-surface-dark transition-colors">
+                        Discard
+                    </button>
+<button class="bg-primary hover:bg-blue-700 text-white px-8 h-11 rounded-lg text-sm font-bold tracking-wide transition-all shadow-lg shadow-primary/20 flex items-center gap-2">
+                        Post Topic
+                        <span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<footer class="mt-20 border-t border-slate-200 dark:border-border-dark py-12">
+<div class="max-w-[1200px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex items-center gap-4 opacity-50">
+<div class="size-6 text-slate-900 dark:text-white">
+<svg fill="currentColor" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<span class="text-xs font-bold uppercase tracking-widest">Chanban Debate Lab</span>
+</div>
+<div class="flex gap-8 text-slate-500 text-xs font-medium uppercase tracking-widest">
+<a class="hover:text-primary transition-colors" href="#">Guidelines</a>
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+</footer>
+</body></html>

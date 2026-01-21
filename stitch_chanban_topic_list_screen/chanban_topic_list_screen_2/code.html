@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CHANBAN - Debate Topic List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#195de6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                        "agree": "#195de6",
+                        "disagree": "#ef4444",
+                        "neutral": "#64748b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            body {
+                font-family: 'Inter', sans-serif;
+            }
+        }
+        @layer utilities {
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scroll-aware-header {
+                transition: all 0.3s ease-in-out;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="layout-container flex flex-col min-h-screen">
+<header class="sticky top-0 z-50 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-slate-800 px-4 py-3">
+<div class="flex items-center justify-between max-w-[600px] mx-auto w-full">
+<div class="flex items-center gap-2 text-primary">
+<div class="size-8 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">account_balance</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight">CHANBAN</h2>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 ring-2 ring-slate-200 dark:ring-slate-800" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWGgbGyZeEem-13QBSjdGbh4TJo-kCeEHD-zQeRzeDHk2WNA36ZFMl9GuA7ezxa5PG9TFf0_YLxmAhPwfDwwIbJEdtrzZJ4spQ_aHA1M4DStStmOhNRdNGYf9KWyKJrhJLGl-fMyaucv0dnIl00dUEedVSzhtcQCAIheSWE09IZuuOugrXwgt_38sznkJGJHS-Qiya_QjfSDhZFz6_kirBVE6vW6i46eUfK-FDi3xDK1I7nLH225mDKDW2EeJ213IShBndTnLcXyi0");'></div>
+</div>
+</div>
+</header>
+<div class="sticky top-[57px] z-40 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 py-2">
+<div class="max-w-[600px] mx-auto w-full flex items-center gap-2 px-4 overflow-hidden">
+<div class="flex-1 overflow-x-auto no-scrollbar flex items-center gap-2">
+<div class="h-8 shrink-0 flex items-center justify-center rounded-full bg-primary px-4 cursor-pointer">
+<p class="text-white text-xs font-bold">All</p>
+</div>
+<div class="h-8 shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 cursor-pointer">
+<p class="text-slate-700 dark:text-slate-300 text-xs font-medium">Politics</p>
+</div>
+<div class="h-8 shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 cursor-pointer">
+<p class="text-slate-700 dark:text-slate-300 text-xs font-medium">Economy</p>
+</div>
+<div class="h-8 shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 cursor-pointer">
+<p class="text-slate-700 dark:text-slate-300 text-xs font-medium">Society</p>
+</div>
+<div class="h-8 shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 cursor-pointer">
+<p class="text-slate-700 dark:text-slate-300 text-xs font-medium">Tech</p>
+</div>
+</div>
+<div class="h-8 w-px bg-slate-200 dark:border-slate-800 mx-1"></div>
+<button class="p-2 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-sm">tune</span>
+</button>
+</div>
+</div>
+<main class="flex-1 flex flex-col items-center w-full max-w-[600px] mx-auto">
+<div class="flex flex-col w-full">
+<article class="flex flex-col bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuANsLdpkgod5id-ztdZ6QtkoO6jHZwbOTUD13Y7LSrGzgRZ_470i_HOT0Ox5Yz-j4LRX27zdMJqoEmVwCCPCfW52Abunlg8ERQUDZXnk5sFgEWtPUTrnkXhl4AO7PkrnnNT5ZIi4gIg8ZfTYIO3GngUcu8kUd7iiBgePqnSlK-z14Qcf5XxxWTUombVYclBlxFpr5qDU2dIiFdSZLr7D6AC56A6UbnlTdngeWStg2A5-884thORB5hMKD5spRTjzJIULyT0gtgfiBeY");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 flex flex-col items-start gap-1">
+<span class="bg-primary/90 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider backdrop-blur-sm">TECH</span>
+<h3 class="text-white text-xl font-bold leading-tight drop-shadow-md">Should AI-generated art be copyrightable?</h3>
+</div>
+</div>
+<div class="p-4 flex flex-col gap-4">
+<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">As generative models like Midjourney and DALL-E become more advanced, the debate over legal authorship intensifies...</p>
+<div class="flex flex-col gap-3">
+<div class="grid grid-cols-3 gap-2">
+<button class="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl bg-agree/10 border border-agree/30 text-agree active:bg-agree active:text-white transition-all">
+<span class="text-xs font-bold">AGREE</span>
+<span class="text-sm font-black">42%</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl bg-neutral/10 border border-neutral/30 text-neutral active:bg-neutral active:text-white transition-all">
+<span class="text-xs font-bold">NEUTRAL</span>
+<span class="text-sm font-black">10%</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl bg-disagree/10 border border-disagree/30 text-disagree active:bg-disagree active:text-white transition-all">
+<span class="text-xs font-bold">DISAGREE</span>
+<span class="text-sm font-black">48%</span>
+</button>
+</div>
+<div class="flex h-1.5 w-full rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 42%"></div>
+<div class="bg-neutral h-full" style="width: 10%"></div>
+<div class="bg-disagree h-full" style="width: 48%"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-slate-400 text-xs font-medium mt-1">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-base">how_to_vote</span>1.2k</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-base">chat_bubble</span>342</span>
+</div>
+<span>2 hours ago</span>
+</div>
+</div>
+</article>
+<article class="flex flex-col bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB1zZG03RncYao0NJwCc-PuUiRZYFIDNwiEW9ChL_crgJzZUB5qMXMGLRJx3Qyof7FU0AHhroHDwHf_oX77LRbk8u200C0L74GchYFB7TMpomwj5hE5kUzoARv7vaEN5ZGjxU1D-X3J0byVj-5g0mJ_hZZpkQNhKAP5thKatiPvIzVunUhPwM5cv5BBEiFOJEp6LfFAOtfNi2eEDDE8aywg5AuAai-yiYmvTn5KhdH8MVWSHR2jkthAw0zfKY4jOqegGa6RWFUvjpsq");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 flex flex-col items-start gap-1">
+<span class="bg-primary/90 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider backdrop-blur-sm">ECONOMY</span>
+<h3 class="text-white text-xl font-bold leading-tight drop-shadow-md">Remote work vs. Office: The future of productivity</h3>
+</div>
+</div>
+<div class="p-4 flex flex-col gap-4">
+<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">The shift to remote work has sparked a global debate on efficiency, mental health, and the future of cities...</p>
+<div class="flex flex-col gap-3">
+<div class="grid grid-cols-3 gap-2">
+<button class="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl bg-agree/10 border border-agree/30 text-agree active:bg-agree active:text-white transition-all">
+<span class="text-xs font-bold">AGREE</span>
+<span class="text-sm font-black">65%</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl bg-neutral/10 border border-neutral/30 text-neutral active:bg-neutral active:text-white transition-all">
+<span class="text-xs font-bold">NEUTRAL</span>
+<span class="text-sm font-black">15%</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl bg-disagree/10 border border-disagree/30 text-disagree active:bg-disagree active:text-white transition-all">
+<span class="text-xs font-bold">DISAGREE</span>
+<span class="text-sm font-black">20%</span>
+</button>
+</div>
+<div class="flex h-1.5 w-full rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 65%"></div>
+<div class="bg-neutral h-full" style="width: 15%"></div>
+<div class="bg-disagree h-full" style="width: 20%"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-slate-400 text-xs font-medium mt-1">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-base">how_to_vote</span>850</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-base">chat_bubble</span>120</span>
+</div>
+<span>5 hours ago</span>
+</div>
+</div>
+</article>
+<article class="flex flex-col bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCpkXQYmHfuMyvm8IP2syZtWVmEpjOayxSmfbq29WuljE5eXZNbDJVGAPgm8cYRv9rK38BQtYnFDCB1UGaUWKp5eajjUiDHa2Tgy_se3qUqWeXrTHi7zK6OrOeNmhWE99dwU17-G9yvOCyl9m2pgM1toqwQtn6-St2rzvJcaeAU5eGicyOHnwS2UG9iY9_KU0j-utA3-aSexxqY6iB2NpX9pl8N9c2qU93IgoRFNbXDcy_iQZR24vBzQgxbWvpiplG3ejN3VKDtzvZN");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 flex flex-col items-start gap-1">
+<span class="bg-primary/90 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider backdrop-blur-sm">SOCIETY</span>
+<h3 class="text-white text-xl font-bold leading-tight drop-shadow-md">Universal Basic Income: Necessity for the AI age?</h3>
+</div>
+</div>
+<div class="p-4 flex flex-col gap-4">
+<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-2">With automation rising across all sectors, UBI is becoming a central topic of global economic policy discussion...</p>
+<div class="flex flex-col gap-3">
+<div class="grid grid-cols-3 gap-2">
+<button class="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl bg-agree/10 border border-agree/30 text-agree active:bg-agree active:text-white transition-all">
+<span class="text-xs font-bold">AGREE</span>
+<span class="text-sm font-black">30%</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl bg-neutral/10 border border-neutral/30 text-neutral active:bg-neutral active:text-white transition-all">
+<span class="text-xs font-bold">NEUTRAL</span>
+<span class="text-sm font-black">10%</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl bg-disagree/10 border border-disagree/30 text-disagree active:bg-disagree active:text-white transition-all">
+<span class="text-xs font-bold">DISAGREE</span>
+<span class="text-sm font-black">60%</span>
+</button>
+</div>
+<div class="flex h-1.5 w-full rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 30%"></div>
+<div class="bg-neutral h-full" style="width: 10%"></div>
+<div class="bg-disagree h-full" style="width: 60%"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-slate-400 text-xs font-medium mt-1">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-base">how_to_vote</span>2.1k</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-base">chat_bubble</span>560</span>
+</div>
+<span>Yesterday</span>
+</div>
+</div>
+</article>
+</div>
+<button class="fixed bottom-6 right-6 size-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform z-50">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<div class="py-10 flex flex-col items-center w-full gap-3">
+<span class="material-symbols-outlined animate-spin text-slate-400 text-3xl">refresh</span>
+<p class="text-slate-500 text-xs font-medium">Loading more debates...</p>
+</div>
+</main>
+<footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 py-8">
+<div class="max-w-[600px] mx-auto px-4 flex flex-col items-center gap-6">
+<div class="flex items-center gap-2 text-slate-400">
+<span class="material-symbols-outlined text-xl">account_balance</span>
+<span class="text-sm font-bold tracking-widest uppercase">CHANBAN 2024</span>
+</div>
+<div class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-slate-500 dark:text-slate-400 text-xs font-semibold">
+<a class="hover:text-primary transition-colors" href="#">GUIDELINES</a>
+<a class="hover:text-primary transition-colors" href="#">PRIVACY</a>
+<a class="hover:text-primary transition-colors" href="#">TERMS</a>
+<a class="hover:text-primary transition-colors" href="#">API</a>
+</div>
+<div class="flex gap-4">
+<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 cursor-pointer">
+<span class="material-symbols-outlined text-xl">share</span>
+</div>
+<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 cursor-pointer">
+<span class="material-symbols-outlined text-xl">public</span>
+</div>
+</div>
+</div>
+</footer>
+</div>
+
+</body></html>

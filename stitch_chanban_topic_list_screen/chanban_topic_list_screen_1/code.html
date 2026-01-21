@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CHANBAN - Debate Topic List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#195de6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                        "agree": "#195de6",
+                        "disagree": "#ef4444",
+                        "neutral": "#64748b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="layout-container flex flex-col min-h-screen">
+<!-- TopNavBar Component -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-10 lg:px-40 py-3">
+<div class="flex items-center justify-between gap-8 max-w-[1200px] mx-auto">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">CHANBAN</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-primary text-sm font-semibold leading-normal" href="#">Explore</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Debates</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors" href="#">Trending</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4">
+<label class="hidden lg:flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full overflow-hidden border border-slate-200 dark:border-slate-700">
+<div class="text-slate-400 bg-white dark:bg-slate-800 flex items-center justify-center pl-3">
+<span class="material-symbols-outlined text-lg">search</span>
+</div>
+<input class="form-input flex w-full border-none bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-0 placeholder:text-slate-400 px-3 text-sm font-normal" placeholder="Search debates..." value=""/>
+</div>
+</label>
+<button class="flex min-w-[120px] cursor-pointer items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold transition-transform active:scale-95">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+<span class="truncate">Start Debate</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-slate-200 dark:ring-slate-800" data-alt="User profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWGgbGyZeEem-13QBSjdGbh4TJo-kCeEHD-zQeRzeDHk2WNA36ZFMl9GuA7ezxa5PG9TFf0_YLxmAhPwfDwwIbJEdtrzZJ4spQ_aHA1M4DStStmOhNRdNGYf9KWyKJrhJLGl-fMyaucv0dnIl00dUEedVSzhtcQCAIheSWE09IZuuOugrXwgt_38sznkJGJHS-Qiya_QjfSDhZFz6_kirBVE6vW6i46eUfK-FDi3xDK1I7nLH225mDKDW2EeJ213IShBndTnLcXyi0");'></div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col items-center px-4 md:px-10 lg:px-40 py-8 max-w-[1200px] mx-auto w-full">
+<!-- HeadlineText Component -->
+<div class="w-full flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-3xl font-extrabold leading-tight">Debate Topics</h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Cast your vote and join the global conversation.</p>
+</div>
+<!-- SegmentedButtons Component -->
+<div class="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-fit">
+<label class="flex cursor-pointer h-8 items-center justify-center rounded-lg px-4 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-900 has-[:checked]:shadow-sm text-slate-500 dark:text-slate-400 has-[:checked]:text-primary text-xs font-bold transition-all">
+<span>LATEST</span>
+<input checked="" class="hidden" name="sort-toggle" type="radio" value="Latest"/>
+</label>
+<label class="flex cursor-pointer h-8 items-center justify-center rounded-lg px-4 has-[:checked]:bg-white dark:has-[:checked]:bg-slate-900 has-[:checked]:shadow-sm text-slate-500 dark:text-slate-400 has-[:checked]:text-primary text-xs font-bold transition-all">
+<span>POPULAR</span>
+<input class="hidden" name="sort-toggle" type="radio" value="Popular"/>
+</label>
+</div>
+</div>
+<!-- Chips Component -->
+<div class="w-full mb-8">
+<div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+<div class="flex h-9 shrink-0 items-center justify-center rounded-full bg-primary px-5 cursor-pointer">
+<p class="text-white text-sm font-semibold">All Topics</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 cursor-pointer hover:border-primary transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium">Politics</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 cursor-pointer hover:border-primary transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium">Society</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 cursor-pointer hover:border-primary transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium">Economy</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 cursor-pointer hover:border-primary transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium">Tech</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 cursor-pointer hover:border-primary transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium">Entertainment</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 cursor-pointer hover:border-primary transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium">Sports</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 cursor-pointer hover:border-primary transition-colors">
+<p class="text-slate-700 dark:text-slate-300 text-sm font-medium">Science</p>
+</div>
+</div>
+</div>
+<!-- Topic Grid (Modified ImageGrid with Progress Bars) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+<!-- Topic Card 1 -->
+<div class="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" data-alt="Futuristic AI robot painting on canvas" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuANsLdpkgod5id-ztdZ6QtkoO6jHZwbOTUD13Y7LSrGzgRZ_470i_HOT0Ox5Yz-j4LRX27zdMJqoEmVwCCPCfW52Abunlg8ERQUDZXnk5sFgEWtPUTrnkXhl4AO7PkrnnNT5ZIi4gIg8ZfTYIO3GngUcu8kUd7iiBgePqnSlK-z14Qcf5XxxWTUombVYclBlxFpr5qDU2dIiFdSZLr7D6AC56A6UbnlTdngeWStg2A5-884thORB5hMKD5spRTjzJIULyT0gtgfiBeY");'>
+<div class="absolute top-3 left-3 bg-primary/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider backdrop-blur-sm">TECH</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-snug mb-2 group-hover:text-primary transition-colors">Should AI-generated art be copyrightable?</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal line-clamp-2 mb-4">As generative models like Midjourney and DALL-E become more advanced, the debate over legal authorship intensifies...</p>
+<!-- Voting Progress Bar -->
+<div class="mt-auto">
+<div class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+<span>AGREE 42%</span>
+<span>NEUTRAL 10%</span>
+<span>DISAGREE 48%</span>
+</div>
+<div class="flex h-2 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 42%"></div>
+<div class="bg-neutral h-full" style="width: 10%"></div>
+<div class="bg-disagree h-full" style="width: 48%"></div>
+</div>
+<div class="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-slate-400 text-[11px] font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">how_to_vote</span>1.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">chat_bubble</span>342</span>
+<span class="ml-auto">2h ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Topic Card 2 -->
+<div class="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" data-alt="Modern home office with laptop" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB1zZG03RncYao0NJwCc-PuUiRZYFIDNwiEW9ChL_crgJzZUB5qMXMGLRJx3Qyof7FU0AHhroHDwHf_oX77LRbk8u200C0L74GchYFB7TMpomwj5hE5kUzoARv7vaEN5ZGjxU1D-X3J0byVj-5g0mJ_hZZpkQNhKAP5thKatiPvIzVunUhPwM5cv5BBEiFOJEp6LfFAOtfNi2eEDDE8aywg5AuAai-yiYmvTn5KhdH8MVWSHR2jkthAw0zfKY4jOqegGa6RWFUvjpsq");'>
+<div class="absolute top-3 left-3 bg-primary/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider backdrop-blur-sm">ECONOMY</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-snug mb-2 group-hover:text-primary transition-colors">Remote work vs. Office: The future of productivity</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal line-clamp-2 mb-4">The shift to remote work has sparked a global debate on efficiency, mental health, and the future of cities...</p>
+<div class="mt-auto">
+<div class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+<span>AGREE 65%</span>
+<span>NEUTRAL 15%</span>
+<span>DISAGREE 20%</span>
+</div>
+<div class="flex h-2 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 65%"></div>
+<div class="bg-neutral h-full" style="width: 15%"></div>
+<div class="bg-disagree h-full" style="width: 20%"></div>
+</div>
+<div class="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-slate-400 text-[11px] font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">how_to_vote</span>850</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">chat_bubble</span>120</span>
+<span class="ml-auto">5h ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Topic Card 3 -->
+<div class="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" data-alt="Stacks of money and digital circuits" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCpkXQYmHfuMyvm8IP2syZtWVmEpjOayxSmfbq29WuljE5eXZNbDJVGAPgm8cYRv9rK38BQtYnFDCB1UGaUWKp5eajjUiDHa2Tgy_se3qUqWeXrTHi7zK6OrOeNmhWE99dwU17-G9yvOCyl9m2pgM1toqwQtn6-St2rzvJcaeAU5eGicyOHnwS2UG9iY9_KU0j-utA3-aSexxqY6iB2NpX9pl8N9c2qU93IgoRFNbXDcy_iQZR24vBzQgxbWvpiplG3ejN3VKDtzvZN");'>
+<div class="absolute top-3 left-3 bg-primary/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider backdrop-blur-sm">SOCIETY</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-snug mb-2 group-hover:text-primary transition-colors">Universal Basic Income: Necessity for the AI age?</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal line-clamp-2 mb-4">With automation rising across all sectors, UBI is becoming a central topic of global economic policy discussion...</p>
+<div class="mt-auto">
+<div class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+<span>AGREE 30%</span>
+<span>NEUTRAL 10%</span>
+<span>DISAGREE 60%</span>
+</div>
+<div class="flex h-2 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 30%"></div>
+<div class="bg-neutral h-full" style="width: 10%"></div>
+<div class="bg-disagree h-full" style="width: 60%"></div>
+</div>
+<div class="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-slate-400 text-[11px] font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">how_to_vote</span>2.1k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">chat_bubble</span>560</span>
+<span class="ml-auto">1d ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Topic Card 4 -->
+<div class="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" data-alt="Space shuttle launching against planet Earth" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAqb71IRDuYZPtVXkPgGkpuGbHIpcYmazZ_WCVXTUhjqxDpDBXTMpxdKvUNwFKwVmFuuOgizy7mWtpbCPNDWddhIilYpVPT2ZkuwnO7beLpsFy2SgOzPpPonaspIcPEDUTPZKebUDbHOWZzEGwniPC1WT35FshMnzF8qVM8owTwONCojLK0b7t_wxhAA-UlFP6rUBZkWvI-0rHTxnRsm6QxoAH7BvSw_ZxUnxTV8SSCO0tX6ULLPceZJV5M0RiHCnJzE4IkAnfk0dP6");'>
+<div class="absolute top-3 left-3 bg-primary/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider backdrop-blur-sm">SCIENCE</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-snug mb-2 group-hover:text-primary transition-colors">Space exploration vs. Earth restoration</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal line-clamp-2 mb-4">Should we prioritize settling Mars or fixing our own climate crisis first? The ultimate resource allocation dilemma.</p>
+<div class="mt-auto">
+<div class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+<span>AGREE 55%</span>
+<span>NEUTRAL 5%</span>
+<span>DISAGREE 40%</span>
+</div>
+<div class="flex h-2 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 55%"></div>
+<div class="bg-neutral h-full" style="width: 5%"></div>
+<div class="bg-disagree h-full" style="width: 40%"></div>
+</div>
+<div class="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-slate-400 text-[11px] font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">how_to_vote</span>1.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">chat_bubble</span>230</span>
+<span class="ml-auto">3h ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Topic Card 5 -->
+<div class="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" data-alt="Smartphone display with social media icons" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDpzC7hOXJyOmaDk5_KP8AedbkjATkw9qqPE-T-iImWsKvW6yTLh-4xlSkSLetTV-jU8F9-RLi9JvIR3HtESllrGJEtbun5ng-9Flpq0XVgFPFsoBaC_Ti_60G7wv27frFf3XqzNRYbvkBNIVi_vnKT-HPBthzcjfpOtzYsBnHsm44m62Ks3uod2Eg_KYeUV2WI5jFbJvEDw6tqXp0NtUuhNlsEoN31IWSsRno3ebq-j9wFa-GGDAHmgLqubd3rU-pHJE9YoYmyr3l6");'>
+<div class="absolute top-3 left-3 bg-primary/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider backdrop-blur-sm">POLITICS</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-snug mb-2 group-hover:text-primary transition-colors">Social Media's impact on political discourse</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal line-clamp-2 mb-4">How algorithms shape our views and the spread of misinformation in modern democratic elections...</p>
+<div class="mt-auto">
+<div class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+<span>AGREE 20%</span>
+<span>NEUTRAL 8%</span>
+<span>DISAGREE 72%</span>
+</div>
+<div class="flex h-2 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 20%"></div>
+<div class="bg-neutral h-full" style="width: 8%"></div>
+<div class="bg-disagree h-full" style="width: 72%"></div>
+</div>
+<div class="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-slate-400 text-[11px] font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">how_to_vote</span>3.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">chat_bubble</span>890</span>
+<span class="ml-auto">12h ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Topic Card 6 -->
+<div class="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl hover:border-primary/50 transition-all">
+<div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" data-alt="Microscopic view of DNA strands" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzWwSE-jmx-50bdkpnea1xg42YbEbdG25AShC_M0bsVsDwE0lxdrrvl-npBfxnl2dPjanDMssRnZ6x3T-x7yWFhPShSPk1n0KGsfUUzE43uewkQe0yKOHiYHtbIfEvqNE-LynwUCz1X6Q1mjYcMpHzAzFuz_Hc1wjgcOQzojtNJED3oQDv7oe4avW_1lm4L2-A5hgxNEehfSvDU7g5n1TEB0WnyHF87BMmYuQpoC1cJHjK9Ti5pG6-u21ymJCV1s5J-Q9vNkC7oWxo");'>
+<div class="absolute top-3 left-3 bg-primary/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider backdrop-blur-sm">SCIENCE</div>
+</div>
+<div class="p-5 flex flex-col flex-1">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-snug mb-2 group-hover:text-primary transition-colors">Genetic engineering: How far is too far?</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal line-clamp-2 mb-4">Exploring the ethical boundaries of CRISPR and human enhancement. Should we edit the human germline?</p>
+<div class="mt-auto">
+<div class="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 mb-1.5">
+<span>AGREE 35%</span>
+<span>NEUTRAL 20%</span>
+<span>DISAGREE 45%</span>
+</div>
+<div class="flex h-2 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 35%"></div>
+<div class="bg-neutral h-full" style="width: 20%"></div>
+<div class="bg-disagree h-full" style="width: 45%"></div>
+</div>
+<div class="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-slate-400 text-[11px] font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">how_to_vote</span>940</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">chat_bubble</span>180</span>
+<span class="ml-auto">6h ago</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Loading Spinner / Load More -->
+<div class="py-12 flex justify-center w-full">
+<button class="flex items-center gap-2 px-6 py-3 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-sm hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-lg animate-spin" style="animation-duration: 3s;">refresh</span>
+                    Load More Topics
+                </button>
+</div>
+</main>
+<footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 py-10">
+<div class="max-w-[1200px] mx-auto px-4 md:px-10 lg:px-40 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2 text-slate-400">
+<span class="material-symbols-outlined text-xl">account_balance</span>
+<span class="text-sm font-bold">CHANBAN © 2024</span>
+</div>
+<div class="flex gap-8 text-slate-500 dark:text-slate-400 text-sm">
+<a class="hover:text-primary" href="#">Guidelines</a>
+<a class="hover:text-primary" href="#">Privacy</a>
+<a class="hover:text-primary" href="#">Terms</a>
+<a class="hover:text-primary" href="#">API</a>
+</div>
+<div class="flex gap-4">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 cursor-pointer hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-lg">share</span>
+</div>
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 cursor-pointer hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-lg">public</span>
+</div>
+</div>
+</div>
+</footer>
+</div>
+</body></html>
