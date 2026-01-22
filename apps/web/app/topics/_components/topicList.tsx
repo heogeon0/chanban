@@ -56,13 +56,11 @@ export function TopicList({ tag, initialMeta }: TopicListProps) {
 
   return (
     <>
-      <ul className="flex flex-col gap-y-3">
+      <div className="divide-y divide-border/50 desktop:divide-y-0 desktop:space-y-0">
         {allPosts.map((post) => (
-          <li key={post.id}>
-            <TopicCard post={post} />
-          </li>
+          <TopicCard key={post.id} post={post} />
         ))}
-      </ul>
+      </div>
 
       {hasNextPage && (
         <div
@@ -70,15 +68,17 @@ export function TopicList({ tag, initialMeta }: TopicListProps) {
           className="flex items-center justify-center py-8"
         >
           {isFetchingNextPage ? (
-            <div className="text-sm text-gray-500">로딩 중...</div>
+            <div className="text-sm text-muted-foreground">로딩 중...</div>
           ) : (
-            <div className="text-sm text-gray-400">스크롤하여 더보기</div>
+            <div className="text-sm text-muted-foreground">
+              스크롤하여 더보기
+            </div>
           )}
         </div>
       )}
 
       {!hasNextPage && allPosts.length > 0 && (
-        <div className="text-center py-8 text-sm text-gray-400">
+        <div className="text-center py-8 text-sm text-muted-foreground">
           모든 게시글을 불러왔습니다
         </div>
       )}

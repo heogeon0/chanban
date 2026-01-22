@@ -1,60 +1,111 @@
-import { BanIcon, ChanIcon, ChongIcon } from "@/shared/ui/icons";
-import { VoteProgressBar } from "@/shared/ui/voteProgressBar";
 import { PostResponse } from "@chanban/shared-types";
-import CommentIcon from '@mui/icons-material/Comment';
+import { MessageSquare, Vote } from "lucide-react";
 import Link from "next/link";
+import { TAG_MAP } from "../_constants";
 
 interface TopicCardProps {
   post: PostResponse;
 }
 
 /**
+ * 상대적 시간을 계산합니다.
+ * @param dateInput - 날짜 문자열 또는 Date 객체
+ * @returns 상대적 시간 문자열 (예: "2h ago")
+ */
+const getRelativeTime = (dateInput: string | Date): string => {
+  const now = new Date();
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return "방금 전";
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}분 전`;
+  if (diffInSeconds < 86400)
+    return `${Math.floor(diffInSeconds / 3600)}시간 전`;
+  if (diffInSeconds < 604800)
+    return `${Math.floor(diffInSeconds / 86400)}일 전`;
+
+  return date.toLocaleDateString();
+};
+
+/**
+ * 숫자를 포맷팅합니다 (1000 -> 1k)
+ * @param num - 포맷팅할 숫자
+ * @returns 포맷팅된 문자열
+ */
+const formatCount = (num: number): string => {
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}k`;
+  }
+  return num.toString();
+};
+
+/**
  * 토픽 목록에서 사용되는 카드 컴포넌트
- * 제목, 내용 미리보기, 투표 통계를 표시합니다.
+ * 왼쪽 보더 + 3색 프로그레스 바 디자인
  *
  * @param post - 게시글 데이터
  */
 export function TopicCard({ post }: TopicCardProps) {
+  const total = post.agreeCount + post.disagreeCount + post.neutralCount;
+  const agreePercent =
+    total === 0 ? 33 : Math.round((post.agreeCount / total) * 100);
+  const neutralPercent =
+    total === 0 ? 34 : Math.round((post.neutralCount / total) * 100);
+  const disagreePercent = total === 0 ? 33 : 100 - agreePercent - neutralPercent;
+
+  const tagInfo = TAG_MAP[post.tag] || { name: post.tag, variant: "default" };
+
   return (
     <Link
       href={`/topics/${post.id}`}
-      className="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden relative"
+      className="block p-4 desktop:p-5 border-l-4 border-l-primary hover:bg-muted/40 transition-colors cursor-pointer desktop:rounded-lg desktop:border desktop:border-border desktop:border-l-4 desktop:border-l-primary desktop:bg-card desktop:mb-3"
     >
-      <VoteProgressBar
-        agreeCount={post.agreeCount}
-        disagreeCount={post.disagreeCount}
-      />
+      {/* 카테고리 & 시간 */}
+      <div className="flex justify-between items-start mb-2">
+        <span className="text-[10px] desktop:text-xs font-bold text-primary uppercase tracking-wide">
+          {tagInfo.name}
+        </span>
+        <span className="text-[10px] desktop:text-xs text-muted-foreground">
+          {getRelativeTime(post.createdAt)}
+        </span>
+      </div>
 
-      {/* 카드 본문 */}
-      <div className="p-4 relative">
-        <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2">
-          {post.title}
-        </h3>
+      {/* 제목 */}
+      <h3 className="text-sm desktop:text-base font-bold mb-2 line-clamp-2">
+        {post.title}
+      </h3>
 
-        {/* 내용 미리보기 */}
-        <p className="text-sm text-gray-600 mb-3 line-clamp-1">
-          {post.content}
-        </p>
+      {/* 내용 미리보기 - 데스크탑에서만 표시 */}
+      <p className="hidden desktop:block text-sm text-muted-foreground mb-3 line-clamp-2">
+        {post.content}
+      </p>
 
-        {/* 투표 통계 */}
-        <div className="flex items-center gap-4 text-sm">
-          <span className="flex items-center gap-1 text-blue-600 font-medium">
-            <ChanIcon size={16} />
-            {post.agreeCount}
-          </span>
-          <span className="flex items-center gap-1 text-red-600 font-medium">
-            <BanIcon size={16} />
-            {post.disagreeCount}
-          </span>
-          <span className="flex items-center gap-1 text-gray-500">
-            <ChongIcon size={16} />
-            {post.neutralCount}
-          </span>
-          <span className="ml-auto flex items-center gap-1 text-gray-500">
-            <CommentIcon sx={{ fontSize: 16 }} />
-            {post.commentCount}
-          </span>
-        </div>
+      {/* 3색 프로그레스 바 */}
+      <div className="flex h-1.5 desktop:h-2 w-full rounded-full overflow-hidden bg-muted mb-3">
+        <div
+          className="bg-primary h-full transition-all"
+          style={{ width: `${agreePercent}%` }}
+        />
+        <div
+          className="bg-muted-foreground h-full transition-all"
+          style={{ width: `${neutralPercent}%` }}
+        />
+        <div
+          className="bg-destructive h-full transition-all"
+          style={{ width: `${disagreePercent}%` }}
+        />
+      </div>
+
+      {/* 투표 수 & 댓글 수 */}
+      <div className="flex items-center gap-3 text-[10px] desktop:text-xs font-medium text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <Vote className="w-3.5 h-3.5 desktop:w-4 desktop:h-4" />
+          {formatCount(total)}
+        </span>
+        <span className="flex items-center gap-1">
+          <MessageSquare className="w-3.5 h-3.5 desktop:w-4 desktop:h-4" />
+          {formatCount(post.commentCount)}
+        </span>
       </div>
     </Link>
   );

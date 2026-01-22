@@ -33,70 +33,59 @@ export function ReplyComment({ reply, onLike }: ReplyCommentProps) {
   // 삭제된 답글 표시
   if (isDeleted) {
     return (
-      <div className="ml-12">
-        <div className="bg-muted/50 border border-dashed rounded-lg p-4">
-          <p className="text-muted-foreground text-body-default">
-            삭제된 답글입니다.
-          </p>
-        </div>
+      <div className="bg-muted/30 border border-dashed rounded-lg p-4">
+        <p className="text-muted-foreground text-sm">삭제된 답글입니다.</p>
       </div>
     );
   }
 
   return (
-    <div className="ml-12">
-      <div className="bg-card border rounded-lg p-4">
-        {/* 헤더: 사용자 정보 및 메타데이터 */}
-        <div className="flex items-start gap-3 mb-3">
-          <Avatar className="flex-shrink-0">
-            <AvatarFallback>
-              {reply.user.nickname.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+    <div className="flex gap-3">
+      {/* 아바타 */}
+      <Avatar className="flex-shrink-0 w-8 h-8">
+        <AvatarFallback className="bg-emerald-500 text-white text-xs font-bold">
+          {reply.user.nickname.slice(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-body-default">
-                {reply.user.nickname}
-              </span>
+      <div className="flex-1">
+        {/* 답글 카드 */}
+        <div className="bg-muted/50 rounded-xl p-4">
+          {/* 헤더: 사용자 정보 및 메타데이터 */}
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="font-bold text-sm">{reply.user.nickname}</span>
+            <span className="text-xs text-muted-foreground">
+              {formatRelativeTime(reply.createdAt)}
+            </span>
 
-              {/* 투표 히스토리 뱃지 */}
-              {latestVote && <VoteHistoryBadge status={latestVote} />}
+            {/* 투표 히스토리 뱃지 */}
+            {latestVote && <VoteHistoryBadge status={latestVote} />}
 
-              <span className="text-muted-foreground text-caption-default">
-                {formatRelativeTime(reply.createdAt)}
-              </span>
-
-              {/* 수정된 답글 표시 */}
-              {reply.updatedAt !== reply.createdAt && (
-                <span className="text-muted-foreground text-caption-default">
-                  (수정됨)
-                </span>
-              )}
-            </div>
+            {/* 수정된 답글 표시 */}
+            {reply.updatedAt !== reply.createdAt && (
+              <span className="text-muted-foreground text-xs">(수정됨)</span>
+            )}
           </div>
-        </div>
 
-        {/* 답글 내용 */}
-        <div className="mb-3 ml-12">
-          <p className="text-body-default whitespace-pre-wrap break-words">
+          {/* 답글 내용 */}
+          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
             {reply.content}
           </p>
         </div>
 
         {/* 액션 버튼 (좋아요만) */}
-        <div className="flex items-center gap-2 ml-12">
+        <div className="flex items-center gap-4 mt-2 px-2">
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 px-2 gap-1.5"
+            className="h-8 px-2 gap-1 text-xs font-bold text-muted-foreground hover:text-primary"
             onClick={handleLikeClick}
           >
             <Heart
-              size={16}
+              size={18}
               className={reply.isLiked ? "fill-current text-red-500" : ""}
             />
-            <span className="text-caption-default">좋아요</span>
+            좋아요
           </Button>
         </div>
       </div>

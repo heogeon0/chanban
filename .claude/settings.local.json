@@ -12,7 +12,9 @@
       "mcp__plugin_playwright_playwright__browser_network_requests",
       "mcp__plugin_playwright_playwright__browser_click",
       "mcp__plugin_playwright_playwright__browser_evaluate",
-      "mcp__plugin_playwright_playwright__browser_close"
+      "mcp__plugin_playwright_playwright__browser_close",
+      "Bash(pnpm --filter=web tsc:*)",
+      "Bash(pnpm --filter web build:*)"
     ]
   }
 }

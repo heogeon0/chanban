@@ -61,7 +61,7 @@ export function CommentList({
 
   // 댓글 목록 렌더링
   return (
-    <div className="space-y-3">
+    <div className="space-y-8">
       {comments.map((comment) => (
         <Comment
           key={comment.id}

@@ -160,136 +160,120 @@ export function Comment({ comment, topicId, onLike }: CommentProps) {
 
   return (
     <div>
-      <div className="bg-card border rounded-lg p-4">
-        {/* 헤더: 사용자 정보 및 메타데이터 */}
-        <div className="flex items-start gap-3 mb-3">
-          <Avatar className="flex-shrink-0">
-            <AvatarFallback>
-              {comment.user.nickname.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+      {/* 원댓글 */}
+      <div className="flex gap-4">
+        {/* 아바타 */}
+        <Avatar className="flex-shrink-0 w-10 h-10">
+          <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+            {comment.user.nickname.slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-body-default">
-                {comment.user.nickname}
+        <div className="flex-1">
+          {/* 댓글 카드 */}
+          <div className="bg-muted/50 rounded-xl p-4">
+            {/* 헤더: 사용자 정보 및 메타데이터 */}
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="font-bold text-sm">{comment.user.nickname}</span>
+              <span className="text-xs text-muted-foreground">
+                {formatRelativeTime(comment.createdAt)}
               </span>
 
               {/* 투표 히스토리 뱃지 */}
               {latestVote && <VoteHistoryBadge status={latestVote} />}
 
-              <span className="text-muted-foreground text-caption-default">
-                {formatRelativeTime(comment.createdAt)}
-              </span>
-
               {/* 수정된 댓글 표시 */}
               {comment.updatedAt !== comment.createdAt && (
-                <span className="text-muted-foreground text-caption-default">
-                  (수정됨)
-                </span>
+                <span className="text-muted-foreground text-xs">(수정됨)</span>
               )}
             </div>
+
+            {/* 댓글 내용 */}
+            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+              {comment.content}
+            </p>
           </div>
-        </div>
 
-        {/* 댓글 내용 */}
-        <div className="mb-3 ml-12">
-          <p className="text-body-default whitespace-pre-wrap break-words">
-            {comment.content}
-          </p>
-        </div>
-
-        {/* 액션 버튼 */}
-        <div className="flex items-center gap-2 ml-12">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 gap-1.5"
-            onClick={handleLikeClick}
-          >
-            <Heart
-              size={16}
-              className={comment.isLiked ? "fill-current text-red-500" : ""}
-            />
-            <span className="text-caption-default">좋아요</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 gap-1.5"
-            onClick={handleReplyClick}
-          >
-            <MessageCircle size={16} />
-            <span className="text-caption-default">답글</span>
-          </Button>
-
-          {hasReplies && (
+          {/* 액션 버튼 */}
+          <div className="flex items-center gap-4 mt-2 px-2">
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-2"
-              onClick={toggleReplies}
+              className="h-8 px-2 gap-1 text-xs font-bold text-muted-foreground hover:text-primary"
+              onClick={handleLikeClick}
             >
-              <span className="text-caption-default">
-                답글 {comment.totalReplies}개 {showReplies ? "숨기기" : "보기"}
-              </span>
+              <Heart
+                size={18}
+                className={comment.isLiked ? "fill-current text-red-500" : ""}
+              />
+              좋아요
             </Button>
-          )}
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 gap-1 text-xs font-bold text-muted-foreground hover:text-primary"
+              onClick={handleReplyClick}
+            >
+              <MessageCircle size={18} />
+              답글
+            </Button>
+
+            {hasReplies && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-xs font-bold text-muted-foreground hover:text-primary"
+                onClick={toggleReplies}
+              >
+                답글 {comment.totalReplies}개 {showReplies ? "숨기기" : "보기"}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* 대댓글 목록 */}
       {hasReplies && showReplies && (
-        <div className="mt-3 space-y-3">
+        <div className="mt-4 space-y-4 border-l-2 border-border ml-5 pl-4">
           {/* 추가로 로드된 답글 (오래된 답글) */}
           {additionalReplies.map((reply) => (
-            <ReplyComment
-              key={reply.id}
-              reply={reply}
-              onLike={onLike}
-            />
+            <ReplyComment key={reply.id} reply={reply} onLike={onLike} />
           ))}
 
           {/* 이전 답글 더보기 버튼 */}
           {hasMoreReplies && (
-            <div className="ml-12">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-3 text-muted-foreground hover:text-foreground"
-                onClick={handleLoadMoreReplies}
-                disabled={isLoadingMoreReplies}
-              >
-                <ChevronDown size={16} className="mr-1" />
-                <span className="text-caption-default">
-                  {isLoadingMoreReplies
-                    ? "로딩 중..."
-                    : `이전 답글 ${remainingReplies}개 더보기`}
-                </span>
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 text-muted-foreground hover:text-foreground"
+              onClick={handleLoadMoreReplies}
+              disabled={isLoadingMoreReplies}
+            >
+              <ChevronDown size={16} className="mr-1" />
+              <span className="text-xs">
+                {isLoadingMoreReplies
+                  ? "로딩 중..."
+                  : `이전 답글 ${remainingReplies}개 더보기`}
+              </span>
+            </Button>
           )}
 
           {/* 초기 답글 (최신 3개) */}
           {comment.replies.map((reply) => (
-            <ReplyComment
-              key={reply.id}
-              reply={reply}
-              onLike={onLike}
-            />
+            <ReplyComment key={reply.id} reply={reply} onLike={onLike} />
           ))}
+        </div>
+      )}
 
-          {/* 답글 작성 폼 */}
-          {showReplyForm && (
-            <div className="ml-12">
-              <CommentForm
-                topicId={topicId}
-                parentId={comment.id}
-                onSubmit={() => setShowReplyForm(false)}
-              />
-            </div>
-          )}
+      {/* 답글 작성 폼 */}
+      {showReplyForm && (
+        <div className="mt-4 ml-14">
+          <CommentForm
+            topicId={topicId}
+            parentId={comment.id}
+            onSubmit={() => setShowReplyForm(false)}
+          />
         </div>
       )}
     </div>

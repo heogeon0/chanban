@@ -23,6 +23,7 @@
     "@mui/material": "^7.3.6",
     "@tanstack/react-query": "^5.90.12",
     "@workspace/ui": "workspace:*",
+    "classnames": "^2.5.1",
     "lexical": "^0.39.0",
     "lucide-react": "^0.475.0",
     "next": "^16.1.3",
@@ -38,6 +39,8 @@
     "@workspace/eslint-config": "workspace:^",
     "@workspace/typescript-config": "workspace:*",
     "eslint": "^9.39.1",
+    "tailwindcss": "^4.1.11",
+    "tw-animate-css": "^1.3.6",
     "typescript": "^5.9.3"
   }
 }

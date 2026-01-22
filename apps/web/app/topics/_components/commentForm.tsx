@@ -6,7 +6,6 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar";
 import { Button } from "@workspace/ui/components/button";
 import { $getRoot, EditorState } from "lexical";
 import { useState, useEffect } from "react";
@@ -114,42 +113,33 @@ export function CommentForm({
   const isSubmitDisabled = !content.trim() || isPending;
 
   return (
-    <div className="bg-card border rounded-lg p-4 space-y-3">
-      <div className="flex items-start gap-3">
-        {/* 사용자 아바타 */}
-        <Avatar className="flex-shrink-0">
-          <AvatarFallback>U</AvatarFallback>
-        </Avatar>
-
-        {/* 에디터 영역 */}
-        <div className="flex-1">
-          <LexicalComposer initialConfig={initialConfig}>
-            <div className="relative">
-              <PlainTextPlugin
-                contentEditable={
-                  <ContentEditable className="min-h-[100px] p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-none text-body-default" />
-                }
-                placeholder={
-                  <div className="absolute top-3 left-3 text-muted-foreground pointer-events-none text-body-default">
-                    댓글을 작성해주세요...
-                  </div>
-                }
-                ErrorBoundary={LexicalErrorBoundary}
-              />
-              <HistoryPlugin />
-              <OnChangePlugin onChange={handleEditorChange} />
-              <ClearEditorPlugin clearTrigger={clearTrigger} />
-            </div>
-          </LexicalComposer>
+    <div className="space-y-3">
+      {/* 에디터 영역 */}
+      <LexicalComposer initialConfig={initialConfig}>
+        <div className="relative">
+          <PlainTextPlugin
+            contentEditable={
+              <ContentEditable className="w-full bg-card border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-sm p-4 min-h-[100px] focus:outline-none transition-colors" />
+            }
+            placeholder={
+              <div className="absolute top-4 left-4 text-muted-foreground pointer-events-none text-sm">
+                토론에 참여해보세요...
+              </div>
+            }
+            ErrorBoundary={LexicalErrorBoundary}
+          />
+          <HistoryPlugin />
+          <OnChangePlugin onChange={handleEditorChange} />
+          <ClearEditorPlugin clearTrigger={clearTrigger} />
         </div>
-      </div>
+      </LexicalComposer>
 
       {/* 제출 버튼 */}
       <div className="flex justify-end">
         <Button
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
-          size="sm"
+          className="px-6 font-bold"
         >
           {isPending ? "작성 중..." : "댓글 작성"}
         </Button>
