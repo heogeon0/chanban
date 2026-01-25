@@ -5,6 +5,7 @@ import { MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { useCommentLike } from "../_queries/useCommentLike";
 import { useGetComments } from "../_queries/useGetComments";
+import { useGetMyVote } from "../_queries/useGetMyVote";
 import { useGetVoteCount } from "../_queries/useGetVoteCount";
 import { usePostVote } from "../_queries/usePostVote";
 import { CommentForm } from "./commentForm";
@@ -29,6 +30,7 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
   const { data: comments = [], isLoading: isLoadingComments } =
     useGetComments(topicId);
   const { data: voteCount } = useGetVoteCount(topicId);
+  const { data: myVote } = useGetMyVote(topicId);
   const { mutate: likeComment } = useCommentLike();
 
   /**
@@ -76,6 +78,7 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
             onVote={handleVote}
             isPending={isPending}
             onShowCommentForm={() => setShowCommentForm(true)}
+            selectedStatus={myVote?.currentStatus ?? null}
           />
         </div>
 

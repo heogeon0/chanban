@@ -1,7 +1,30 @@
-import { PostResponse } from "@chanban/shared-types";
+import { PostResponse, VoteStatus } from "@chanban/shared-types";
 import { MessageSquare, Vote } from "lucide-react";
 import Link from "next/link";
 import { TAG_MAP } from "../_constants";
+
+/**
+ * 작성자의 의견에 따른 border 색상 클래스를 반환합니다.
+ * @param opinion - 작성자의 의견 (agree, disagree, neutral, null)
+ * @param showOpinion - 의견 공개 여부
+ * @returns Tailwind border 색상 클래스
+ */
+const getOpinionBorderClass = (
+  opinion: VoteStatus | null,
+  showOpinion: boolean
+): string => {
+  if (!showOpinion || opinion === null) {
+    return "border-l-muted-foreground";
+  }
+
+  const borderClassMap: Record<VoteStatus, string> = {
+    [VoteStatus.AGREE]: "border-l-opinion-agree",
+    [VoteStatus.DISAGREE]: "border-l-destructive",
+    [VoteStatus.NEUTRAL]: "border-l-muted-foreground",
+  };
+
+  return borderClassMap[opinion];
+};
 
 interface TopicCardProps {
   post: PostResponse;
@@ -54,11 +77,15 @@ export function TopicCard({ post }: TopicCardProps) {
   const disagreePercent = total === 0 ? 33 : 100 - agreePercent - neutralPercent;
 
   const tagInfo = TAG_MAP[post.tag] || { name: post.tag, variant: "default" };
+  const borderColorClass = getOpinionBorderClass(
+    post.creatorOpinion,
+    post.showCreatorOpinion
+  );
 
   return (
     <Link
       href={`/topics/${post.id}`}
-      className="block p-4 desktop:p-5 border-l-4 border-l-primary hover:bg-muted/40 transition-colors cursor-pointer desktop:rounded-lg desktop:border desktop:border-border desktop:border-l-4 desktop:border-l-primary desktop:bg-card desktop:mb-3"
+      className={`block p-4 desktop:p-5 border-l-4 ${borderColorClass} hover:bg-muted/40 transition-colors cursor-pointer desktop:rounded-lg desktop:border desktop:border-border desktop:border-l-4 desktop:bg-card desktop:mb-3`}
     >
       {/* 카테고리 & 시간 */}
       <div className="flex justify-between items-start mb-2">
@@ -83,7 +110,7 @@ export function TopicCard({ post }: TopicCardProps) {
       {/* 3색 프로그레스 바 */}
       <div className="flex h-1.5 desktop:h-2 w-full rounded-full overflow-hidden bg-muted mb-3">
         <div
-          className="bg-primary h-full transition-all"
+          className="bg-opinion-agree h-full transition-all"
           style={{ width: `${agreePercent}%` }}
         />
         <div

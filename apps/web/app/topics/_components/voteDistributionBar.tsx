@@ -52,7 +52,7 @@ export const VoteDistributionBar = memo(function VoteDistributionBar({
       >
         {agreePercent > 0 && (
           <div
-            className="bg-primary h-full flex items-center justify-center text-xs font-black text-white transition-all"
+            className="bg-opinion-agree h-full flex items-center justify-center text-xs font-black text-white transition-all"
             style={{ width: `${agreePercent}%` }}
           >
             {agreePercent >= MIN_DISPLAY_WIDTH && `${agreePercent}%`}
@@ -79,7 +79,7 @@ export const VoteDistributionBar = memo(function VoteDistributionBar({
       {/* 범례 */}
       <div className="flex justify-center gap-8 mt-4">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-primary" />
+          <div className="w-3 h-3 rounded-full bg-opinion-agree" />
           <span className="text-xs text-muted-foreground">찬성</span>
         </div>
         <div className="flex items-center gap-2">
