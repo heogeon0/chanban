@@ -47,3 +47,11 @@ export const TAG_MAP = {
     variant: 'default' as const,
   },
 }
+
+export const CATEGORY_FILTERS = [
+  { id: "all", name: "All" },
+  { id: PostTag.POLITICS, name: "정치" },
+  { id: PostTag.TECHNOLOGY, name: "기술" },
+  { id: PostTag.ECONOMY, name: "경제" },
+  { id: PostTag.SOCIETY, name: "사회" },
+];

@@ -1,63 +1,16 @@
-import { httpClient } from "@/lib/httpClient";
 import {
-  PaginatedResponse,
-  PostResponse,
-  PostTag,
-  TAGS,
+  PostTag
 } from "@chanban/shared-types";
 import Link from "next/link";
 import ListToggle from "./_components/listToggle";
 import { TopicCard } from "./_components/topicCard";
 import { TopicList } from "./_components/topicList";
+import { CATEGORY_FILTERS } from "./_constants";
+import { topicDomains } from "./_domains";
 
-/** 정렬 타입 */
-type SortType = "latest" | "popular";
 
-/**
- * 게시글 목록을 조회합니다.
- * @param tag - 필터링할 태그 (선택)
- * @param sort - 정렬 방식 (latest/popular)
- */
-async function getPosts(tag?: PostTag | "all", sort: SortType = "popular") {
-  if (tag === "all" || !tag) {
-    const sortParam = sort === "popular" ? "?sort=popular" : "";
-    return await httpClient.get<PaginatedResponse<PostResponse>>(
-      `/api/posts/recent${sortParam}`
-    );
-  }
 
-  return await httpClient.get<PaginatedResponse<PostResponse>>(
-    `/api/posts/tags/${tag}`
-  );
-}
 
-/** 카테고리 필터 목록 (All 포함) */
-const CATEGORY_FILTERS = [
-  { id: "all", name: "All" },
-  { id: PostTag.POLITICS, name: "정치" },
-  { id: PostTag.TECHNOLOGY, name: "기술" },
-  { id: PostTag.ECONOMY, name: "경제" },
-  { id: PostTag.SOCIETY, name: "사회" },
-];
-
-/**
- * searchParams에서 tag와 sortType을 파싱합니다.
- * @param searchParams - URL search params 객체
- * @returns 파싱된 tag와 sortType
- */
-function parseSortSearchParams(searchParams: {
-  tag?: PostTag | "all";
-  sort?: string;
-}): { tag: PostTag | "all"; sortType: SortType } {
-  const { tag, sort } = searchParams;
-  const selectedTag = TAGS.includes(tag as PostTag)
-    ? (tag as PostTag)
-    : "all";
-  const selectedSort: SortType =
-    sort === "latest" ? "latest" : "popular";
-
-  return { tag: selectedTag, sortType: selectedSort };
-}
 
 export default async function TopicsPage({
   searchParams,
@@ -66,11 +19,12 @@ export default async function TopicsPage({
 }) {
   const params = await searchParams;
   const { tag: selectedTag, sortType: selectedSort } =
-    parseSortSearchParams(params);
-  const initialPosts = await getPosts(
+    topicDomains.parseSortSearchParams(params);
+  const initialPosts = await topicDomains.getPosts(
     selectedTag === "all" ? "all" : selectedTag,
     selectedSort
   );
+  
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
