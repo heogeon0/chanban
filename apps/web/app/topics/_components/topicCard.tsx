@@ -14,13 +14,13 @@ const getOpinionBorderClass = (
   showOpinion: boolean
 ): string => {
   if (!showOpinion || opinion === null) {
-    return "border-l-muted-foreground";
+    return "border-t-muted-foreground desktop:border-t-border desktop:border-l-muted-foreground";
   }
 
   const borderClassMap: Record<VoteStatus, string> = {
-    [VoteStatus.AGREE]: "border-l-opinion-agree",
-    [VoteStatus.DISAGREE]: "border-l-destructive",
-    [VoteStatus.NEUTRAL]: "border-l-muted-foreground",
+    [VoteStatus.AGREE]: "border-t-opinion-agree desktop:border-t-border desktop:border-l-opinion-agree",
+    [VoteStatus.DISAGREE]: "border-t-opinion-disagree desktop:border-t-border desktop:border-l-opinion-disagree",
+    [VoteStatus.NEUTRAL]: "border-t-opinion-neutral desktop:border-t-border desktop:border-l-opinion-neutral",
   };
 
   return borderClassMap[opinion];
@@ -85,7 +85,7 @@ export function TopicCard({ post }: TopicCardProps) {
   return (
     <Link
       href={`/topics/${post.id}`}
-      className={`block p-4 desktop:p-5 border-l-4 ${borderColorClass} hover:bg-muted/40 transition-colors cursor-pointer desktop:rounded-lg desktop:border desktop:border-border desktop:border-l-4 desktop:bg-card desktop:mb-3`}
+      className={`block p-4 desktop:p-5 border-t-2 desktop:border-t desktop:border-l-4 ${borderColorClass} hover:bg-muted/40 transition-colors cursor-pointer desktop:border desktop:border-border desktop:bg-card desktop:mb-3`}
     >
       {/* 카테고리 & 시간 */}
       <div className="flex justify-between items-start mb-2">

@@ -78,7 +78,7 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
             onVote={handleVote}
             isPending={isPending}
             onShowCommentForm={() => setShowCommentForm(true)}
-            selectedStatus={myVote?.currentStatus ?? null}
+            selectedStatus={myVote?.status ?? null}
           />
         </div>
 

@@ -14,10 +14,10 @@ export function useGetInfiniteTopics(
   tag: PostTag | 'recent' | 'hot',
   initialMeta: PaginationMeta
 ) {
-  const hasNextPage = initialMeta.page < initialMeta.totalPages;
+  const initialHasNextPage = initialMeta.page < initialMeta.totalPages;
   const nextPage = initialMeta.page + 1;
 
-  return useInfiniteQuery({
+  const query = useInfiniteQuery({
     queryKey: ['topics', tag],
     queryFn: async ({ pageParam }) => {
       let url: string;
@@ -37,6 +37,12 @@ export function useGetInfiniteTopics(
       const { page, totalPages } = lastPage.meta;
       return page < totalPages ? page + 1 : undefined;
     },
-    enabled: hasNextPage, // 다음 페이지가 없으면 query 비활성화
+    enabled: false, // 자동 fetch 비활성화, fetchNextPage()로만 호출
   });
+
+
+  return {
+    ...query,
+    hasNextPage: query.data ? query.hasNextPage : initialHasNextPage,
+  };
 }

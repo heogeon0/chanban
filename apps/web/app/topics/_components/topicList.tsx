@@ -28,20 +28,17 @@ export function TopicList({ tag, initialMeta }: TopicListProps) {
     error,
   } = useGetInfiniteTopics(tag, initialMeta);
 
+
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { entries } = useIntersectionObserver(loadMoreRef, {
     threshold: 0.5,
   });
 
-  const isLoadMoreVisible = entries.some(
-    entry => entry.target === loadMoreRef.current
-  );
-
   useEffect(() => {
-    if (isLoadMoreVisible && hasNextPage && !isFetchingNextPage) {
+    if (entries.length > 0 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [isLoadMoreVisible, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [entries, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (isError) {
     return (
