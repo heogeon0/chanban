@@ -1,4 +1,4 @@
-import { SignupContent } from "./_components/signupContent";
+import { SignupContent } from "./widgets/signupContent";
 
 /**
  * 회원가입 페이지 (전체 페이지 버전)

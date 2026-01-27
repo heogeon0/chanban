@@ -2,7 +2,7 @@
 
 import { BanIcon, ChanIcon, ChongIcon } from "@/shared/ui/icons";
 import { VoteProgressBar } from "@/shared/ui/voteProgressBar";
-import { useGetVoteCount } from "../_queries/useGetVoteCount";
+import { useGetVoteCount } from "@/shared/queries";
 
 interface VoteCountsProps {
   postId: string;

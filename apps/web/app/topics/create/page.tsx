@@ -1,6 +1,6 @@
 "use client";
 
-import { TopicCreateForm } from "../_components/topicCreateForm";
+import { TopicCreateForm } from "../widgets/topicCreateForm";
 
 /**
  * 토픽 작성 페이지

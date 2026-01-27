@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
-import { SignupContent } from "@/app/auth/signup/_components/signupContent";
+import { SignupContent } from "@/app/auth/signup/widgets/signupContent";
 
 /**
  * 회원가입 모달 컴포넌트

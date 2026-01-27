@@ -11,7 +11,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { $getRoot, EditorState } from "lexical";
 import { useState } from "react";
-import { useCreatePost } from "../_queries/useCreatePost";
+import { useCreatePost } from "@/shared/queries";
 
 const TAG_LABELS: Record<PostTag, string> = {
   [PostTag.POLITICS]: "정치",

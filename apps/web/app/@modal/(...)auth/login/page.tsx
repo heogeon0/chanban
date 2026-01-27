@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
-import { LoginContent } from "@/app/auth/login/_components/loginContent";
+import { LoginContent } from "@/app/auth/login/widgets/loginContent";
 
 /**
  * 로그인 모달 컴포넌트

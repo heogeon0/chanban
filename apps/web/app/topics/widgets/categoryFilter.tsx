@@ -1,6 +1,6 @@
 import { PostTag } from "@chanban/shared-types";
 import Link from "next/link";
-import { CATEGORY_FILTERS } from "../_constants";
+import { CATEGORY_FILTERS } from "../domains/constants";
 
 interface CategoryFilterProps {
   selectedTag: PostTag | "all";

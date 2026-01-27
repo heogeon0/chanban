@@ -1,4 +1,4 @@
-import { LoginContent } from "./_components/loginContent";
+import { LoginContent } from "./widgets/loginContent";
 
 /**
  * 로그인 페이지 (전체 페이지 버전)

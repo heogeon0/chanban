@@ -1,7 +1,7 @@
 import { PostResponse, VoteStatus } from "@chanban/shared-types";
 import { MessageSquare, Vote } from "lucide-react";
 import Link from "next/link";
-import { TAG_MAP } from "../_constants";
+import { TAG_MAP } from "../domains/constants";
 
 /**
  * 작성자의 의견에 따른 border 색상 클래스를 반환합니다.

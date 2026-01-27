@@ -2,8 +2,8 @@ import { httpClient } from "@/lib/httpClient";
 import { ApiResponse, PostResponse } from "@chanban/shared-types";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { TopicDetailContent } from "./_components/topicDetailContent";
-import { TAG_MAP } from "../_constants";
+import { TopicDetailContent } from "./widgets/topicDetailContent";
+import { TAG_MAP } from "../domains/constants";
 
 /**
  * 특정 토픽의 상세 정보를 조회합니다.

@@ -1,9 +1,9 @@
 import { PostTag } from "@chanban/shared-types";
-import { CategoryFilter } from "./_components/categoryFilter";
-import ListToggle from "./_components/listToggle";
-import { TopicCard } from "./_components/topicCard";
-import { TopicList } from "./_components/topicList";
-import { topicDomains } from "./_domains";
+import { CategoryFilter } from "./widgets/categoryFilter";
+import ListToggle from "./widgets/listToggle";
+import { TopicCard } from "./widgets/topicCard";
+import { TopicList } from "./widgets/topicList";
+import { topicDomains } from "./domains";
 
 
 

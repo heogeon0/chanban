@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { ChevronDown, Heart, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useGetReplies } from "../_queries/useGetReplies";
+import { useGetReplies } from "@/shared/queries";
 import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
 import { ReplyComment } from "./replyComment";
 import { CommentForm } from "./commentForm";

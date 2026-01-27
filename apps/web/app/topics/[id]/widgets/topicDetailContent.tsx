@@ -3,11 +3,13 @@
 import { VoteStatus } from "@chanban/shared-types";
 import { MessageSquare } from "lucide-react";
 import { useState } from "react";
-import { useCommentLike } from "../_queries/useCommentLike";
-import { useGetComments } from "../_queries/useGetComments";
-import { useGetMyVote } from "../_queries/useGetMyVote";
-import { useGetVoteCount } from "../_queries/useGetVoteCount";
-import { usePostVote } from "../_queries/usePostVote";
+import {
+  useCommentLike,
+  useGetComments,
+  useGetMyVote,
+  useGetVoteCount,
+  usePostVote,
+} from "@/shared/queries";
 import { CommentForm } from "./commentForm";
 import { CommentList } from "./commentList";
 import { VoteButtons } from "./voteButtons";
