@@ -2,7 +2,7 @@ import { httpClient } from "@/lib/httpClient";
 import { ApiResponse, PostResponse } from "@chanban/shared-types";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { TopicDetailContent } from "../_components/topicDetailContent";
+import { TopicDetailContent } from "./_components/topicDetailContent";
 import { TAG_MAP } from "../_constants";
 
 /**

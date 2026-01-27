@@ -6,6 +6,7 @@ import { Button } from '@workspace/ui/components/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@workspace/ui/components/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { RETURN_URL_KEY } from '@/lib/auth/kakao';
 
 /**
  * 사용자 메뉴 컴포넌트
@@ -45,10 +46,19 @@ export function UserMenu() {
     router.push('/auth/login');
   };
 
+  /**
+   * 로그인 링크 클릭 시 현재 URL 저장
+   */
+  const handleLoginClick = () => {
+    localStorage.setItem(RETURN_URL_KEY, window.location.href);
+  };
+
   if (!isAuthenticated) {
     return (
       <Button asChild size="sm" variant="outline">
-        <Link href="/auth/login">로그인</Link>
+        <Link href="/auth/login" onClick={handleLoginClick}>
+          로그인
+        </Link>
       </Button>
     );
   }

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { clearTokens, getAccessToken, getRefreshToken } from '@/lib/auth/token';
 import { User } from '@/lib/auth/types';
-import { getAccessToken, getRefreshToken, clearTokens } from '@/lib/auth/token';
 import { httpClient } from '@/lib/httpClient';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
   user: User | null;
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const userData = await httpClient.get<User>('/auth/me');
+        const userData = await httpClient.get<User>('/api/auth/me');
         setUser(userData);
       } catch (error) {
         console.error('Failed to load user:', error);

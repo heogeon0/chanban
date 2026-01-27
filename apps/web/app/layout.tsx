@@ -7,8 +7,10 @@ import Link from "next/link";
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -43,6 +45,9 @@ export default function RootLayout({
 
           {/* 메인 콘텐츠 */}
           <main className="flex-1 flex flex-col">{children}</main>
+
+          {/* 모달 슬롯 */}
+          {modal}
         </Providers>
       </body>
     </html>
