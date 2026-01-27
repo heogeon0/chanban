@@ -4,7 +4,7 @@ import { setTokens } from "@/lib/auth/token";
 import { httpClient } from "@/lib/httpClient";
 import { useAuth } from "@/shared/contexts/auth-context";
 import { ApiResponse } from "@chanban/shared-types";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@/shared/ui/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

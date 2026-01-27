@@ -1,6 +1,6 @@
 import { UserMenu } from "@/shared/components/user-menu";
 import { Providers } from "@/shared/providers";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@/shared/ui/button";
 import "@/styles/globals.css";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";

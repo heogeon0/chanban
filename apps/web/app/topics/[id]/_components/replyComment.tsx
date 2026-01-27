@@ -1,8 +1,8 @@
 "use client";
 
 import { CommentReplyResponse } from "@chanban/shared-types";
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar";
-import { Button } from "@workspace/ui/components/button";
+import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { Button } from "@/shared/ui/button";
 import { Heart } from "lucide-react";
 import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
 

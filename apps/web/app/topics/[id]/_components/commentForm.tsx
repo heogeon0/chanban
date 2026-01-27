@@ -6,7 +6,7 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
-import { Button } from "@workspace/ui/components/button";
+import { Button } from "@/shared/ui/button";
 import { $getRoot, EditorState } from "lexical";
 import { useState, useEffect } from "react";
 import { usePostComment } from "../_queries/usePostComment";

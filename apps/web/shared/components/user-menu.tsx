@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/auth-context';
-import { Button } from '@workspace/ui/components/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@workspace/ui/components/avatar';
+import { Button } from '@/shared/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { RETURN_URL_KEY } from '@/lib/auth/kakao';

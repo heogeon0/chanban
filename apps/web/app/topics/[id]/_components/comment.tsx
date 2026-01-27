@@ -1,8 +1,8 @@
 "use client";
 
 import { CommentReplyResponse, CommentResponse } from "@chanban/shared-types";
-import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar";
-import { Button } from "@workspace/ui/components/button";
+import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { Button } from "@/shared/ui/button";
 import { ChevronDown, Heart, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useGetReplies } from "../_queries/useGetReplies";

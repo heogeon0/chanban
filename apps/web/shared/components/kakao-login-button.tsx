@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@workspace/ui/components/button';
+import { Button } from '@/shared/ui/button';
 import { useKakaoLogin } from '@/hooks/use-kakao-login';
 
 export function KakaoLoginButton() {
