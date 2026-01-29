@@ -7,8 +7,10 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { Button } from "@/shared/ui/button";
-import { $getRoot, EditorState } from "lexical";
+import { useAuth } from "@/shared/contexts/auth-context";
+import { $getRoot, EditorState, FOCUS_COMMAND, COMMAND_PRIORITY_LOW } from "lexical";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { usePostComment } from "../features";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
@@ -32,6 +34,32 @@ function ClearEditorPlugin({ clearTrigger }: { clearTrigger: number }) {
       });
     }
   }, [clearTrigger, editor]);
+
+  return null;
+}
+
+/**
+ * 에디터 포커스 시 로그인 체크를 위한 플러그인 컴포넌트
+ * 비로그인 상태에서 포커스 시 로그인 모달을 표시합니다.
+ */
+function AuthCheckOnFocusPlugin() {
+  const [editor] = useLexicalComposerContext();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    return editor.registerCommand(
+      FOCUS_COMMAND,
+      () => {
+        if (!isAuthenticated) {
+          router.push("/auth/login");
+          return true;
+        }
+        return false;
+      },
+      COMMAND_PRIORITY_LOW
+    );
+  }, [editor, isAuthenticated, router]);
 
   return null;
 }
@@ -131,6 +159,7 @@ export function CommentForm({
           <HistoryPlugin />
           <OnChangePlugin onChange={handleEditorChange} />
           <ClearEditorPlugin clearTrigger={clearTrigger} />
+          <AuthCheckOnFocusPlugin />
         </div>
       </LexicalComposer>
 

@@ -5,6 +5,9 @@ import { MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { commentQueries, voteQueries } from "@/shared/queries";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/shared/contexts/auth-context";
+import { Button } from "@/shared/ui/button";
+import Link from "next/link";
 import { useCommentLike, usePostVote } from "../features";
 import { CommentForm } from "./commentForm";
 import { CommentList } from "./commentList";
@@ -23,6 +26,7 @@ interface TopicDetailContentProps {
  */
 export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
   const [showCommentForm, setShowCommentForm] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const { mutate: postVote, isPending } = usePostVote();
   const { data: comments = [], isLoading: isLoadingComments } = useQuery({
@@ -122,12 +126,53 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
         </div>
 
         {/* 댓글 목록 */}
-        <CommentList
-          comments={comments}
-          topicId={topicId}
-          onLike={handleLike}
-          isLoading={isLoadingComments}
-        />
+        {isAuthenticated ? (
+          <CommentList
+            comments={comments}
+            topicId={topicId}
+            onLike={handleLike}
+            isLoading={isLoadingComments}
+          />
+        ) : (
+          <div className="relative">
+            {/* 블러 처리된 스켈레톤 UI */}
+            <div className="blur-sm pointer-events-none select-none">
+              <div className="space-y-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="w-10 h-10 rounded-full bg-muted animate-pulse flex-shrink-0" />
+                    <div className="flex-1 space-y-3">
+                      <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-4 bg-muted rounded w-20 animate-pulse" />
+                          <div className="h-3 bg-muted rounded w-16 animate-pulse" />
+                        </div>
+                        <div className="h-4 bg-muted rounded w-full animate-pulse" />
+                        <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+                      </div>
+                      <div className="flex gap-4 px-2">
+                        <div className="h-6 bg-muted rounded w-16 animate-pulse" />
+                        <div className="h-6 bg-muted rounded w-12 animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 로그인 유도 오버레이 */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center space-y-4 p-8 bg-card border border-border rounded-2xl shadow-lg">
+                <p className="text-lg font-medium text-foreground">
+                  로그인해서 다른 사람들의 의견을 확인해보세요
+                </p>
+                <Button asChild size="lg">
+                  <Link href="/auth/login">로그인</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );
