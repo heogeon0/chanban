@@ -3,7 +3,7 @@
 import useIntersectionObserver from "@/hooks/useIntersectionObserver";
 import { PaginationMeta, PostTag } from "@chanban/shared-types";
 import { useEffect, useRef } from "react";
-import { useGetInfiniteTopics } from "@/shared/queries";
+import { useGetInfiniteTopics } from "../features";
 import { TopicCard } from "./topicCard";
 
 interface TopicListProps {

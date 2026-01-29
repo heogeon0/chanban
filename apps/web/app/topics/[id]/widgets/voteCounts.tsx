@@ -2,7 +2,8 @@
 
 import { BanIcon, ChanIcon, ChongIcon } from "@/shared/ui/icons";
 import { VoteProgressBar } from "@/shared/ui/voteProgressBar";
-import { useGetVoteCount } from "@/shared/queries";
+import { voteQueries } from "@/shared/queries";
+import { useQuery } from "@tanstack/react-query";
 
 interface VoteCountsProps {
   postId: string;
@@ -15,7 +16,7 @@ interface VoteCountsProps {
  * @param postId - 게시물 ID
  */
 export function VoteCounts({ postId }: VoteCountsProps) {
-  const { data: voteCount, isLoading } = useGetVoteCount(postId);
+  const { data: voteCount, isLoading } = useQuery(voteQueries.count(postId));
 
   console.log(voteCount, 'voteCount');
 

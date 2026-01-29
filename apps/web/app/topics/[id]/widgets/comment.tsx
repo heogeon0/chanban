@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { ChevronDown, Heart, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useGetReplies } from "@/shared/queries";
+import { commentQueries } from "@/shared/queries";
+import { useQuery } from "@tanstack/react-query";
 import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
 import { ReplyComment } from "./replyComment";
 import { CommentForm } from "./commentForm";
@@ -37,10 +38,9 @@ export function Comment({ comment, topicId, onLike }: CommentProps) {
   const latestVote = comment.user.voteHistory[0]?.toStatus;
 
   // 답글 더보기를 위한 쿼리
-  const { data: moreReplies, isLoading: isLoadingMoreReplies } = useGetReplies({
-    commentId: comment.id,
-    page: currentPage,
-    enabled: loadMoreEnabled,
+  const { data: moreReplies, isLoading: isLoadingMoreReplies } = useQuery({
+    ...commentQueries.replies(comment.id, currentPage),
+    enabled: loadMoreEnabled && !!comment.id,
   });
 
   // 추가 답글 로드 완료 시 상태 업데이트 (중복 제거)

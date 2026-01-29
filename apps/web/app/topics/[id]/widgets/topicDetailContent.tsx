@@ -3,13 +3,9 @@
 import { VoteStatus } from "@chanban/shared-types";
 import { MessageSquare } from "lucide-react";
 import { useState } from "react";
-import {
-  useCommentLike,
-  useGetComments,
-  useGetMyVote,
-  useGetVoteCount,
-  usePostVote,
-} from "@/shared/queries";
+import { commentQueries, voteQueries } from "@/shared/queries";
+import { useQuery } from "@tanstack/react-query";
+import { useCommentLike, usePostVote } from "../features";
 import { CommentForm } from "./commentForm";
 import { CommentList } from "./commentList";
 import { VoteButtons } from "./voteButtons";
@@ -29,10 +25,12 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
   const [showCommentForm, setShowCommentForm] = useState(false);
 
   const { mutate: postVote, isPending } = usePostVote();
-  const { data: comments = [], isLoading: isLoadingComments } =
-    useGetComments(topicId);
-  const { data: voteCount } = useGetVoteCount(topicId);
-  const { data: myVote } = useGetMyVote(topicId);
+  const { data: comments = [], isLoading: isLoadingComments } = useQuery({
+    ...commentQueries.list(topicId),
+    enabled: !!topicId,
+  });
+  const { data: voteCount } = useQuery(voteQueries.count(topicId));
+  const { data: myVote } = useQuery(voteQueries.my(topicId));
   const { mutate: likeComment } = useCommentLike();
 
   /**

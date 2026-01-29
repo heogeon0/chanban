@@ -9,7 +9,7 @@ import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { Button } from "@/shared/ui/button";
 import { $getRoot, EditorState } from "lexical";
 import { useState, useEffect } from "react";
-import { usePostComment } from "@/shared/queries";
+import { usePostComment } from "../features";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 interface CommentFormProps {
