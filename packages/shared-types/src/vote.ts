@@ -4,9 +4,10 @@ export interface VoteResponse {
   id: string;
   postId: string;
   userId: string;
-  status: VoteStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  currentStatus: VoteStatus;
+  changeCount: number;
+  firstVotedAt: Date;
+  lastChangedAt: Date | null;
 }
 
 export interface CreateVoteDto {

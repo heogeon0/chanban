@@ -35,9 +35,10 @@ export const voteQueries = {
   count: (postId: string) => ({
     queryKey: queryKeys.vote.count(postId),
     queryFn: async () => {
-      return await httpClient
-        .get<ApiResponse<VoteCountResponse>>(`/api/posts/${postId}/vote-count`)
-        .then((response) => response.data);
+      const response = await httpClient.get<ApiResponse<VoteCountResponse>>(
+        `/api/posts/${postId}/vote-count`
+      );
+      return response.data;
     },
     staleTime: 0,
     refetchOnWindowFocus: true,
@@ -52,9 +53,10 @@ export const voteMutations = {
    * 투표 생성/업데이트 API 호출
    */
   create: async (createVoteDto: CreateVoteDto) => {
-    return await httpClient.post<VoteResponse, CreateVoteDto>(
+    const response = await httpClient.post<ApiResponse<VoteResponse>, CreateVoteDto>(
       "/api/votes",
       createVoteDto
     );
+    return response.data;
   },
 };

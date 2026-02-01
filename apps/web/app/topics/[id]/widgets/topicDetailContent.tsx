@@ -1,13 +1,13 @@
 "use client";
 
-import { VoteStatus } from "@chanban/shared-types";
-import { MessageSquare } from "lucide-react";
-import { useState } from "react";
-import { commentQueries, voteQueries } from "@/shared/queries";
-import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/shared/contexts/auth-context";
+import { commentQueries, voteQueries } from "@/shared/queries";
 import { Button } from "@/shared/ui/button";
+import { VoteStatus } from "@chanban/shared-types";
+import { useQuery } from "@tanstack/react-query";
+import { MessageSquare } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { useCommentLike, usePostVote } from "../features";
 import { CommentForm } from "./commentForm";
 import { CommentList } from "./commentList";
@@ -55,6 +55,8 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
     );
   };
 
+  console.log(myVote, '여기');
+
   /**
    * 좋아요 버튼 클릭 핸들러
    * 댓글에 좋아요를 추가하거나 취소합니다.
@@ -82,7 +84,7 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
             onVote={handleVote}
             isPending={isPending}
             onShowCommentForm={() => setShowCommentForm(true)}
-            selectedStatus={myVote?.status ?? null}
+            selectedStatus={myVote?.currentStatus ?? null}
           />
         </div>
 

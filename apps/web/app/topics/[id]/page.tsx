@@ -2,8 +2,8 @@ import { httpClient } from "@/lib/httpClient";
 import { ApiResponse, PostResponse } from "@chanban/shared-types";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { TopicDetailContent } from "./widgets/topicDetailContent";
 import { TAG_MAP } from "../domains/constants";
+import { TopicDetailContent } from "./widgets/topicDetailContent";
 
 /**
  * 특정 토픽의 상세 정보를 조회합니다.
@@ -54,7 +54,6 @@ export default async function TopicDetailPage(props: {
             href="/topics"
             className="text-muted-foreground text-sm font-medium hover:underline"
           >
-            홈
           </Link>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
           <Link
