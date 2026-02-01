@@ -28,7 +28,7 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
   const [showCommentForm, setShowCommentForm] = useState(false);
   const { isAuthenticated } = useAuth();
 
-  const { mutate: postVote, isPending } = usePostVote();
+  const { mutate: postVote } = usePostVote();
   const { data: comments = [], isLoading: isLoadingComments } = useQuery({
     ...commentQueries.list(topicId),
     enabled: !!topicId,
@@ -55,8 +55,6 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
     );
   };
 
-  console.log(myVote, '여기');
-
   /**
    * 좋아요 버튼 클릭 핸들러
    * 댓글에 좋아요를 추가하거나 취소합니다.
@@ -82,7 +80,6 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
           <VoteButtons
             postId={topicId}
             onVote={handleVote}
-            isPending={isPending}
             onShowCommentForm={() => setShowCommentForm(true)}
             selectedStatus={myVote?.currentStatus ?? null}
           />
