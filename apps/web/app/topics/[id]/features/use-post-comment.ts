@@ -1,5 +1,5 @@
 import { isHttpError } from "@/lib/httpClient";
-import { queryKeys, commentMutations } from "@/shared/queries";
+import { commentMutations } from "@/shared/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -17,8 +17,11 @@ export function usePostComment() {
   return useMutation({
     mutationFn: commentMutations.create,
     onSuccess: (_, variables) => {
+      // 모든 정렬 타입의 댓글 목록을 무효화 (popular, latest 모두)
       queryClient.invalidateQueries({
-        queryKey: queryKeys.comment.list(variables.postId),
+        predicate: (query) =>
+          query.queryKey[0] === "comments" &&
+          query.queryKey[1] === variables.postId,
       });
 
       if (variables.parentId) {
