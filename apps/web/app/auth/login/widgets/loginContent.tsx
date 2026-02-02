@@ -41,7 +41,7 @@ export function LoginContent({ onSuccess }: LoginContentProps) {
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold mb-2">찬반</h1>
-        <p className="text-muted-foreground">로그인하고 주제에 투표해보세요</p>
+        <p className="text-muted-foreground">카카오로 3초만에 시작하세요</p>
       </div>
 
       <div className="space-y-4">

@@ -54,6 +54,7 @@ export default async function TopicDetailPage(props: {
             href="/topics"
             className="text-muted-foreground text-sm font-medium hover:underline"
           >
+            홈
           </Link>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
           <Link

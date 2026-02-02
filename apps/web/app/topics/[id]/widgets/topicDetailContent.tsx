@@ -3,7 +3,7 @@
 import { useAuth } from "@/shared/contexts/auth-context";
 import { commentQueries, voteQueries } from "@/shared/queries";
 import { Button } from "@/shared/ui/button";
-import { VoteStatus } from "@chanban/shared-types";
+import { CommentSortType, VoteStatus } from "@chanban/shared-types";
 import { useQuery } from "@tanstack/react-query";
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
@@ -26,11 +26,12 @@ interface TopicDetailContentProps {
  */
 export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
   const [showCommentForm, setShowCommentForm] = useState(false);
+  const [sortType, setSortType] = useState<CommentSortType>("popular");
   const { isAuthenticated } = useAuth();
 
   const { mutate: postVote } = usePostVote();
   const { data: comments = [], isLoading: isLoadingComments } = useQuery({
-    ...commentQueries.list(topicId),
+    ...commentQueries.list(topicId, sortType),
     enabled: !!topicId,
   });
   const { data: voteCount } = useQuery(voteQueries.count(topicId));
@@ -104,10 +105,26 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
             토론 ({comments.length})
           </h2>
           <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
-            <button className="px-3 py-1 text-xs font-bold bg-card rounded shadow-sm">
+            <button
+              type="button"
+              onClick={() => setSortType("popular")}
+              className={`px-3 py-1 text-xs font-bold rounded transition-all ${
+                sortType === "popular"
+                  ? "bg-card shadow-sm"
+                  : "text-muted-foreground"
+              }`}
+            >
               인기
             </button>
-            <button className="px-3 py-1 text-xs font-bold text-muted-foreground">
+            <button
+              type="button"
+              onClick={() => setSortType("latest")}
+              className={`px-3 py-1 text-xs font-bold rounded transition-all ${
+                sortType === "latest"
+                  ? "bg-card shadow-sm"
+                  : "text-muted-foreground"
+              }`}
+            >
               최신
             </button>
           </div>

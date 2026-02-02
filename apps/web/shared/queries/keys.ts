@@ -1,4 +1,4 @@
-import { PostTag } from "@chanban/shared-types";
+import { CommentSortType, PostTag } from "@chanban/shared-types";
 
 /**
  * 쿼리 키 정의
@@ -12,7 +12,8 @@ export const queryKeys = {
   },
   comment: {
     all: ["comments"] as const,
-    list: (postId: string) => ["comments", postId] as const,
+    list: (postId: string, sort: CommentSortType = "popular") =>
+      ["comments", postId, sort] as const,
     replies: (commentId: string, page: number) => ["replies", commentId, page] as const,
   },
   vote: {

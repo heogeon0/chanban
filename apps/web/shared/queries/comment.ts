@@ -2,6 +2,7 @@ import { httpClient } from "@/lib/httpClient";
 import {
   CommentReplyResponse,
   CommentResponse,
+  CommentSortType,
   PaginatedResponse,
 } from "@chanban/shared-types";
 import { queryKeys } from "./keys";
@@ -14,12 +15,15 @@ export const commentQueries = {
   /**
    * 댓글 목록 조회 쿼리 옵션
    * @param postId - 게시글 ID
+   * @param sort - 정렬 방식 (popular: 인기순, latest: 최신순)
    */
-  list: (postId: string) => ({
-    queryKey: queryKeys.comment.list(postId),
+  list: (postId: string, sort: CommentSortType = "popular") => ({
+    queryKey: queryKeys.comment.list(postId, sort),
     queryFn: async () => {
       return await httpClient
-        .get<PaginatedResponse<CommentResponse>>(`/api/comments/posts/${postId}`)
+        .get<PaginatedResponse<CommentResponse>>(`/api/comments/posts/${postId}`, {
+          params: { sort },
+        })
         .then((response) => response.data);
     },
   }),
