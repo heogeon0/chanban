@@ -1,16 +1,17 @@
 "use client";
 
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { PostTag, TAGS, VoteStatus } from "@chanban/shared-types";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
-import { PostTag, VoteStatus, TAGS } from "@chanban/shared-types";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
 import { $getRoot, EditorState } from "lexical";
 import { useState } from "react";
+import { VoteButtons } from "../[id]/widgets/voteButtons";
 import { useCreatePost } from "../features";
 
 const TAG_LABELS: Record<PostTag, string> = {
@@ -184,78 +185,11 @@ export function TopicCreateForm() {
         </div>
 
         {showCreatorOpinion && (
-          <div className="space-y-2 pl-6">
-            <label className="text-label-default block">나의 의견</label>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setCreatorOpinion(VoteStatus.AGREE)}
-                className={`flex-1 p-3 rounded-lg border-2 transition-all ${
-                  creatorOpinion === VoteStatus.AGREE
-                    ? "border-opinion-agree bg-opinion-agree/10"
-                    : "border-border bg-background"
-                }`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-2xl">👍</span>
-                  <span
-                    className={`text-label-default ${
-                      creatorOpinion === VoteStatus.AGREE
-                        ? "text-opinion-agree font-semibold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    찬성
-                  </span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCreatorOpinion(VoteStatus.NEUTRAL)}
-                className={`flex-1 p-3 rounded-lg border-2 transition-all ${
-                  creatorOpinion === VoteStatus.NEUTRAL
-                    ? "border-opinion-neutral bg-opinion-neutral/10"
-                    : "border-border bg-background"
-                }`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-2xl">🤔</span>
-                  <span
-                    className={`text-label-default ${
-                      creatorOpinion === VoteStatus.NEUTRAL
-                        ? "text-opinion-neutral font-semibold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    중립
-                  </span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCreatorOpinion(VoteStatus.DISAGREE)}
-                className={`flex-1 p-3 rounded-lg border-2 transition-all ${
-                  creatorOpinion === VoteStatus.DISAGREE
-                    ? "border-opinion-disagree bg-opinion-disagree/10"
-                    : "border-border bg-background"
-                }`}
-              >
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-2xl">👎</span>
-                  <span
-                    className={`text-label-default ${
-                      creatorOpinion === VoteStatus.DISAGREE
-                        ? "text-opinion-disagree font-semibold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    반대
-                  </span>
-                </div>
-              </button>
-            </div>
+          <div className="space-y-2 pl-6 pt-4">
+            <VoteButtons
+              onVote={setCreatorOpinion}
+              selectedStatus={creatorOpinion}
+            />
           </div>
         )}
       </div>

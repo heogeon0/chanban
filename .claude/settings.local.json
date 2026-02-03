@@ -22,7 +22,8 @@
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm --filter web tsc:*)",
       "Bash(npx tsc:*)",
-      "Bash(pnpm tsc:*)"
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm --filter @chanban/shared-types build:*)"
     ]
   }
 }

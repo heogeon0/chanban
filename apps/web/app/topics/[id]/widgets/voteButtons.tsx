@@ -4,7 +4,6 @@ import { VoteStatus } from "@chanban/shared-types";
 import { Scale, ThumbsDown, ThumbsUp } from "lucide-react";
 
 interface VoteButtonsProps {
-  postId: string;
   onVote: (status: VoteStatus) => void;
   onShowCommentForm?: () => void;
   selectedStatus?: VoteStatus | null;
@@ -12,9 +11,7 @@ interface VoteButtonsProps {
 
 /**
  * 투표 버튼 컴포넌트 (찬성/반대/중립)
- * 낙관적 업데이트가 적용되어 즉시 UI가 반영됩니다.
  *
- * @param postId - 투표할 포스트 ID
  * @param onVote - 투표 시 호출될 콜백 함수
  * @param onShowCommentForm - 투표 후 댓글 폼을 표시할 때 호출될 콜백
  * @param selectedStatus - 현재 선택된 투표 상태

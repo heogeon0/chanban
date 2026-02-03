@@ -1,8 +1,7 @@
+import { CreateTopicButton } from "@/shared/components/create-topic-button";
 import { UserMenu } from "@/shared/components/user-menu";
 import { Providers } from "@/shared/providers";
-import { Button } from "@/shared/ui/button";
 import "@/styles/globals.css";
-import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 
 export default function RootLayout({
@@ -32,15 +31,11 @@ export default function RootLayout({
 
               {/* 네비게이션 & 액션 */}
               <div className="flex items-center gap-4">
-                <Button asChild size="sm" className="gap-2">
-                  <Link href="/topics/create">
-                    <PlusCircle className="w-4 h-4" />
-                    <span className="hidden desktop:inline">새 토론</span>
-                  </Link>
-                </Button>
+                <CreateTopicButton />
                 <UserMenu />
               </div>
             </div>
+
           </header>
 
           {/* 메인 콘텐츠 */}

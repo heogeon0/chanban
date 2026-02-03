@@ -80,7 +80,6 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
         {/* 투표 버튼 */}
         <div className="mb-10">
           <VoteButtons
-            postId={topicId}
             onVote={handleVote}
             onShowCommentForm={() => setShowCommentForm(true)}
             selectedStatus={myVote?.currentStatus ?? null}

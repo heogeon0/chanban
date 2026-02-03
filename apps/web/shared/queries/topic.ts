@@ -79,6 +79,5 @@ export interface PostCreateResponse {
   content: string;
   tag: PostTag;
   showCreatorOpinion: boolean;
-  creatorOpinion: VoteStatus | null;
   createdAt: Date;
 }

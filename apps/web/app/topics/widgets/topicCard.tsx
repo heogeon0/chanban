@@ -78,7 +78,7 @@ export function TopicCard({ post }: TopicCardProps) {
 
   const tagInfo = TAG_MAP[post.tag] || { name: post.tag, variant: "default" };
   const borderColorClass = getOpinionBorderClass(
-    post.creatorOpinion,
+    post.creatorVote ?? null,
     post.showCreatorOpinion
   );
 

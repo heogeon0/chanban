@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../contexts/auth-context';
-import { Button } from '@/shared/ui/button';
+import { RETURN_URL_KEY } from '@/lib/auth/kakao';
 import { UserAvatar } from '@/shared/ui/avatar';
+import { Button } from '@/shared/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { RETURN_URL_KEY } from '@/lib/auth/kakao';
+import { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../contexts/auth-context';
 
 /**
  * 사용자 메뉴 컴포넌트
@@ -41,7 +41,7 @@ export function UserMenu() {
    * 로그아웃 처리
    */
   const handleLogout = async () => {
-    await logout();
+    logout();
     setIsOpen(false);
     router.push('/auth/login');
   };
