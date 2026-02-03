@@ -17,11 +17,8 @@ export function usePostComment() {
   return useMutation({
     mutationFn: commentMutations.create,
     onSuccess: (_, variables) => {
-      // 모든 정렬 타입의 댓글 목록을 무효화 (popular, latest 모두)
       queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0] === "comments" &&
-          query.queryKey[1] === variables.postId,
+        queryKey: ["comments", variables.postId],
       });
 
       if (variables.parentId) {

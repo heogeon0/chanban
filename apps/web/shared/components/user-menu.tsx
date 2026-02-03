@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/auth-context';
 import { Button } from '@/shared/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/shared/ui/avatar';
+import { UserAvatar } from '@/shared/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { RETURN_URL_KEY } from '@/lib/auth/kakao';
@@ -63,13 +63,6 @@ export function UserMenu() {
     );
   }
 
-  /**
-   * 닉네임의 첫 글자를 추출 (프로필 이미지 fallback용)
-   */
-  const getInitial = (nickname: string) => {
-    return nickname.charAt(0).toUpperCase();
-  };
-
   return (
     <div className="relative" ref={dropdownRef}>
       {/* 프로필 사진 버튼 */}
@@ -78,17 +71,7 @@ export function UserMenu() {
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         aria-label="사용자 메뉴"
       >
-        <Avatar className="w-8 h-8 cursor-pointer">
-          {user?.profileImageUrl && (
-            <AvatarImage
-              src={user.profileImageUrl}
-              alt={user.nickname}
-            />
-          )}
-          <AvatarFallback className="bg-blue-500 text-white text-sm">
-            {user?.nickname ? getInitial(user.nickname) : '?'}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar user={user} size="sm" className="cursor-pointer" />
       </button>
 
       {/* 드롭다운 메뉴 */}

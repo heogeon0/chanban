@@ -510,7 +510,14 @@ export class CommentService {
       });
 
       await manager.save(like);
-      await manager.increment(Comment, { id: commentId }, 'likeCount', 1);
+
+      // likeCount만 증가 (updatedAt 변경 방지를 위해 raw query 사용)
+      await manager
+        .createQueryBuilder()
+        .update(Comment)
+        .set({ likeCount: () => '"likeCount" + 1' })
+        .where('id = :id', { id: commentId })
+        .execute();
     });
   }
 
@@ -534,9 +541,14 @@ export class CommentService {
         userId: userId,
       });
 
-      // 삭제된 좋아요가 있으면 카운트 감소
+      // 삭제된 좋아요가 있으면 카운트 감소 (updatedAt 변경 방지를 위해 raw query 사용)
       if (result.affected && result.affected > 0) {
-        await manager.decrement(Comment, { id: commentId }, 'likeCount', 1);
+        await manager
+          .createQueryBuilder()
+          .update(Comment)
+          .set({ likeCount: () => '"likeCount" - 1' })
+          .where('id = :id', { id: commentId })
+          .execute();
       }
     });
   }

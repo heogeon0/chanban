@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/shared/contexts/auth-context";
 import { commentQueries, voteQueries } from "@/shared/queries";
+import { UserAvatar } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { CommentSortType, VoteStatus } from "@chanban/shared-types";
 import { useQuery } from "@tanstack/react-query";
@@ -27,7 +28,7 @@ interface TopicDetailContentProps {
 export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [sortType, setSortType] = useState<CommentSortType>("popular");
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const { mutate: postVote } = usePostVote();
   const { data: comments = [], isLoading: isLoadingComments } = useQuery({
@@ -132,7 +133,7 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
 
         {/* 댓글 작성 폼 */}
         <div className="flex gap-4">
-          <div className="w-10 h-10 rounded-full bg-muted flex-shrink-0" />
+          <UserAvatar user={user} size="md" />
           <div className="flex-1">
             <CommentForm
               topicId={topicId}

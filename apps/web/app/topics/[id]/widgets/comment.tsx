@@ -1,7 +1,7 @@
 "use client";
 
 import { CommentReplyResponse, CommentResponse } from "@chanban/shared-types";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { UserAvatar } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { ChevronDown, Heart, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -163,11 +163,7 @@ export function Comment({ comment, topicId, onLike }: CommentProps) {
       {/* 원댓글 */}
       <div className="flex gap-4">
         {/* 아바타 */}
-        <Avatar className="flex-shrink-0 w-10 h-10">
-          <AvatarFallback className="bg-primary text-primary-foreground font-bold">
-            {comment.user.nickname.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar user={comment.user} size="md" />
 
         <div className="flex-1">
           {/* 댓글 카드 */}

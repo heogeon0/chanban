@@ -1,7 +1,7 @@
 "use client";
 
 import { CommentReplyResponse } from "@chanban/shared-types";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import { UserAvatar } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { Heart } from "lucide-react";
 import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
@@ -42,11 +42,7 @@ export function ReplyComment({ reply, onLike }: ReplyCommentProps) {
   return (
     <div className="flex gap-3">
       {/* 아바타 */}
-      <Avatar className="flex-shrink-0 w-8 h-8">
-        <AvatarFallback className="bg-emerald-500 text-white text-xs font-bold">
-          {reply.user.nickname.slice(0, 2).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+      <UserAvatar user={reply.user} size="sm" />
 
       <div className="flex-1">
         {/* 답글 카드 */}
