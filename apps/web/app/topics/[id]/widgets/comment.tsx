@@ -35,7 +35,7 @@ export function Comment({ comment, topicId, onLike }: CommentProps) {
 
   const isDeleted = comment.deletedAt !== null;
   const hasReplies = comment.replies && comment.replies.length > 0;
-  const latestVote = comment.user.voteHistory[0]?.toStatus;
+  const latestVote = comment.user.voteHistory.at(-1)?.toStatus;
 
   // 답글 더보기를 위한 쿼리
   const { data: moreReplies, isLoading: isLoadingMoreReplies } = useQuery({

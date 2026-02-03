@@ -21,7 +21,7 @@ interface ReplyCommentProps {
  */
 export function ReplyComment({ reply, onLike }: ReplyCommentProps) {
   const isDeleted = reply.deletedAt !== null;
-  const latestVote = reply.user.voteHistory[0]?.toStatus;
+  const latestVote = reply.user.voteHistory.at(-1)?.toStatus;
 
   /**
    * 좋아요 버튼 클릭 핸들러
