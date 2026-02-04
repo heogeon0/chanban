@@ -95,7 +95,7 @@ class HttpClient {
           try {
             // 토큰 갱신 시도
             const refreshResponse = await this.post<{ accessToken: string }>(
-              '/auth/refresh',
+              '/api/auth/refresh',
               { refreshToken },
               { skipAuth: true }
             );
