@@ -49,7 +49,7 @@ export default async function TopicsPage({
           </div>
           {/* 무한스크롤 */}
           <TopicList
-            tag={selectedTag === "all" ? "hot" : selectedTag}
+            tag={selectedTag === "all" ? (selectedSort === "latest" ? "recent" : "hot") : selectedTag}
             initialMeta={initialPosts.meta}
           />
         </div>

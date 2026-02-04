@@ -26,7 +26,7 @@ export default function RootLayout({
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
                   <span className="text-sm font-black">찬</span>
                 </div>
-                <span className="hidden desktop:inline">찬반</span>
+                <span>찬반</span>
               </Link>
 
               {/* 네비게이션 & 액션 */}

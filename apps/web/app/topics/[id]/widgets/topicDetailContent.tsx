@@ -17,6 +17,7 @@ import { VoteDistributionBar } from "./voteDistributionBar";
 
 interface TopicDetailContentProps {
   topicId: string;
+  commentCount: number;
 }
 
 /**
@@ -24,9 +25,9 @@ interface TopicDetailContentProps {
  * 투표 후 댓글 작성 폼을 표시하는 로직을 포함
  *
  * @param topicId - 토픽 ID
+ * @param commentCount - 서버에서 받아온 전체 댓글 수
  */
-export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
-  const [showCommentForm, setShowCommentForm] = useState(false);
+export function TopicDetailContent({ topicId, commentCount }: TopicDetailContentProps) {
   const [sortType, setSortType] = useState<CommentSortType>("popular");
   const { isAuthenticated, user } = useAuth();
 
@@ -49,11 +50,6 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
         postId: topicId,
         status,
       },
-      {
-        onSuccess: () => {
-          setShowCommentForm(true);
-        },
-      }
     );
   };
 
@@ -81,7 +77,6 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
         <div className="mb-10">
           <VoteButtons
             onVote={handleVote}
-            onShowCommentForm={() => setShowCommentForm(true)}
             selectedStatus={myVote?.currentStatus ?? null}
           />
         </div>
@@ -102,7 +97,7 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <MessageSquare className="w-6 h-6" />
-            토론 ({comments.length})
+            토론 ({commentCount})
           </h2>
           <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
             <button
@@ -130,16 +125,17 @@ export function TopicDetailContent({ topicId }: TopicDetailContentProps) {
           </div>
         </div>
 
-        {/* 댓글 작성 폼 */}
-        <div className="flex gap-4">
-          <UserAvatar user={user} size="md" />
-          <div className="flex-1">
-            <CommentForm
-              topicId={topicId}
-              onSubmit={() => setShowCommentForm(false)}
-            />
+        {/* 댓글 작성 폼 (로그인 시에만 표시) */}
+        {isAuthenticated && (
+          <div className="flex gap-4">
+            <UserAvatar user={user} size="md" />
+            <div className="flex-1">
+              <CommentForm
+                topicId={topicId}
+                />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* 댓글 목록 */}
         {isAuthenticated ? (

@@ -202,7 +202,7 @@ export function Comment({ comment, topicId, onLike }: CommentProps) {
                 size={18}
                 className={comment.isLiked ? "fill-current text-red-500" : ""}
               />
-              좋아요
+              좋아요{comment.likeCount > 0 && ` ${comment.likeCount}`}
             </Button>
 
             <Button

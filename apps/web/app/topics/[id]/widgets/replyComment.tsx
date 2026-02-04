@@ -81,7 +81,7 @@ export function ReplyComment({ reply, onLike }: ReplyCommentProps) {
               size={18}
               className={reply.isLiked ? "fill-current text-red-500" : ""}
             />
-            좋아요
+            좋아요{reply.likeCount > 0 && ` ${reply.likeCount}`}
           </Button>
         </div>
       </div>

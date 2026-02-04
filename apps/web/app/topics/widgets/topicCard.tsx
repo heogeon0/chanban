@@ -2,6 +2,7 @@ import { PostResponse, VoteStatus } from "@chanban/shared-types";
 import { MessageSquare, Vote } from "lucide-react";
 import Link from "next/link";
 import { TAG_MAP } from "../domains/constants";
+import { formatRelativeTime } from "@/app/topics/[id]/widgets/commentUtils";
 
 /**
  * 작성자의 의견에 따른 border 색상 클래스를 반환합니다.
@@ -29,26 +30,6 @@ const getOpinionBorderClass = (
 interface TopicCardProps {
   post: PostResponse;
 }
-
-/**
- * 상대적 시간을 계산합니다.
- * @param dateInput - 날짜 문자열 또는 Date 객체
- * @returns 상대적 시간 문자열 (예: "2h ago")
- */
-const getRelativeTime = (dateInput: string | Date): string => {
-  const now = new Date();
-  const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return "방금 전";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}분 전`;
-  if (diffInSeconds < 86400)
-    return `${Math.floor(diffInSeconds / 3600)}시간 전`;
-  if (diffInSeconds < 604800)
-    return `${Math.floor(diffInSeconds / 86400)}일 전`;
-
-  return date.toLocaleDateString();
-};
 
 /**
  * 숫자를 포맷팅합니다 (1000 -> 1k)
@@ -93,7 +74,7 @@ export function TopicCard({ post }: TopicCardProps) {
           {tagInfo.name}
         </span>
         <span className="text-[10px] desktop:text-xs text-muted-foreground">
-          {getRelativeTime(post.createdAt)}
+          {formatRelativeTime(post.createdAt)}
         </span>
       </div>
 

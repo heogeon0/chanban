@@ -23,7 +23,10 @@
       "Bash(pnpm --filter web tsc:*)",
       "Bash(npx tsc:*)",
       "Bash(pnpm tsc:*)",
-      "Bash(pnpm --filter @chanban/shared-types build:*)"
+      "Bash(pnpm --filter @chanban/shared-types build:*)",
+      "Bash(lsof:*)",
+      "mcp__plugin_playwright_playwright__browser_resize",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
