@@ -3,6 +3,7 @@
 import { clearTokens, getAccessToken, getRefreshToken } from '@/lib/auth/token';
 import { User } from '@/lib/auth/types';
 import { httpClient } from '@/lib/httpClient';
+import { ApiResponse } from '@chanban/shared-types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
@@ -32,8 +33,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const userData = await httpClient.get<User>('/api/auth/me');
-        setUser(userData);
+        const response = await httpClient.get<ApiResponse<User>>('/api/auth/me');
+        setUser(response.data);
       } catch (error) {
         console.error('Failed to load user:', error);
         clearTokens();

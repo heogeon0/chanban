@@ -29,7 +29,7 @@ interface TopicDetailContentProps {
  */
 export function TopicDetailContent({ topicId, commentCount }: TopicDetailContentProps) {
   const [sortType, setSortType] = useState<CommentSortType>("popular");
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading: isLoadingAuth, user } = useAuth();
 
   const { mutate: postVote } = usePostVote();
   const { data: comments = [], isLoading: isLoadingComments } = useQuery({
@@ -138,7 +138,25 @@ export function TopicDetailContent({ topicId, commentCount }: TopicDetailContent
         )}
 
         {/* 댓글 목록 */}
-        {isAuthenticated ? (
+        {isLoadingAuth ? (
+          <div className="space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex gap-4">
+                <div className="w-10 h-10 rounded-full bg-muted animate-pulse flex-shrink-0" />
+                <div className="flex-1 space-y-3">
+                  <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 bg-muted rounded w-20 animate-pulse" />
+                      <div className="h-3 bg-muted rounded w-16 animate-pulse" />
+                    </div>
+                    <div className="h-4 bg-muted rounded w-full animate-pulse" />
+                    <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : isAuthenticated ? (
           <CommentList
             comments={comments}
             topicId={topicId}

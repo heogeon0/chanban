@@ -13,7 +13,7 @@ import { useAuth } from '../contexts/auth-context';
  * 로그인 상태에 따라 로그인 버튼 또는 프로필 사진과 드롭다운 메뉴를 표시합니다.
  */
 export function UserMenu() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -52,6 +52,10 @@ export function UserMenu() {
   const handleLoginClick = () => {
     localStorage.setItem(RETURN_URL_KEY, window.location.href);
   };
+
+  if (isLoading) {
+    return <div className="size-8 rounded-full bg-muted animate-pulse" />;
+  }
 
   if (!isAuthenticated) {
     return (

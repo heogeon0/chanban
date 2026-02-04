@@ -1,7 +1,7 @@
 "use client"
 
-import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
+import * as React from "react"
 
 import { cn } from "@/shared/ui/lib/utils"
 
@@ -93,4 +93,5 @@ function UserAvatar({ user, size = "md", className }: UserAvatarProps) {
   )
 }
 
-export { Avatar, AvatarImage, AvatarFallback, UserAvatar }
+export { Avatar, AvatarFallback, AvatarImage, UserAvatar }
+
