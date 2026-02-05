@@ -112,15 +112,13 @@ export function usePostVote() {
       }
     },
 
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(queryKeys.vote.my(variables.postId), data);
+    },
+
     onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.topic.detail(variables.postId),
-      });
-      queryClient.invalidateQueries({
         queryKey: queryKeys.vote.count(variables.postId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.vote.my(variables.postId),
       });
     },
   });

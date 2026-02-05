@@ -73,7 +73,7 @@ const sizeClasses = {
 function UserAvatar({ user, size = "md", className }: UserAvatarProps) {
   const hasUser = user && user.nickname
   const fallbackText = hasUser ? user.nickname.slice(0, 2).toUpperCase() : ""
-
+ㅓ
   return (
     <Avatar className={cn(sizeClasses[size], className)}>
       {user?.profileImageUrl && (
