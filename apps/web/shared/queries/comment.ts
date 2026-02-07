@@ -7,25 +7,34 @@ import {
 } from "@chanban/shared-types";
 import { queryKeys } from "./keys";
 
+const COMMENT_PAGE_LIMIT = 20;
+
 /**
  * 댓글 관련 쿼리 옵션
  * queryKey와 queryFn을 함께 관리합니다.
  */
 export const commentQueries = {
   /**
-   * 댓글 목록 조회 쿼리 옵션
+   * 댓글 목록 무한 스크롤 쿼리 옵션
    * @param postId - 게시글 ID
    * @param sort - 정렬 방식 (popular: 인기순, latest: 최신순)
    */
   list: (postId: string, sort: CommentSortType = "popular") => ({
     queryKey: queryKeys.comment.list(postId, sort),
-    queryFn: async () => {
-      return await httpClient
-        .get<PaginatedResponse<CommentResponse>>(`/api/comments/posts/${postId}`, {
-          params: { sort },
-        })
-        .then((response) => response.data);
+    queryFn: async ({ pageParam = 1 }: { pageParam?: number }) => {
+      const response = await httpClient.get<PaginatedResponse<CommentResponse>>(
+        `/api/comments/posts/${postId}`,
+        {
+          params: { sort, page: pageParam, limit: COMMENT_PAGE_LIMIT },
+        }
+      );
+      return response;
     },
+    getNextPageParam: (lastPage: PaginatedResponse<CommentResponse>) => {
+      const { page, totalPages } = lastPage.meta;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    initialPageParam: 1,
   }),
 
   /**

@@ -5,10 +5,10 @@ import { commentQueries, voteQueries } from "@/shared/queries";
 import { UserAvatar } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { CommentSortType, VoteStatus } from "@chanban/shared-types";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { MessageSquare } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useCommentLike, usePostVote } from "../features";
 import { CommentForm } from "./commentForm";
 import { CommentList } from "./commentList";
@@ -32,10 +32,22 @@ export function TopicDetailContent({ topicId, commentCount }: TopicDetailContent
   const { isAuthenticated, isLoading: isLoadingAuth, user } = useAuth();
 
   const { mutate: postVote } = usePostVote();
-  const { data: comments = [], isLoading: isLoadingComments } = useQuery({
+  const {
+    data: commentsData,
+    isLoading: isLoadingComments,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     ...commentQueries.list(topicId, sortType),
     enabled: !!topicId,
   });
+
+  /** 무한 스크롤 데이터를 평탄화하여 댓글 배열로 변환 */
+  const comments = useMemo(() => {
+    return commentsData?.pages.flatMap((page) => page.data) ?? [];
+  }, [commentsData]);
+
   const { data: voteCount } = useQuery(voteQueries.count(topicId));
   const { data: myVote } = useQuery(voteQueries.my(topicId));
   const { mutate: likeComment } = useCommentLike();
@@ -162,6 +174,9 @@ export function TopicDetailContent({ topicId, commentCount }: TopicDetailContent
             topicId={topicId}
             onLike={handleLike}
             isLoading={isLoadingComments}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            onLoadMore={fetchNextPage}
           />
         ) : (
           <div className="relative">
