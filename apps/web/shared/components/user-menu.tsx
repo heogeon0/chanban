@@ -1,18 +1,19 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../contexts/auth-context';
-import { Button } from '@workspace/ui/components/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@workspace/ui/components/avatar';
+import { RETURN_URL_KEY } from '@/lib/auth/kakao';
+import { UserAvatar } from '@/shared/ui/avatar';
+import { Button } from '@/shared/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../contexts/auth-context';
 
 /**
  * 사용자 메뉴 컴포넌트
  * 로그인 상태에 따라 로그인 버튼 또는 프로필 사진과 드롭다운 메뉴를 표시합니다.
  */
 export function UserMenu() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -40,25 +41,31 @@ export function UserMenu() {
    * 로그아웃 처리
    */
   const handleLogout = async () => {
-    await logout();
+    logout();
     setIsOpen(false);
     router.push('/auth/login');
   };
 
+  /**
+   * 로그인 링크 클릭 시 현재 URL 저장
+   */
+  const handleLoginClick = () => {
+    localStorage.setItem(RETURN_URL_KEY, window.location.href);
+  };
+
+  if (isLoading) {
+    return <div className="size-8 rounded-full bg-muted animate-pulse" />;
+  }
+
   if (!isAuthenticated) {
     return (
       <Button asChild size="sm" variant="outline">
-        <Link href="/auth/login">로그인</Link>
+        <Link href="/auth/login" onClick={handleLoginClick}>
+          로그인
+        </Link>
       </Button>
     );
   }
-
-  /**
-   * 닉네임의 첫 글자를 추출 (프로필 이미지 fallback용)
-   */
-  const getInitial = (nickname: string) => {
-    return nickname.charAt(0).toUpperCase();
-  };
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -68,17 +75,7 @@ export function UserMenu() {
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         aria-label="사용자 메뉴"
       >
-        <Avatar className="w-8 h-8 cursor-pointer">
-          {user?.profileImageUrl && (
-            <AvatarImage
-              src={user.profileImageUrl}
-              alt={user.nickname}
-            />
-          )}
-          <AvatarFallback className="bg-blue-500 text-white text-sm">
-            {user?.nickname ? getInitial(user.nickname) : '?'}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar user={user} size="sm" className="cursor-pointer" />
       </button>
 
       {/* 드롭다운 메뉴 */}

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CHANBAN - Focused Discussion</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#195de6",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#0a0e17",
+                        "card-dark": "#111621",
+                        "agree": "#195de6",
+                        "disagree": "#ef4444",
+                        "neutral": "#64748b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .no-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            .no-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }#detail-view {
+            display: none;
+        }
+        @media (max-width: 1023px) {
+            body.show-detail #master-list {
+                display: none;
+            }
+            body.show-detail #detail-view {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 h-screen flex flex-col overflow-hidden">
+<header class="z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 py-3 flex-none">
+<div class="flex items-center justify-between gap-8 max-w-[1400px] mx-auto">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 bg-primary rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">CHANBAN</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-primary text-sm font-semibold" href="#">Explore</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary text-sm font-medium transition-colors" href="#">Debates</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end items-center gap-4">
+<label class="hidden lg:flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full overflow-hidden border border-slate-200 dark:border-slate-700">
+<div class="text-slate-400 bg-white dark:bg-slate-800 flex items-center justify-center pl-3">
+<span class="material-symbols-outlined text-lg">search</span>
+</div>
+<input class="form-input flex w-full border-none bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-0 placeholder:text-slate-400 px-3 text-sm font-normal" placeholder="Search..." value=""/>
+</div>
+</label>
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+<span class="hidden sm:inline">Start Debate</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 ring-2 ring-slate-200 dark:ring-slate-800" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWGgbGyZeEem-13QBSjdGbh4TJo-kCeEHD-zQeRzeDHk2WNA36ZFMl9GuA7ezxa5PG9TFf0_YLxmAhPwfDwwIbJEdtrzZJ4spQ_aHA1M4DStStmOhNRdNGYf9KWyKJrhJLGl-fMyaucv0dnIl00dUEedVSzhtcQCAIheSWE09IZuuOugrXwgt_38sznkJGJHS-Qiya_QjfSDhZFz6_kirBVE6vW6i46eUfK-FDi3xDK1I7nLH225mDKDW2EeJ213IShBndTnLcXyi0");'></div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex overflow-hidden">
+<section class="w-full lg:w-[400px] flex-none border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-card-dark flex flex-col overflow-hidden" id="master-list">
+<div class="p-4 space-y-4 border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between">
+<h1 class="text-lg font-bold">Topics</h1>
+<div class="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-lg">
+<button class="px-3 py-1 text-[10px] font-bold rounded bg-white dark:bg-slate-900 shadow-sm text-primary">LATEST</button>
+<button class="px-3 py-1 text-[10px] font-bold rounded text-slate-500">POPULAR</button>
+</div>
+</div>
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+<div class="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold whitespace-nowrap">All</div>
+<div class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-transparent text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap">Politics</div>
+<div class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-transparent text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap">Tech</div>
+<div class="px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-transparent text-slate-600 dark:text-slate-400 text-xs font-medium whitespace-nowrap">Economy</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto no-scrollbar divide-y divide-slate-100 dark:divide-slate-800/50">
+<div class="p-4 bg-slate-50 dark:bg-slate-800/40 border-l-4 border-primary cursor-pointer transition-colors" onclick="document.body.classList.add('show-detail')">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-bold text-primary uppercase">Tech</span>
+<span class="text-[10px] text-slate-400">2h ago</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 dark:text-white mb-2 line-clamp-2">Should AI-generated art be copyrightable?</h3>
+<div class="flex h-1.5 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 42%"></div>
+<div class="bg-neutral h-full" style="width: 10%"></div>
+<div class="bg-disagree h-full" style="width: 48%"></div>
+</div>
+<div class="flex items-center gap-3 mt-3 text-[10px] font-medium text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">how_to_vote</span>1.2k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">chat_bubble</span>342</span>
+</div>
+</div>
+<div class="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 cursor-pointer border-l-4 border-transparent transition-colors" onclick="document.body.classList.add('show-detail')">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-bold text-primary uppercase">Economy</span>
+<span class="text-[10px] text-slate-400">5h ago</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 dark:text-white mb-2 line-clamp-2">Remote work vs. Office: The future of productivity</h3>
+<div class="flex h-1.5 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 65%"></div>
+<div class="bg-neutral h-full" style="width: 15%"></div>
+<div class="bg-disagree h-full" style="width: 20%"></div>
+</div>
+<div class="flex items-center gap-3 mt-3 text-[10px] font-medium text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">how_to_vote</span>850</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">chat_bubble</span>120</span>
+</div>
+</div>
+<div class="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 cursor-pointer border-l-4 border-transparent transition-colors" onclick="document.body.classList.add('show-detail')">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-bold text-primary uppercase">Society</span>
+<span class="text-[10px] text-slate-400">1d ago</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 dark:text-white mb-2 line-clamp-2">Universal Basic Income: Necessity for the AI age?</h3>
+<div class="flex h-1.5 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 30%"></div>
+<div class="bg-neutral h-full" style="width: 10%"></div>
+<div class="bg-disagree h-full" style="width: 60%"></div>
+</div>
+<div class="flex items-center gap-3 mt-3 text-[10px] font-medium text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">how_to_vote</span>2.1k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">chat_bubble</span>560</span>
+</div>
+</div>
+<div class="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 cursor-pointer border-l-4 border-transparent transition-colors" onclick="document.body.classList.add('show-detail')">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-bold text-primary uppercase">Science</span>
+<span class="text-[10px] text-slate-400">3h ago</span>
+</div>
+<h3 class="text-sm font-bold text-slate-900 dark:text-white mb-2 line-clamp-2">Space exploration vs. Earth restoration</h3>
+<div class="flex h-1.5 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+<div class="bg-agree h-full" style="width: 55%"></div>
+<div class="bg-neutral h-full" style="width: 5%"></div>
+<div class="bg-disagree h-full" style="width: 40%"></div>
+</div>
+<div class="flex items-center gap-3 mt-3 text-[10px] font-medium text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">how_to_vote</span>1.5k</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">chat_bubble</span>230</span>
+</div>
+</div>
+</div>
+</section>
+<section class="flex-1 flex flex-col bg-background-light dark:bg-background-dark overflow-y-auto" id="detail-view">
+<div class="lg:hidden p-4 flex items-center bg-white dark:bg-card-dark border-b border-slate-200 dark:border-slate-800">
+<button class="flex items-center text-primary font-semibold" onclick="document.body.classList.remove('show-detail')">
+<span class="material-symbols-outlined mr-1">chevron_left</span>
+                Back to List
+            </button>
+</div>
+<div class="max-w-4xl mx-auto w-full px-4 md:px-8 py-8">
+<div class="bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+<div class="w-full aspect-[21/9] bg-center bg-no-repeat bg-cover relative" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuANsLdpkgod5id-ztdZ6QtkoO6jHZwbOTUD13Y7LSrGzgRZ_470i_HOT0Ox5Yz-j4LRX27zdMJqoEmVwCCPCfW52Abunlg8ERQUDZXnk5sFgEWtPUTrnkXhl4AO7PkrnnNT5ZIi4gIg8ZfTYIO3GngUcu8kUd7iiBgePqnSlK-z14Qcf5XxxWTUombVYclBlxFpr5qDU2dIiFdSZLr7D6AC56A6UbnlTdngeWStg2A5-884thORB5hMKD5spRTjzJIULyT0gtgfiBeY");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+<div class="absolute bottom-6 left-6 md:left-10">
+<span class="bg-primary px-3 py-1 rounded text-[11px] font-bold text-white uppercase mb-3 inline-block">Tech</span>
+<h2 class="text-2xl md:text-4xl font-extrabold text-white leading-tight">Should AI-generated art be copyrightable?</h2>
+</div>
+</div>
+<div class="p-6 md:p-10">
+<div class="flex items-center gap-4 mb-8">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-300">DebateHost</span>
+</div>
+<span class="text-slate-400 text-sm">• 2 hours ago</span>
+<div class="ml-auto flex gap-2">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"><span class="material-symbols-outlined text-slate-500">share</span></button>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"><span class="material-symbols-outlined text-slate-500">bookmark</span></button>
+</div>
+</div>
+<p class="text-slate-600 dark:text-slate-400 leading-relaxed text-lg mb-10">
+                        As generative models like Midjourney, DALL-E, and Stable Diffusion become increasingly capable of producing gallery-quality artwork, the legal framework surrounding authorship is under fire. Critics argue that since AI lacks "human creativity," its output shouldn't be copyrightable. However, artists argue that the prompt engineering and selection process is a new form of digital craftsmanship that deserves protection. What's your take on this technological shift?
+                    </p>
+<div class="space-y-6 bg-slate-50 dark:bg-slate-800/20 p-6 md:p-8 rounded-2xl border border-slate-100 dark:border-slate-800">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-end">
+<h4 class="font-bold text-lg">Cast Your Vote</h4>
+<div class="text-sm font-medium text-slate-400">1,240 people voted</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-agree/20 hover:border-agree hover:bg-agree/5 transition-all group">
+<span class="text-agree font-bold text-lg">AGREE</span>
+<span class="text-slate-400 text-xs font-medium">42%</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-neutral/20 hover:border-neutral hover:bg-neutral/5 transition-all group">
+<span class="text-neutral font-bold text-lg">NEUTRAL</span>
+<span class="text-slate-400 text-xs font-medium">10%</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-disagree/20 hover:border-disagree hover:bg-disagree/5 transition-all group">
+<span class="text-disagree font-bold text-lg">DISAGREE</span>
+<span class="text-slate-400 text-xs font-medium">48%</span>
+</button>
+</div>
+<div class="space-y-2 mt-4">
+<div class="flex h-4 w-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800/50">
+<div class="bg-agree h-full transition-all" style="width: 42%"></div>
+<div class="bg-neutral h-full transition-all" style="width: 10%"></div>
+<div class="bg-disagree h-full transition-all" style="width: 48%"></div>
+</div>
+<div class="flex justify-between text-[11px] font-bold">
+<span class="text-agree">42% AGREE</span>
+<span class="text-neutral">10% NEUTRAL</span>
+<span class="text-disagree">48% DISAGREE</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xl font-bold">Discussion (342)</h3>
+<button class="text-primary text-sm font-bold">View All</button>
+</div>
+<div class="space-y-4">
+<div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/40">
+<div class="flex items-center gap-2 mb-2">
+<div class="size-6 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+<span class="text-xs font-bold">ArtLover99</span>
+<span class="text-[10px] text-slate-500">Agree</span>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-400 italic">"Without protection, the commercial incentive for digital artists will disappear..."</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="flex-none border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-card-dark py-4 hidden lg:block">
+<div class="max-w-[1400px] mx-auto px-8 flex justify-between items-center text-slate-500 text-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base">account_balance</span>
+<span class="font-bold uppercase tracking-wider">CHANBAN © 2024</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Guidelines</a>
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">API</a>
+</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-lg cursor-pointer hover:text-primary">share</span>
+<span class="material-symbols-outlined text-lg cursor-pointer hover:text-primary">public</span>
+</div>
+</div>
+</footer>
+
+</body></html>

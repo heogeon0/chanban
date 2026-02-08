@@ -5,6 +5,7 @@ import {
   PostTag,
   SortOrder,
   VoteCountResponse,
+  VoteStatus,
 } from '@chanban/shared-types';
 import {
   BadRequestException,
@@ -12,10 +13,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { DataSource, IsNull, Repository } from 'typeorm';
 import { ResponseWithMeta } from '../common/dto/response.dto';
 import { Post } from '../entities/post.entity';
 import { User } from '../entities/user.entity';
+import { Vote } from '../entities/vote.entity';
+import { VoteHistory } from '../entities/vote-history.entity';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
@@ -25,6 +28,11 @@ export class PostService {
   constructor(
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
+    @InjectRepository(Vote)
+    private readonly voteRepository: Repository<Vote>,
+    @InjectRepository(VoteHistory)
+    private readonly voteHistoryRepository: Repository<VoteHistory>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async findRecentPosts(
@@ -93,38 +101,77 @@ export class PostService {
   }
 
   async create(createPostDto: CreatePostDto, user: User): Promise<Post> {
+    const { creatorOpinion, showCreatorOpinion, ...postData } = createPostDto;
+
     // 비즈니스 로직 검증: 작성자 의견 공개 시 의견 필수
-    if (createPostDto.showCreatorOpinion && !createPostDto.creatorOpinion) {
+    if (showCreatorOpinion && !creatorOpinion) {
       throw new BadRequestException({
         code: ErrorCode.BAD_REQUEST,
       });
     }
 
-    const post = this.postRepository.create({
-      ...createPostDto,
-      creatorId: user.id,
+    // Transaction으로 Post 생성 + Vote 생성
+    return await this.dataSource.transaction(async (manager) => {
+      // Post 생성
+      const post = manager.create(Post, {
+        ...postData,
+        showCreatorOpinion: showCreatorOpinion ?? false,
+        creatorId: user.id,
+      });
+
+      const savedPost = await manager.save(post);
+
+      // 작성자 의견이 있으면 Vote 생성
+      if (showCreatorOpinion && creatorOpinion) {
+        const vote = manager.create(Vote, {
+          postId: savedPost.id,
+          userId: user.id,
+          currentStatus: creatorOpinion,
+          changeCount: 0,
+        });
+
+        await manager.save(vote);
+
+        // 투표 이력 추가
+        const history = manager.create(VoteHistory, {
+          voteId: vote.id,
+          fromStatus: null,
+          toStatus: creatorOpinion,
+        });
+
+        await manager.save(history);
+
+        // 투표 카운트 업데이트
+        if (creatorOpinion === VoteStatus.AGREE) {
+          savedPost.agreeCount = 1;
+        } else if (creatorOpinion === VoteStatus.DISAGREE) {
+          savedPost.disagreeCount = 1;
+        } else if (creatorOpinion === VoteStatus.NEUTRAL) {
+          savedPost.neutralCount = 1;
+        }
+
+        await manager.save(savedPost);
+      }
+
+      // creator 정보 포함해서 반환
+      const postWithCreator = await manager.findOne(Post, {
+        where: { id: savedPost.id },
+        relations: ['creator'],
+      });
+
+      if (!postWithCreator) {
+        throw new Error('Failed to retrieve created post');
+      }
+
+      return postWithCreator;
     });
-
-    const savedPost = await this.postRepository.save(post);
-
-    // creator 정보 포함해서 반환
-    const postWithCreator = await this.postRepository.findOne({
-      where: { id: savedPost.id },
-      relations: ['creator'],
-    });
-
-    if (!postWithCreator) {
-      throw new Error('Failed to retrieve created post');
-    }
-
-    return postWithCreator;
   }
 
   findAll() {
     return `This action returns all post`;
   }
 
-  async findOne(id: string): Promise<Post> {
+  async findOne(id: string): Promise<Post & { creatorVote?: VoteStatus | null }> {
     const post = await this.postRepository.findOne({
       where: { id, deletedAt: IsNull() },
       relations: ['creator'],
@@ -140,7 +187,16 @@ export class PostService {
     await this.postRepository.increment({ id }, 'viewCount', 1);
     post.viewCount += 1;
 
-    return post;
+    // 작성자 의견 공개인 경우 투표 정보 조회
+    let creatorVote: VoteStatus | null = null;
+    if (post.showCreatorOpinion) {
+      const vote = await this.voteRepository.findOne({
+        where: { postId: id, userId: post.creatorId },
+      });
+      creatorVote = vote?.currentStatus ?? null;
+    }
+
+    return { ...post, creatorVote };
   }
 
   update(id: number) {

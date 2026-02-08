@@ -11,6 +11,27 @@ interface HttpClientConfig {
   timeout?: number;
 }
 
+/**
+ * HTTP 에러 클래스
+ * API 에러 응답의 status와 message를 포함합니다.
+ */
+export class HttpError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string
+  ) {
+    super(message);
+    this.name = 'HttpError';
+  }
+}
+
+/**
+ * HttpError 타입 가드
+ */
+export function isHttpError(error: unknown): error is HttpError {
+  return error instanceof HttpError;
+}
+
 class HttpClient {
   private baseURL: string;
   private defaultHeaders: HeadersInit;
@@ -74,7 +95,7 @@ class HttpClient {
           try {
             // 토큰 갱신 시도
             const refreshResponse = await this.post<{ accessToken: string }>(
-              '/auth/refresh',
+              '/api/auth/refresh',
               { refreshToken },
               { skipAuth: true }
             );
@@ -96,7 +117,9 @@ class HttpClient {
       }
 
       if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        const errorBody = await response.json().catch(() => ({}));
+        const message = errorBody.message || response.statusText;
+        throw new HttpError(response.status, message);
       }
 
       const data = await response.json();
@@ -159,7 +182,7 @@ export const createHttpClient = (config?: HttpClientConfig) => {
 
 // Default instance
 export const httpClient = createHttpClient({
-  baseURL: process.env.NEXT_PUBLIC_CAHNBAN_API || 'http://localhost:3001',
+  baseURL: process.env.NEXT_PUBLIC_CHANBAN_API || 'http://localhost:3001',
   headers: {
     'Content-Type': 'application/json',
   },

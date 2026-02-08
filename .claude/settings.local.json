@@ -5,7 +5,28 @@
       "Bash(tree:*)",
       "Bash(mkdir:*)",
       "mcp__plugin_playwright_playwright__browser_navigate",
-      "mcp__plugin_playwright_playwright__browser_take_screenshot"
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "mcp__plugin_playwright_playwright__browser_network_requests",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "mcp__plugin_playwright_playwright__browser_close",
+      "Bash(pnpm --filter=web tsc:*)",
+      "Bash(pnpm --filter web build:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm --filter web tsc:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm --filter @chanban/shared-types build:*)",
+      "Bash(lsof:*)",
+      "mcp__plugin_playwright_playwright__browser_resize",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

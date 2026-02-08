@@ -20,6 +20,7 @@ import { Comment } from '../entities/comment.entity';
 import { VoteHistory } from '../entities/vote-history.entity';
 import { Vote } from '../entities/vote.entity';
 import { PaginationQueryDto } from '../post/dto/pagination-query.dto';
+import { CommentQueryDto } from './dto/comment-query.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
@@ -31,6 +32,7 @@ const ReplyRawSchema = z.object({
   reply_deletedAt: z.date().nullable(),
   reply_postId: z.string(),
   reply_parentId: z.string(),
+  reply_likeCount: z.number(),
   user_id: z.string(),
   user_nickname: z.string(),
   row_num: z.string(),
@@ -64,13 +66,16 @@ export class CommentService {
 
   async findByPostId(
     postId: string,
-    paginationQuery: PaginationQueryDto,
+    query: CommentQueryDto,
     userId: string,
   ): Promise<ResponseWithMeta<CommentResponse[], PaginationMeta>> {
 
-    const { page = 1, limit = 20 } = paginationQuery;
+    const { page = 1, limit = 20, sort = 'popular' } = query;
     const skip = (page - 1) * limit;
     const REPLY_LIMIT = 3;
+
+    // 정렬 기준 설정: popular(인기순) - likeCount DESC, latest(최신순) - createdAt DESC
+    const orderColumn = sort === 'popular' ? 'comment.likeCount' : 'comment.createdAt';
 
     // 쿼리 1: 최상위 댓글만 조회 (답글 제외)
     const [comments, total] = await this.commentRepository
@@ -79,7 +84,7 @@ export class CommentService {
       .where('comment.postId = :postId', { postId })
       .andWhere('comment.parentId IS NULL')
       .andWhere('comment.deletedAt IS NULL')
-      .orderBy('comment.createdAt', 'DESC')
+      .orderBy(orderColumn, 'DESC')
       .skip(skip)
       .take(limit)
       .getManyAndCount();
@@ -107,6 +112,7 @@ export class CommentService {
         'reply.deletedAt',
         'reply.postId',
         'reply.parentId',
+        'reply.likeCount',
         'user.id',
         'user.nickname',
       ])
@@ -141,6 +147,7 @@ export class CommentService {
           updatedAt: reply.reply_updatedAt,
           deletedAt: reply.reply_deletedAt,
           postId: reply.reply_postId,
+          likeCount: reply.reply_likeCount,
           user: {
             id: reply.user_id,
             nickname: reply.user_nickname,
@@ -261,6 +268,7 @@ export class CommentService {
         replies,
         totalReplies: replyCountMap.get(comment.id) || 0,
         isLiked: likedCommentIds.has(comment.id),
+        likeCount: comment.likeCount,
       };
     });
 
@@ -363,6 +371,7 @@ export class CommentService {
       },
       postId: reply.postId,
       isLiked: likedCommentIds.has(reply.id),
+      likeCount: reply.likeCount,
     }));
 
     const totalPages = Math.ceil(total / limit);
@@ -501,7 +510,14 @@ export class CommentService {
       });
 
       await manager.save(like);
-      await manager.increment(Comment, { id: commentId }, 'likeCount', 1);
+
+      // likeCount만 증가 (updatedAt 변경 방지를 위해 raw query 사용)
+      await manager
+        .createQueryBuilder()
+        .update(Comment)
+        .set({ likeCount: () => '"likeCount" + 1' })
+        .where('id = :id', { id: commentId })
+        .execute();
     });
   }
 
@@ -525,9 +541,14 @@ export class CommentService {
         userId: userId,
       });
 
-      // 삭제된 좋아요가 있으면 카운트 감소
+      // 삭제된 좋아요가 있으면 카운트 감소 (updatedAt 변경 방지를 위해 raw query 사용)
       if (result.affected && result.affected > 0) {
-        await manager.decrement(Comment, { id: commentId }, 'likeCount', 1);
+        await manager
+          .createQueryBuilder()
+          .update(Comment)
+          .set({ likeCount: () => '"likeCount" - 1' })
+          .where('id = :id', { id: commentId })
+          .execute();
       }
     });
   }

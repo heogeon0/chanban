@@ -10,7 +10,7 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
-import { PostTag, VoteStatus } from '@chanban/shared-types';
+import { PostTag } from '@chanban/shared-types';
 import { User } from './user.entity';
 import { Vote } from './vote.entity';
 import { Comment } from './comment.entity';
@@ -45,13 +45,6 @@ export class Post {
 
   @Column({ type: 'boolean', default: false })
   showCreatorOpinion: boolean;
-
-  @Column({
-    type: 'enum',
-    enum: VoteStatus,
-    nullable: true,
-  })
-  creatorOpinion: VoteStatus | null;
 
   @Column({ type: 'integer', default: 0 })
   agreeCount: number;

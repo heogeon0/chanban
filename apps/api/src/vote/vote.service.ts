@@ -19,10 +19,7 @@ export class VoteService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async upsertVote(createVoteDto: CreateVoteDto): Promise<Vote> {
-    // TODO: JWT 토큰에서 userId 가져오기
-    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
-
+  async upsertVote(createVoteDto: CreateVoteDto, userId: string): Promise<Vote> {
     const { postId, status } = createVoteDto;
 
     // 포스트 존재 확인
@@ -45,7 +42,7 @@ export class VoteService {
     return await this.dataSource.transaction(async (manager) => {
       // 기존 투표 확인
       let vote = await manager.findOne(Vote, {
-        where: { postId, userId: MOCK_USER_ID },
+        where: { postId, userId },
       });
 
       const post = await manager.findOne(Post, {
@@ -93,7 +90,7 @@ export class VoteService {
         // 새로운 투표 생성
         vote = manager.create(Vote, {
           postId,
-          userId: MOCK_USER_ID,
+          userId,
           currentStatus: status,
           changeCount: 0,
         });
@@ -124,12 +121,9 @@ export class VoteService {
     });
   }
 
-  async getMyVote(postId: string): Promise<Vote | null> {
-    // TODO: JWT 토큰에서 userId 가져오기
-    const MOCK_USER_ID = '181eaff6-755d-4c90-96ad-31de54fe5b5b';
-
+  async getMyVote(postId: string, userId: string): Promise<Vote | null> {
     const vote = await this.voteRepository.findOne({
-      where: { postId, userId: MOCK_USER_ID },
+      where: { postId, userId },
     });
 
     return vote;

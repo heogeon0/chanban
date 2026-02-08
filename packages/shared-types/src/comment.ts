@@ -1,5 +1,7 @@
 import { VoteStatus } from './enums';
 
+export type CommentSortType = 'popular' | 'latest';
+
 export interface VoteHistoryResponse {
   fromStatus: VoteStatus | null;
   toStatus: VoteStatus;
@@ -19,6 +21,7 @@ export interface CommentReplyResponse {
   };
   postId: string;
   isLiked: boolean;
+  likeCount: number;
 }
 
 export interface CommentResponse {
@@ -37,4 +40,5 @@ export interface CommentResponse {
   replies: CommentReplyResponse[];
   totalReplies: number;
   isLiked: boolean;
+  likeCount: number;
 }

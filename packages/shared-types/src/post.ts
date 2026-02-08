@@ -14,7 +14,7 @@ export interface PostResponse {
   content: string;
   tag: PostTag;
   showCreatorOpinion: boolean;
-  creatorOpinion: VoteStatus | null;
+  creatorVote?: VoteStatus | null;
   agreeCount: number;
   disagreeCount: number;
   neutralCount: number;

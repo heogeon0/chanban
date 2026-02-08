@@ -14,6 +14,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/entities';
 import { PaginationQueryDto } from '../post/dto/pagination-query.dto';
 import { CommentService } from './comment.service';
+import { CommentQueryDto } from './dto/comment-query.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
@@ -25,10 +26,10 @@ export class CommentController {
   @Get('posts/:postId')
   async findByPostId(
     @Param('postId') postId: string,
-    @Query() paginationQuery: PaginationQueryDto,
+    @Query() query: CommentQueryDto,
     @CurrentUser() user: User,
   ) {
-    return this.commentService.findByPostId(postId, paginationQuery, user.id);
+    return this.commentService.findByPostId(postId, query, user.id);
   }
 
   @UseGuards(JwtAuthGuard)
