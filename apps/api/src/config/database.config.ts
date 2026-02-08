@@ -11,7 +11,7 @@ export default registerAs(
     password: process.env.DATABASE_PASSWORD || 'postgres',
     database: process.env.DATABASE_NAME || 'chanban',
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: process.env.NODE_ENV !== 'production',
+    synchronize: true, // TODO: 프로덕션 테이블 생성 후 process.env.NODE_ENV !== 'production'으로 복원
     logging: process.env.NODE_ENV === 'development',
   }),
 );
