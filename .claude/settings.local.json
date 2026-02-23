@@ -26,7 +26,14 @@
       "Bash(pnpm --filter @chanban/shared-types build:*)",
       "Bash(lsof:*)",
       "mcp__plugin_playwright_playwright__browser_resize",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(python3 -m venv:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(brew install:*)",
+      "Bash(pyenv install:*)",
+      "WebSearch",
+      "Bash(uv run python:*)"
     ]
   }
 }

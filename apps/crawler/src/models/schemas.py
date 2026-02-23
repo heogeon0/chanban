@@ -23,6 +23,15 @@ class VoteStatus(str, Enum):
     NEUTRAL = "neutral"
 
 
+class Persona(BaseModel):
+    """봇 페르소나 설정."""
+
+    name: str
+    jwt_token: str
+    description: str
+    system_prompt: str
+
+
 class Article(BaseModel):
     """크롤링된 뉴스 기사."""
 
@@ -46,8 +55,21 @@ class AnalysisResult(BaseModel):
     title: str = Field(..., min_length=1, max_length=100)
     content: str = Field(..., min_length=1)
     tag: PostTag
-    show_creator_opinion: bool = False
-    creator_opinion: VoteStatus | None = None
+    show_creator_opinion: bool = True
+    creator_opinion: VoteStatus
+
+
+class CommentResult(BaseModel):
+    """LangChain 댓글 생성 결과."""
+
+    content: str
+    vote_status: VoteStatus
+
+
+class ReplyResult(BaseModel):
+    """LangChain 대댓글 생성 결과."""
+
+    content: str
 
 
 class CreatePostPayload(BaseModel):
@@ -59,5 +81,5 @@ class CreatePostPayload(BaseModel):
     title: str = Field(..., min_length=1, max_length=100)
     content: str = Field(..., min_length=1)
     tag: PostTag
-    showCreatorOpinion: bool = False
-    creatorOpinion: VoteStatus | None = None
+    showCreatorOpinion: bool = True
+    creatorOpinion: VoteStatus
