@@ -6,6 +6,25 @@ from src.config import get_settings
 from src.models.schemas import CreatePostPayload, Persona, VoteStatus
 
 
+async def get_post(post_id: str) -> dict:
+    """게시글 정보를 가져온다 (인증 불필요).
+
+    Args:
+        post_id: 게시글 UUID.
+
+    Returns:
+        API 응답 JSON (id, title, content, tag 등).
+    """
+    settings = get_settings()
+    url = f"{settings.CHANBAN_API_URL}/posts/{post_id}"
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.get(url)
+        resp.raise_for_status()
+
+    return resp.json()
+
+
 async def create_post(payload: CreatePostPayload, persona: Persona) -> dict:
     """chanban API에 특정 페르소나로 새 토론 주제를 생성한다.
 

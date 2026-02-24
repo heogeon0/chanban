@@ -75,6 +75,7 @@ async def generate_comment(
     title: str,
     content: str,
     persona: Persona,
+    existing_comments: list[str] | None = None,
 ) -> CommentResult:
     """게시글을 읽고 페르소나 관점의 댓글 + 투표를 생성한다.
 
@@ -82,17 +83,24 @@ async def generate_comment(
         title: 게시글 제목.
         content: 게시글 본문.
         persona: 댓글을 작성할 봇 페르소나.
+        existing_comments: 이미 달린 댓글 목록 (다른 페르소나들의 댓글).
 
     Returns:
         CommentResult (content, vote_status).
     """
     chain = comment_prompt | _build_model() | JsonOutputParser()
 
+    if existing_comments:
+        formatted = "\n".join(f"- {c}" for c in existing_comments)
+    else:
+        formatted = "(아직 댓글 없음)"
+
     result = await chain.ainvoke({
         "persona_description": persona.description,
         "persona_prompt": persona.system_prompt,
         "post_title": title,
         "post_content": content[:3000],
+        "existing_comments": formatted,
     })
 
     return CommentResult(**result)

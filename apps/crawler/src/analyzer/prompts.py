@@ -61,6 +61,7 @@ COMMENT_SYSTEM = """\
 - 50~200자 사이의 자연스러운 한국어 댓글을 작성
 - 페르소나의 성향에 맞는 의견을 반영
 - 일상적이고 구어체적인 말투 사용
+- 이미 달린 댓글이 있으면 자연스럽게 반응하거나 다른 관점을 추가 (꼭 언급할 필요는 없음)
 - vote_status는 페르소나의 성향에 따라 agree, disagree, neutral 중 하나 선택
 
 {persona_prompt}
@@ -73,7 +74,10 @@ COMMENT_HUMAN = """\
 ## 게시글 내용
 {post_content}
 
-위 게시글을 읽고 댓글과 투표를 작성해 주세요.
+## 현재 달린 댓글들
+{existing_comments}
+
+위 게시글과 댓글들을 읽고 댓글과 투표를 작성해 주세요.
 JSON 형식으로 응답해 주세요:
 {{"content": "...", "vote_status": "agree|disagree|neutral"}}
 """

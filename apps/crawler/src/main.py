@@ -7,7 +7,7 @@ import random
 from pathlib import Path
 
 from src.analyzer.chain import analyze_article, generate_comment, generate_reply
-from src.api.client import cast_vote, create_comment, create_post
+from src.api.client import cast_vote, create_comment, create_post, get_post
 from src.config import get_personas
 from src.crawlers.article import fetch_article_content
 from src.crawlers.comment import fetch_comments
@@ -42,9 +42,10 @@ async def _comment_and_vote(
     post_id: int,
     title: str,
     content: str,
+    existing_comments: list[str] | None = None,
 ) -> tuple[int, str, VoteStatus]:
     """페르소나가 댓글 + 투표를 남긴다. (comment_id, comment_content, vote_status) 반환."""
-    comment_result = await generate_comment(title, content, persona)
+    comment_result = await generate_comment(title, content, persona, existing_comments)
 
     # 투표
     await cast_vote(post_id, comment_result.vote_status, persona)
@@ -158,8 +159,10 @@ async def discuss(posts: list[dict]) -> None:
         comment_records: list[dict] = []
 
         for persona in commenters:
+            # 이미 달린 댓글들을 컨텍스트로 전달 (첫 번째는 None)
+            existing_contents = [r["comment_content"] for r in comment_records] or None
             comment_id, comment_content, vote_status = await _comment_and_vote(
-                persona, post_id, post_title, post_content
+                persona, post_id, post_title, post_content, existing_contents
             )
             comment_records.append({
                 "persona_name": persona.name,
@@ -197,6 +200,20 @@ def _save_posts(posts: list[dict]) -> None:
         })
     POSTS_CACHE.write_text(json.dumps(serializable, ensure_ascii=False, indent=2))
     print(f"게시글 캐시 저장: {POSTS_CACHE}")
+
+
+async def _load_post_from_api(post_id: str) -> list[dict]:
+    """API에서 특정 게시글을 가져와 discuss 형식으로 변환한다."""
+    personas = get_personas()
+    data = await get_post(post_id)
+    post_data = data.get("data", data)
+    print(f"게시글 로드: {post_data['title']} (id={post_id})")
+    return [{
+        "post_id": post_id,
+        "title": post_data["title"],
+        "content": post_data["content"],
+        "writer": personas[0],  # 작성자 미상이므로 민주 기준으로 제외
+    }]
 
 
 def _load_posts() -> list[dict]:
@@ -238,6 +255,10 @@ def main() -> None:
         choices=["politics", "economy", "society", "entertainment", "technology", "all"],
         help="크롤링할 뉴스 섹션 (default: politics)",
     )
+    parser.add_argument(
+        "--post-id",
+        help="discuss 단계에서 특정 게시글 ID 지정 (캐시 무시)",
+    )
     args = parser.parse_args()
     section = None if args.section == "all" else args.section
 
@@ -245,7 +266,10 @@ def main() -> None:
         posts = asyncio.run(crawl_and_post(limit=args.limit, section=section))
         _save_posts(posts)
     elif args.step == "discuss":
-        posts = _load_posts()
+        if args.post_id:
+            posts = asyncio.run(_load_post_from_api(args.post_id))
+        else:
+            posts = _load_posts()
         asyncio.run(discuss(posts))
     else:
         asyncio.run(run_pipeline(limit=args.limit, section=section))

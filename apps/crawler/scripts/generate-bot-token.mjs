@@ -25,11 +25,11 @@
 
 import { createHmac } from 'node:crypto';
 
-const [userId, jwtSecret] = process.argv.slice(2);
+const [userId, kakaoId, nickname, jwtSecret] = process.argv.slice(2);
 
-if (!userId || !jwtSecret) {
-  console.error('Usage: node scripts/generate-bot-token.mjs <user-id> <jwt-secret>');
-  console.error('Example: node scripts/generate-bot-token.mjs abc-123 my-secret-key');
+if (!userId || !kakaoId || !nickname || !jwtSecret) {
+  console.error('Usage: node scripts/generate-bot-token.mjs <user-id> <kakao-id> <nickname> <jwt-secret>');
+  console.error('Example: node scripts/generate-bot-token.mjs abc-123 bot-crawler-001 찬반뉴스봇 my-secret-key');
   process.exit(1);
 }
 
@@ -42,8 +42,8 @@ const header = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
 const now = Math.floor(Date.now() / 1000);
 const payload = base64url(JSON.stringify({
   sub: userId,
-  kakaoId: 'bot-crawler-001',
-  nickname: '찬반뉴스봇',
+  kakaoId,
+  nickname,
   iat: now,
   exp: now + 365 * 24 * 60 * 60, // 1년
 }));
