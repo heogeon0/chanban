@@ -2,6 +2,7 @@ import { CreateTopicButton } from "@/shared/components/create-topic-button";
 import { UserMenu } from "@/shared/components/user-menu";
 import { Providers } from "@/shared/providers";
 import "@/styles/globals.css";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import Link from "next/link";
 
 export default function RootLayout({
@@ -45,6 +46,9 @@ export default function RootLayout({
           {modal}
         </Providers>
       </body>
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+      )}
     </html>
   );
 }
