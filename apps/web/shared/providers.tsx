@@ -5,11 +5,9 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import * as React from "react";
 import { AuthProvider } from "./contexts/auth-context";
 
-const queryClient = new QueryClient({
-
-});
-
 export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = React.useState(() => new QueryClient());
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

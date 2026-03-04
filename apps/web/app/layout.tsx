@@ -3,7 +3,17 @@ import { UserMenu } from "@/shared/components/user-menu";
 import { Providers } from "@/shared/providers";
 import "@/styles/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | 찬반",
+    default: "찬반 - 함께 토론하는 찬반 플랫폼",
+  },
+  description:
+    "사회, 정치, 경제, 기술 이슈에 대해 찬반 의견을 나누는 토론 플랫폼",
+};
 
 export default function RootLayout({
   children,
@@ -13,7 +23,7 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning>
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <Providers>
           {/* 헤더 */}
