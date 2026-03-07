@@ -42,14 +42,22 @@ export async function generateMetadata({
   }
 
   const description = topic.content.slice(0, 120).replace(/\n/g, " ");
+  const baseUrl = process.env.NEXT_PUBLIC_HOST ?? "";
+  const url = `${baseUrl}/topics/${id}`;
 
   return {
     title: topic.title,
     description,
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
       title: `${topic.title} | 찬반`,
       description,
       type: "article",
+      url,
+      publishedTime: new Date(topic.createdAt).toISOString(),
+      authors: [`@${topic.creator.nickname}`],
     },
   };
 }
@@ -65,9 +73,40 @@ export default async function TopicDetailPage(props: {
   }
 
   const tagInfo = TAG_MAP[topic.tag] || { name: topic.tag };
+  const baseUrl = process.env.NEXT_PUBLIC_HOST ?? "";
+  const totalVotes = topic.agreeCount + topic.disagreeCount + topic.neutralCount;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "DiscussionForumPosting",
+    headline: topic.title,
+    text: topic.content,
+    datePublished: new Date(topic.createdAt).toISOString(),
+    url: `${baseUrl}/topics/${topic.id}`,
+    author: {
+      "@type": "Person",
+      name: `@${topic.creator.nickname}`,
+    },
+    interactionStatistic: [
+      {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/CommentAction",
+        userInteractionCount: topic.commentCount,
+      },
+      {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/VoteAction",
+        userInteractionCount: totalVotes,
+      },
+    ],
+  };
 
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-[840px] mx-auto px-6 py-8">
         {/* 브레드크럼 */}
         <nav className="flex items-center gap-2 mb-6">
