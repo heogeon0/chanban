@@ -1,4 +1,4 @@
-"""기사 URL에서 본문 텍스트를 추출한다."""
+c"""기사 URL에서 본문 텍스트를 추출한다."""
 
 import httpx
 from bs4 import BeautifulSoup

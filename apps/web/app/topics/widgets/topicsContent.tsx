@@ -16,6 +16,7 @@ export async function TopicsContent({
   selectedTag,
   selectedSort,
 }: TopicsContentProps) {
+  
   const initialPosts = await topicDomains.getPosts(
     selectedTag === "all" ? "all" : selectedTag,
     selectedSort
