@@ -36,7 +36,7 @@ export function TopicDetailContent({ topicId, commentCount, initialVoteCount }: 
   const [sortType, setSortType] = useState<CommentSortType>("popular");
   const { isAuthenticated, isLoading: isLoadingAuth, user } = useAuth();
 
-  const { mutate: postVote } = usePostVote();
+  const { mutate: postVote, isPending: isVotePending } = usePostVote();
   const {
     data: commentsData,
     isLoading: isLoadingComments,
@@ -98,6 +98,7 @@ export function TopicDetailContent({ topicId, commentCount, initialVoteCount }: 
           <VoteButtons
             onVote={handleVote}
             selectedStatus={myVote?.currentStatus ?? null}
+            disabled={isVotePending}
           />
         </div>
 
@@ -220,7 +221,7 @@ export function TopicDetailContent({ topicId, commentCount, initialVoteCount }: 
                   로그인해서 다른 사람들의 의견을 확인해보세요
                 </p>
                 <Button asChild size="lg">
-                  <Link href="/auth/login">로그인</Link>
+                  <Link href={`/auth/login?returnUrl=/topics/${topicId}`}>로그인</Link>
                 </Button>
               </div>
             </div>

@@ -52,7 +52,7 @@ function AuthCheckOnFocusPlugin() {
       FOCUS_COMMAND,
       () => {
         if (!isAuthenticated) {
-          router.push("/auth/login");
+          router.push(`/auth/login?returnUrl=${window.location.pathname}`);
           return true;
         }
         return false;

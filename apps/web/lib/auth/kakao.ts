@@ -24,13 +24,19 @@ export const loginWithKakao = (): void => {
     return;
   }
 
-  // 현재 URL 저장 (로그인 완료 후 돌아갈 위치)
-  // 인증 관련 경로는 제외하고 저장
-  const currentPath = window.location.pathname;
-  const isExcludedPath = EXCLUDED_PATHS.some((path) => currentPath.startsWith(path));
+  // returnUrl query param이 있으면 우선 사용 (로그인 페이지에서 목적지를 명시한 경우)
+  // 없으면 현재 URL 저장 (인증 관련 경로 제외)
+  const searchParams = new URLSearchParams(window.location.search);
+  const returnUrlParam = searchParams.get("returnUrl");
 
-  if (!isExcludedPath) {
-    localStorage.setItem(RETURN_URL_KEY, window.location.href);
+  if (returnUrlParam) {
+    localStorage.setItem(RETURN_URL_KEY, `${window.location.origin}${returnUrlParam}`);
+  } else {
+    const currentPath = window.location.pathname;
+    const isExcludedPath = EXCLUDED_PATHS.some((path) => currentPath.startsWith(path));
+    if (!isExcludedPath) {
+      localStorage.setItem(RETURN_URL_KEY, window.location.href);
+    }
   }
 
   // 카카오 OAuth 인증 URL로 이동

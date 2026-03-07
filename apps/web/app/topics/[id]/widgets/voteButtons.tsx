@@ -7,6 +7,7 @@ interface VoteButtonsProps {
   onVote: (status: VoteStatus) => void;
   onShowCommentForm?: () => void;
   selectedStatus?: VoteStatus | null;
+  disabled?: boolean;
 }
 
 /**
@@ -20,6 +21,7 @@ export function VoteButtons({
   onVote,
   onShowCommentForm,
   selectedStatus = null,
+  disabled = false,
 }: VoteButtonsProps) {
   const isAgreeSelected = selectedStatus === VoteStatus.AGREE;
   const isDisagreeSelected = selectedStatus === VoteStatus.DISAGREE;
@@ -37,7 +39,8 @@ export function VoteButtons({
       {/* 찬성 버튼 */}
       <button
         type="button"
-        className={`flex-1 flex flex-col items-center justify-center gap-2 py-6 rounded-xl bg-opinion-agree hover:bg-opinion-agree/90 text-white transition-all transform hover:scale-[1.02] shadow-lg shadow-opinion-agree/20 ${isAgreeSelected ? selectedRingClass : ""}`}
+        disabled={disabled}
+        className={`flex-1 flex flex-col items-center justify-center gap-2 py-6 rounded-xl bg-opinion-agree hover:bg-opinion-agree/90 text-white transition-all transform hover:scale-[1.02] shadow-lg shadow-opinion-agree/20 disabled:opacity-80 disabled:cursor-not-allowed disabled:hover:scale-100 ${isAgreeSelected ? selectedRingClass : ""}`}
         onClick={() => handleVote(VoteStatus.AGREE)}
       >
         <ThumbsUp className="w-8 h-8" />
@@ -47,7 +50,8 @@ export function VoteButtons({
       {/* 반대 버튼 */}
       <button
         type="button"
-        className={`flex-1 flex flex-col items-center justify-center gap-2 py-6 rounded-xl bg-destructive hover:bg-destructive/90 text-white transition-all transform hover:scale-[1.02] shadow-lg shadow-destructive/20 ${isDisagreeSelected ? selectedRingClass : ""}`}
+        disabled={disabled}
+        className={`flex-1 flex flex-col items-center justify-center gap-2 py-6 rounded-xl bg-destructive hover:bg-destructive/90 text-white transition-all transform hover:scale-[1.02] shadow-lg shadow-destructive/20 disabled:opacity-80 disabled:cursor-not-allowed disabled:hover:scale-100 ${isDisagreeSelected ? selectedRingClass : ""}`}
         onClick={() => handleVote(VoteStatus.DISAGREE)}
       >
         <ThumbsDown className="w-8 h-8" />
@@ -57,7 +61,8 @@ export function VoteButtons({
       {/* 중립 버튼 */}
       <button
         type="button"
-        className={`flex-1 flex flex-col items-center justify-center gap-2 py-6 rounded-xl bg-muted hover:bg-muted/80 text-foreground transition-all transform hover:scale-[1.02] ${isNeutralSelected ? selectedRingClass : ""}`}
+        disabled={disabled}
+        className={`flex-1 flex flex-col items-center justify-center gap-2 py-6 rounded-xl bg-muted hover:bg-muted/80 text-foreground transition-all transform hover:scale-[1.02] disabled:opacity-80 disabled:cursor-not-allowed disabled:hover:scale-100 ${isNeutralSelected ? selectedRingClass : ""}`}
         onClick={() => handleVote(VoteStatus.NEUTRAL)}
       >
         <Scale className="w-8 h-8" />

@@ -88,7 +88,7 @@ export function useCommentLike() {
       }
 
       if (isHttpError(error) && error.status === HTTP_STATUS_UNAUTHORIZED) {
-        router.push("/auth/login");
+        router.push(`/auth/login?returnUrl=${window.location.pathname}`);
       }
     },
 
