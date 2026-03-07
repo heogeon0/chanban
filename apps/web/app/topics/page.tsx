@@ -6,7 +6,7 @@ import { TAG_MAP } from "./domains/constants";
 import { CategoryFilter } from "./widgets/categoryFilter";
 import ListToggle from "./widgets/listToggle";
 import { TopicsContent } from "./widgets/topicsContent";
-import TopicsLoading from "./loading";
+import { TopicsListSkeleton } from "./widgets/topicsListSkeleton";
 
 /**
  * 선택된 tag에 따라 동적 메타데이터를 생성합니다.
@@ -57,7 +57,7 @@ export default async function TopicsPage({
 
       {/* 토픽 목록 — API 응답 대기 중 스켈레톤 표시 */}
       <section className="flex-1 overflow-y-auto">
-        <Suspense fallback={<TopicsLoading />}>
+        <Suspense fallback={<TopicsListSkeleton />}>
           <TopicsContent
             selectedTag={selectedTag}
             selectedSort={selectedSort}

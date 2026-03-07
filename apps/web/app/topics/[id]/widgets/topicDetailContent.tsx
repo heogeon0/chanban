@@ -18,6 +18,11 @@ import { VoteDistributionBar } from "./voteDistributionBar";
 interface TopicDetailContentProps {
   topicId: string;
   commentCount: number;
+  initialVoteCount?: {
+    agreeCount: number;
+    disagreeCount: number;
+    neutralCount: number;
+  };
 }
 
 /**
@@ -27,7 +32,7 @@ interface TopicDetailContentProps {
  * @param topicId - 토픽 ID
  * @param commentCount - 서버에서 받아온 전체 댓글 수
  */
-export function TopicDetailContent({ topicId, commentCount }: TopicDetailContentProps) {
+export function TopicDetailContent({ topicId, commentCount, initialVoteCount }: TopicDetailContentProps) {
   const [sortType, setSortType] = useState<CommentSortType>("popular");
   const { isAuthenticated, isLoading: isLoadingAuth, user } = useAuth();
 
@@ -48,7 +53,10 @@ export function TopicDetailContent({ topicId, commentCount }: TopicDetailContent
     return commentsData?.pages.flatMap((page) => page.data) ?? [];
   }, [commentsData]);
 
-  const { data: voteCount } = useQuery(voteQueries.count(topicId));
+  const { data: voteCount } = useQuery({
+    ...voteQueries.count(topicId),
+    initialData: initialVoteCount,
+  });
   const { data: myVote } = useQuery(voteQueries.my(topicId));
   const { mutate: likeComment } = useCommentLike();
 

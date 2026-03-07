@@ -3,7 +3,9 @@ import { UserAvatar } from "@/shared/ui/avatar";
 import { VoteBadge } from "@/shared/ui/voteBadge";
 import { ApiResponse, PostResponse } from "@chanban/shared-types";
 import { ChevronRight } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { TAG_MAP } from "../domains/constants";
 import { formatRelativeTime } from "./widgets/commentUtils";
@@ -11,19 +13,46 @@ import { TopicDetailContent } from "./widgets/topicDetailContent";
 
 /**
  * 특정 토픽의 상세 정보를 조회합니다.
+ * cache()로 감싸 generateMetadata와 page 컴포넌트 간 중복 호출을 방지합니다.
  * @param id - 토픽 ID
  * @returns 토픽 상세 정보 또는 null (실패 시)
  */
-const getTopic = async (id: string): Promise<PostResponse | null> => {
+const getTopic = cache(async (id: string): Promise<PostResponse | null> => {
   try {
     const response = await httpClient.get<ApiResponse<PostResponse>>(
-      `/api/posts/${id}`
+      `/api/posts/${id}`,
+      { cache: "force-cache" }
     );
     return response.data;
   } catch {
     return null;
   }
-};
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const topic = await getTopic(id);
+
+  if (!topic) {
+    return { title: "토픽을 찾을 수 없습니다" };
+  }
+
+  const description = topic.content.slice(0, 120).replace(/\n/g, " ");
+
+  return {
+    title: topic.title,
+    description,
+    openGraph: {
+      title: `${topic.title} | 찬반`,
+      description,
+      type: "article",
+    },
+  };
+}
 
 export default async function TopicDetailPage(props: {
   params: Promise<{ id: string }>;
@@ -39,7 +68,7 @@ export default async function TopicDetailPage(props: {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="max-w-[840px] mx-auto px-6 py-8">
+      <div className="max-w-[840px] mx-auto px-6 py-8">
         {/* 브레드크럼 */}
         <nav className="flex items-center gap-2 mb-6">
           <Link
@@ -90,8 +119,16 @@ export default async function TopicDetailPage(props: {
         </article>
 
         {/* 투표 및 댓글 섹션 */}
-        <TopicDetailContent topicId={id} commentCount={topic.commentCount} />
-      </main>
+        <TopicDetailContent
+          topicId={id}
+          commentCount={topic.commentCount}
+          initialVoteCount={{
+            agreeCount: topic.agreeCount,
+            disagreeCount: topic.disagreeCount,
+            neutralCount: topic.neutralCount,
+          }}
+        />
+      </div>
     </div>
   );
 }
