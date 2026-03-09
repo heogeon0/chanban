@@ -2,9 +2,9 @@
 
 import { useAuth } from '@/shared/contexts/auth-context';
 import { UserAvatar } from '@/shared/ui/avatar';
-import { Button } from '@/shared/ui/button';
-import { useState } from 'react';
-import { EditNicknameForm } from './editNicknameForm';
+import { Pencil } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { useUpdateNickname } from '../features/use-update-nickname';
 
 interface ProfileSectionProps {
   totalVotes?: number;
@@ -19,53 +19,90 @@ interface ProfileSectionProps {
 export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps) {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { mutate, isPending } = useUpdateNickname();
 
   const hasStats = totalVotes !== undefined || totalTopics !== undefined;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const nickname = inputRef.current?.value.trim();
+    if (!nickname || nickname === user?.nickname) {
+      setIsEditing(false);
+      return;
+    }
+    mutate({ nickname }, { onSuccess: () => setIsEditing(false) });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') setIsEditing(false);
+  };
 
   return (
     <div className="px-4 py-8 desktop:px-8 desktop:py-10 border-b border-border">
       {/* 모바일: 중앙 정렬 컬럼 / 데스크탑: 수평 row */}
-      <div className="flex flex-col items-center gap-4 desktop:flex-row desktop:items-end desktop:justify-between">
-        {/* 아바타 + 정보 */}
-        <div className="flex flex-col items-center gap-3 desktop:flex-row desktop:items-center desktop:gap-6">
-          <UserAvatar
-            user={user}
-            size="md"
-            className="size-24 desktop:size-28 text-2xl rounded-full ring-4 ring-primary/20"
-          />
-          <div className="flex flex-col items-center gap-1 desktop:items-start">
-            <p className="text-2xl desktop:text-3xl font-bold leading-tight">
-              {user?.nickname}
-            </p>
-            {hasStats && (
-              <p className="text-sm text-muted-foreground hidden desktop:block">
-                {[
-                  totalVotes !== undefined && `${totalVotes} Votes`,
-                  totalTopics !== undefined && `${totalTopics} Topics`,
-                ]
-                  .filter(Boolean)
-                  .join(' • ')}
-              </p>
-            )}
-          </div>
-        </div>
+      <div className="flex flex-col items-center gap-4 desktop:flex-row desktop:items-center desktop:justify-start">
+        {/* 아바타 */}
+        <UserAvatar
+          user={user}
+          size="md"
+          className="size-24 desktop:size-28 text-2xl rounded-full ring-4 ring-primary/20"
+        />
 
-        {/* 수정 버튼 / 폼 */}
-        <div className="w-full desktop:w-auto">
+        {/* 닉네임 + 수정 */}
+        <div className="flex flex-col items-center gap-1.5 desktop:items-start">
           {isEditing ? (
-            <EditNicknameForm
-              currentNickname={user?.nickname ?? ''}
-              onClose={() => setIsEditing(false)}
-            />
+            <form onSubmit={handleSubmit} className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                defaultValue={user?.nickname}
+                minLength={2}
+                maxLength={20}
+                disabled={isPending}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                className="text-2xl desktop:text-3xl font-bold leading-tight bg-transparent border-b-2 border-primary outline-none w-40 desktop:w-52 text-center desktop:text-left"
+              />
+              <button
+                type="submit"
+                disabled={isPending}
+                className="text-xs text-primary font-semibold hover:opacity-70 disabled:opacity-40"
+              >
+                {isPending ? '저장 중' : '저장'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="text-xs text-muted-foreground hover:opacity-70"
+              >
+                취소
+              </button>
+            </form>
           ) : (
-            <Button
-              variant="outline"
-              onClick={() => setIsEditing(true)}
-              className="w-full desktop:w-auto rounded-full desktop:rounded-lg gap-1.5"
-            >
-              <span className="text-sm">✏</span>
-              Edit Profile
-            </Button>
+            <div className="flex items-center gap-2">
+              <p className="text-2xl desktop:text-3xl font-bold leading-tight">
+                {user?.nickname}
+              </p>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-muted-foreground hover:text-foreground transition-colors mt-0.5"
+                aria-label="닉네임 수정"
+              >
+                <Pencil className="size-4" />
+              </button>
+            </div>
+          )}
+
+          {/* 통계 - 데스크탑 인라인 */}
+          {hasStats && (
+            <p className="text-sm text-muted-foreground hidden desktop:block">
+              {[
+                totalVotes !== undefined && `${totalVotes} Votes`,
+                totalTopics !== undefined && `${totalTopics} Topics`,
+              ]
+                .filter(Boolean)
+                .join(' • ')}
+            </p>
           )}
         </div>
       </div>

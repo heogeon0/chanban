@@ -11,9 +11,9 @@ export function useUpdateNickname() {
 
   return useMutation({
     mutationFn: userMutations.updateNickname,
-    onSuccess: (data) => {
+    onSuccess: (_, variables) => {
       if (user) {
-        setUser({ ...user, nickname: data.nickname });
+        setUser({ ...user, nickname: variables.nickname });
       }
     },
   });
