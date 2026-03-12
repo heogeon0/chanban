@@ -108,7 +108,7 @@ export function HotTopicsSection() {
         <div className="h-52 bg-muted rounded-xl animate-pulse mb-4" />
         <div className="grid desktop:grid-cols-3 gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-40 bg-muted rounded animate-pulse" />
+            <div key={i} className="w-full h-40 bg-muted rounded animate-pulse" />
           ))}
         </div>
       </section>

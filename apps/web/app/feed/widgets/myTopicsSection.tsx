@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { userQueries } from "@/shared/queries/user";
 import { TopicCard } from "@/app/topics/widgets/topicCard";
+import { userQueries } from "@/shared/queries/user";
+import { useQuery } from "@tanstack/react-query";
 import { FeedSectionHeader } from "./feedSectionHeader";
 
 /**
@@ -22,7 +22,7 @@ export function MyTopicsSection() {
         </div>
         <div className="grid desktop:grid-cols-2 gap-3 desktop:gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-40 bg-muted rounded animate-pulse" />
+            <div key={i} className="w-full h-40 bg-muted rounded animate-pulse" />
           ))}
         </div>
       </section>
