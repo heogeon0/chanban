@@ -2,8 +2,11 @@
 
 import { useAuth } from "@/shared/contexts/auth-context";
 import { HotTopicsSection } from "./feed/widgets/hotTopicsSection";
+import { LatestTopicsSection } from "./feed/widgets/latestTopicsSection";
+import { LoginCtaBanner } from "./feed/widgets/loginCtaBanner";
 import { MyTopicsSection } from "./feed/widgets/myTopicsSection";
 import { MyVotesSection } from "./feed/widgets/myVotesSection";
+import { TagTopicsSection } from "./feed/widgets/tagTopicsSection";
 
 export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -17,10 +20,13 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 개인화 섹션 */}
-      <div className="max-w-6xl mx-auto px-4 desktop:px-8 py-8 space-y-10">
+      {/* 피드 섹션 */}
+      <div className="max-w-6xl w-full mx-auto px-4 desktop:px-8 py-8 space-y-10">
         {!isLoading && isAuthenticated && <MyTopicsSection />}
         {!isLoading && isAuthenticated && <MyVotesSection />}
+        <LatestTopicsSection />
+        <TagTopicsSection />
+        {!isLoading && !isAuthenticated && <LoginCtaBanner />}
       </div>
     </>
   );
