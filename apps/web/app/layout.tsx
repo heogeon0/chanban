@@ -31,7 +31,7 @@ export default function RootLayout({
             <div className="max-w-6xl mx-auto px-4 desktop:px-8 py-3 flex items-center justify-between">
               {/* 로고 */}
               <Link
-                href="/topics"
+                href="/"
                 className="flex items-center gap-2 text-primary font-bold text-xl"
               >
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
