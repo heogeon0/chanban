@@ -20,13 +20,26 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 피드 섹션 */}
+      {/* 로그인 유도 배너 — 비로그인 사용자만 */}
+      {!isLoading && !isAuthenticated && (
+        <div className="border-b border-border py-8">
+          <div className="max-w-6xl mx-auto px-4 desktop:px-8">
+            <LoginCtaBanner />
+          </div>
+        </div>
+      )}
+
+      {/* 로그인 피드 섹션 */}
+      {!isLoading && isAuthenticated && (
+      <div className="max-w-6xl w-full mx-auto px-4 desktop:px-8 py-8 space-y-10 border-b border-border">
+        <MyTopicsSection />
+        <MyVotesSection />
+      </div>
+      )}
+      {/* 최신 토픽 섹션 */}
       <div className="max-w-6xl w-full mx-auto px-4 desktop:px-8 py-8 space-y-10">
-        {!isLoading && isAuthenticated && <MyTopicsSection />}
-        {!isLoading && isAuthenticated && <MyVotesSection />}
         <LatestTopicsSection />
         <TagTopicsSection />
-        {!isLoading && !isAuthenticated && <LoginCtaBanner />}
       </div>
     </>
   );

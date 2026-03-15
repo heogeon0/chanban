@@ -33,13 +33,13 @@ const getOpinionBorderClass = (
   showOpinion: boolean
 ): string => {
   if (!showOpinion || opinion === null) {
-    return "border-t-muted-foreground desktop:border-t-border desktop:border-l-muted-foreground";
+    return "border-l-muted-foreground";
   }
 
   const borderClassMap: Record<VoteStatus, string> = {
-    [VoteStatus.AGREE]: "border-t-opinion-agree desktop:border-t-border desktop:border-l-opinion-agree",
-    [VoteStatus.DISAGREE]: "border-t-opinion-disagree desktop:border-t-border desktop:border-l-opinion-disagree",
-    [VoteStatus.NEUTRAL]: "border-t-opinion-neutral desktop:border-t-border desktop:border-l-opinion-neutral",
+    [VoteStatus.AGREE]: "border-l-opinion-agree",
+    [VoteStatus.DISAGREE]: "border-l-opinion-disagree",
+    [VoteStatus.NEUTRAL]: "border-l-opinion-neutral",
   };
 
   return borderClassMap[opinion];
@@ -64,7 +64,7 @@ const formatCount = (num: number): string => {
 
 /**
  * 토픽 목록에서 사용되는 카드 컴포넌트
- * 왼쪽 보더 + 3색 프로그레스 바 디자인
+ * 왼쪽 컬러 보더 + 3색 프로그레스 바 디자인
  *
  * @param post - 게시글 데이터
  */
@@ -85,13 +85,13 @@ export function TopicCard({ post, myVote }: TopicCardProps) {
   return (
     <Link
       href={`/topics/${post.id}`}
-      className={`flex flex-col p-4 desktop:p-5 border-t-2 desktop:border-t desktop:border-l-4 ${borderColorClass} hover:bg-muted/40 transition-colors cursor-pointer desktop:border desktop:border-border desktop:bg-card desktop:mb-3`}
+      className={`flex flex-col min-h-[160px] p-4 desktop:p-5 border-l-4 ${borderColorClass} border border-border bg-card hover:bg-muted/40 transition-colors cursor-pointer rounded-sm`}
     >
       {/* 상단: 카테고리/시간 + 제목 + 설명 — flex-1로 가변 공간 차지 */}
       <div className="flex-1 flex flex-col">
         {/* 카테고리 & 시간 */}
-        <div className="flex justify-between items-start mb-2">
-          <span className="text-[10px] desktop:text-xs font-bold text-primary uppercase tracking-wide">
+        <div className="flex justify-between items-center mb-2">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] desktop:text-xs font-semibold bg-muted text-primary">
             {tagInfo.name}
           </span>
           <span className="text-[10px] desktop:text-xs text-muted-foreground">
@@ -105,7 +105,7 @@ export function TopicCard({ post, myVote }: TopicCardProps) {
         </h3>
 
         {/* 내용 미리보기 - 데스크탑에서만 표시 */}
-        <p className="hidden desktop:block text-sm text-muted-foreground line-clamp-2">
+        <p className="hidden desktop:block text-sm text-muted-foreground line-clamp-2 flex-1">
           {post.content}
         </p>
       </div>
@@ -113,7 +113,7 @@ export function TopicCard({ post, myVote }: TopicCardProps) {
       {/* 하단: 프로그레스 바 + 메타 — 항상 카드 바닥에 위치 */}
       <div className="mt-3">
         {/* 3색 프로그레스 바 */}
-        <div className="flex h-1.5 desktop:h-2 w-full rounded-full overflow-hidden bg-muted mb-3">
+        <div className="flex h-2 desktop:h-2.5 w-full rounded-full overflow-hidden bg-muted mb-3">
           <div
             className="bg-opinion-agree h-full transition-all"
             style={{ width: `${agreePercent}%` }}
