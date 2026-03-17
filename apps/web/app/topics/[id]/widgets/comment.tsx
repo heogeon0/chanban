@@ -10,6 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
 import { ReplyComment } from "./replyComment";
 import { CommentForm } from "./commentForm";
+import { FollowButton } from "@/shared/components/follow-button";
+import Link from "next/link";
 
 interface CommentProps {
   comment: CommentResponse;
@@ -163,14 +165,18 @@ export function Comment({ comment, topicId, onLike }: CommentProps) {
       {/* 원댓글 */}
       <div className="flex gap-4">
         {/* 아바타 */}
-        <UserAvatar user={comment.user} size="md" />
+        <Link href={`/users/${comment.user.id}`}>
+          <UserAvatar user={comment.user} size="md" className="hover:opacity-80 transition-opacity cursor-pointer" />
+        </Link>
 
         <div className="flex-1">
           {/* 댓글 카드 */}
           <div className="bg-muted/50 rounded-xl p-4">
             {/* 헤더: 사용자 정보 및 메타데이터 */}
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="font-bold text-sm">{comment.user.nickname}</span>
+              <Link href={`/users/${comment.user.id}`} className="font-bold text-sm hover:underline">
+                {comment.user.nickname}
+              </Link>
               <span className="text-xs text-muted-foreground">
                 {formatRelativeTime(comment.createdAt)}
               </span>
@@ -182,6 +188,8 @@ export function Comment({ comment, topicId, onLike }: CommentProps) {
               {comment.updatedAt !== comment.createdAt && (
                 <span className="text-muted-foreground text-xs">(수정됨)</span>
               )}
+
+              <FollowButton userId={comment.user.id} />
             </div>
 
             {/* 댓글 내용 */}

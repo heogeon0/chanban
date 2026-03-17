@@ -10,6 +10,7 @@ import { notFound } from "next/navigation";
 import { TAG_MAP } from "../domains/constants";
 import { formatRelativeTime } from "./widgets/commentUtils";
 import { TopicDetailContent } from "./widgets/topicDetailContent";
+import { FollowButton } from "@/shared/components/follow-button";
 
 /**
  * 특정 토픽의 상세 정보를 조회합니다.
@@ -133,12 +134,14 @@ export default async function TopicDetailPage(props: {
             {topic.title}
           </h1>
           <div className="flex items-center gap-3 flex-wrap">
-            <UserAvatar user={topic.creator} size="sm" />
+            <Link href={`/users/${topic.creator.id}`}>
+              <UserAvatar user={topic.creator} size="sm" className="hover:opacity-80 transition-opacity cursor-pointer" />
+            </Link>
             <p className="text-muted-foreground text-sm">
               Posted by{" "}
-              <span className="text-primary font-medium">
+              <Link href={`/users/${topic.creator.id}`} className="text-primary font-medium hover:underline">
                 @{topic.creator.nickname}
-              </span>
+              </Link>
               <span className="mx-1">•</span>
               <span>{formatRelativeTime(topic.createdAt)}</span>
               <span className="mx-1">in</span>
@@ -147,6 +150,7 @@ export default async function TopicDetailPage(props: {
             {topic.showCreatorOpinion && topic.creatorVote && (
               <VoteBadge status={topic.creatorVote} />
             )}
+            <FollowButton userId={topic.creator.id} />
           </div>
         </header>
 

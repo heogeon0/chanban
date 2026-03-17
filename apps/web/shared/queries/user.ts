@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/httpClient";
-import { PaginatedResponse, PostResponse, VoteResponse } from "@chanban/shared-types";
+import { ApiResponse, PaginatedResponse, PostResponse, UserCommentResponse, UserResponse, VoteResponse } from "@chanban/shared-types";
 import { queryKeys } from "./keys";
 
 /**
@@ -44,6 +44,42 @@ export const userQueries = {
         `/api/users/me/votes?page=${page}&limit=10`
       );
     },
+  }),
+
+  /**
+   * 특정 사용자의 공개 프로필 쿼리 옵션
+   * @param userId - 사용자 ID
+   */
+  profile: (userId: string) => ({
+    queryKey: queryKeys.user.profile(userId),
+    queryFn: async () =>
+      httpClient.get<ApiResponse<UserResponse>>(`/api/users/${userId}/profile`),
+  }),
+
+  /**
+   * 특정 사용자가 작성한 토픽 목록 쿼리 옵션
+   * @param userId - 사용자 ID
+   * @param page - 페이지 번호
+   */
+  userPosts: (userId: string, page: number) => ({
+    queryKey: queryKeys.user.posts(userId, page),
+    queryFn: async () =>
+      httpClient.get<PaginatedResponse<PostResponse>>(
+        `/api/users/${userId}/posts?page=${page}&limit=10`
+      ),
+  }),
+
+  /**
+   * 특정 사용자가 작성한 댓글 목록 쿼리 옵션
+   * @param userId - 사용자 ID
+   * @param page - 페이지 번호
+   */
+  userComments: (userId: string, page: number) => ({
+    queryKey: queryKeys.user.comments(userId, page),
+    queryFn: async () =>
+      httpClient.get<PaginatedResponse<UserCommentResponse>>(
+        `/api/users/${userId}/comments?page=${page}&limit=10`
+      ),
   }),
 };
 

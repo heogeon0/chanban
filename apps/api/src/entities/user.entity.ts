@@ -12,6 +12,7 @@ import { Post } from './post.entity';
 import { Vote } from './vote.entity';
 import { Comment } from './comment.entity';
 import { CommentLike } from './comment-like.entity';
+import { Follow } from './follow.entity';
 
 @Entity('users')
 export class User {
@@ -50,4 +51,10 @@ export class User {
 
   @OneToMany(() => CommentLike, (like) => like.user)
   commentLikes: CommentLike[];
+
+  @OneToMany(() => Follow, (f) => f.follower)
+  following: Follow[];
+
+  @OneToMany(() => Follow, (f) => f.following)
+  followers: Follow[];
 }

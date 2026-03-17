@@ -5,6 +5,8 @@ import { UserAvatar } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { Heart } from "lucide-react";
 import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
+import { FollowButton } from "@/shared/components/follow-button";
+import Link from "next/link";
 
 interface ReplyCommentProps {
   reply: CommentReplyResponse;
@@ -42,14 +44,18 @@ export function ReplyComment({ reply, onLike }: ReplyCommentProps) {
   return (
     <div className="flex gap-3">
       {/* 아바타 */}
-      <UserAvatar user={reply.user} size="sm" />
+      <Link href={`/users/${reply.user.id}`}>
+        <UserAvatar user={reply.user} size="sm" className="hover:opacity-80 transition-opacity cursor-pointer" />
+      </Link>
 
       <div className="flex-1">
         {/* 답글 카드 */}
         <div className="bg-muted/50 rounded-xl p-4">
           {/* 헤더: 사용자 정보 및 메타데이터 */}
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="font-bold text-sm">{reply.user.nickname}</span>
+            <Link href={`/users/${reply.user.id}`} className="font-bold text-sm hover:underline">
+              {reply.user.nickname}
+            </Link>
             <span className="text-xs text-muted-foreground">
               {formatRelativeTime(reply.createdAt)}
             </span>
@@ -61,6 +67,8 @@ export function ReplyComment({ reply, onLike }: ReplyCommentProps) {
             {reply.updatedAt !== reply.createdAt && (
               <span className="text-muted-foreground text-xs">(수정됨)</span>
             )}
+
+            <FollowButton userId={reply.user.id} />
           </div>
 
           {/* 답글 내용 */}
