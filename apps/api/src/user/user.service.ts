@@ -9,6 +9,7 @@ import { ErrorCode, PaginationMeta, VoteStatus } from '@chanban/shared-types';
 import { User } from '../entities/user.entity';
 import { Post } from '../entities/post.entity';
 import { Vote } from '../entities/vote.entity';
+import { Comment } from '../entities/comment.entity';
 import { ResponseWithMeta } from '../common/dto/response.dto';
 
 @Injectable()
@@ -20,6 +21,8 @@ export class UserService {
     private postRepository: Repository<Post>,
     @InjectRepository(Vote)
     private voteRepository: Repository<Vote>,
+    @InjectRepository(Comment)
+    private commentRepository: Repository<Comment>,
   ) {}
 
   /**
@@ -117,6 +120,52 @@ export class UserService {
       take: limit,
       relations: ['post', 'post.creator'],
     });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return new ResponseWithMeta(items, { total, page, limit, totalPages });
+  }
+
+  /**
+   * 특정 사용자가 작성한 댓글 목록을 조회합니다.
+   * @param userId - 사용자 ID
+   * @param page - 페이지 번호
+   * @param limit - 페이지당 항목 수
+   */
+  async findUserComments(
+    userId: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<ResponseWithMeta<any[], PaginationMeta>> {
+    const skip = (page - 1) * limit;
+
+    const [comments, total] = await this.commentRepository.findAndCount({
+      where: { userId, deletedAt: IsNull() },
+      order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
+      relations: ['post'],
+    });
+
+    const postIds = [...new Set(comments.map((c) => c.postId))];
+
+    const voteMap = new Map<string, VoteStatus>();
+    if (postIds.length > 0) {
+      const votes = await this.voteRepository.find({
+        where: postIds.map((postId) => ({ postId, userId })),
+        select: ['postId', 'currentStatus'],
+      });
+      votes.forEach((v) => voteMap.set(v.postId, v.currentStatus));
+    }
+
+    const items = comments.map((c) => ({
+      id: c.id,
+      content: c.content,
+      likeCount: c.likeCount,
+      createdAt: c.createdAt,
+      myVote: voteMap.get(c.postId) ?? null,
+      post: { id: c.post.id, title: c.post.title },
+    }));
 
     const totalPages = Math.ceil(total / limit);
 
