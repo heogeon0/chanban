@@ -49,6 +49,15 @@ class Comment(BaseModel):
     disagree_count: int = 0
 
 
+class AnalysisLLMOutput(BaseModel):
+    """LLM이 직접 반환하는 분석 결과 스키마 (with_structured_output 전용)."""
+
+    title: str = Field(..., description="찬반 토론 제목 (50자 이내, 커뮤니티 구어체)")
+    content: str = Field(..., description="본문 (300~500자)")
+    tag: PostTag = Field(..., description="카테고리 태그")
+    creator_opinion: VoteStatus = Field(..., description="작성자 의견 (agree/disagree/neutral)")
+
+
 class AnalysisResult(BaseModel):
     """LangChain 분석 결과 — 찬반 토론 주제."""
 
