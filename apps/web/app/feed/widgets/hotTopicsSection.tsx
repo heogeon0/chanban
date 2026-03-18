@@ -117,7 +117,7 @@ export function HotTopicsSection() {
 
   if (topics.length === 0) return null;
 
-  const [hero, ...rest] = topics;
+  const [hero, ...rest] = topics as [PostResponse, ...PostResponse[]];
 
   return (
     <section>
