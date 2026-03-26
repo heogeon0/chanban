@@ -49,7 +49,7 @@ export const loginWithKakao = (): void => {
  * 저장된 returnUrl을 가져오고 삭제합니다.
  */
 export const getAndClearReturnUrl = (): string => {
-  if (typeof window === "undefined") return "/topics";
+  if (typeof window === "undefined") return "/";
 
   const returnUrl = localStorage.getItem(RETURN_URL_KEY);
   localStorage.removeItem(RETURN_URL_KEY);
@@ -66,5 +66,5 @@ export const getAndClearReturnUrl = (): string => {
     }
   }
 
-  return "/topics";
+  return "/";
 };
