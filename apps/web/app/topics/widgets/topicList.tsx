@@ -53,7 +53,7 @@ export function TopicList({ tag, initialMeta }: TopicListProps) {
 
   return (
     <>
-      <div className="divide-y divide-border/50 desktop:divide-y-0 desktop:space-y-0">
+      <div className="divide-y divide-border/50">
         {allPosts.map((post) => (
           <TopicCard key={post.id} post={post} />
         ))}

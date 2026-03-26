@@ -23,8 +23,8 @@ export async function TopicsContent({
   );
 
   return (
-    <div className="max-w-4xl mx-auto w-full px-0 desktop:px-8 desktop:py-6">
-      <div className="divide-y divide-border/50 space-y-1 desktop:divide-y-0 desktop:space-y-0">
+    <div className="max-w-4xl mx-auto w-full">
+      <div className="divide-y divide-border/50">
         {initialPosts.data.map((post) => (
           <TopicCard key={post.id} post={post} />
         ))}
