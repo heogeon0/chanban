@@ -28,7 +28,7 @@ export default function RootLayout({
         <Providers>
           {/* 헤더 */}
           <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-            <div className="max-w-6xl mx-auto px-4 desktop:px-8 py-3 flex items-center justify-between">
+            <div className="px-4 py-3 flex items-center justify-between">
               {/* 로고 */}
               <Link
                 href="/"

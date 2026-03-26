@@ -13,31 +13,28 @@ export default function HomePage() {
 
   return (
     <>
-      {/* 인기 토픽 — 배경 분리 */}
-      <div className="bg-muted/40 border-b border-border py-8">
-        <div className="max-w-6xl mx-auto px-4 desktop:px-8">
-          <HotTopicsSection />
-        </div>
+      {/* 인기 토픽 */}
+      <div className="bg-muted/40 border-b border-border">
+        <HotTopicsSection />
       </div>
 
       {/* 로그인 유도 배너 — 비로그인 사용자만 */}
       {!isLoading && !isAuthenticated && (
-        <div className="border-b border-border py-8">
-          <div className="max-w-6xl mx-auto px-4 desktop:px-8">
-            <LoginCtaBanner />
-          </div>
+        <div className="border-b border-border px-4 py-6">
+          <LoginCtaBanner />
         </div>
       )}
 
       {/* 로그인 피드 섹션 */}
       {!isLoading && isAuthenticated && (
-      <div className="max-w-6xl w-full mx-auto px-4 desktop:px-8 py-8 space-y-10 border-b border-border">
-        <MyTopicsSection />
-        <MyVotesSection />
-      </div>
+        <div className="border-b border-border divide-y divide-border/50">
+          <MyTopicsSection />
+          <MyVotesSection />
+        </div>
       )}
+
       {/* 최신 토픽 섹션 */}
-      <div className="max-w-6xl w-full mx-auto px-4 desktop:px-8 py-8 space-y-10">
+      <div className="divide-y divide-border/50">
         <LatestTopicsSection />
         <TagTopicsSection />
       </div>

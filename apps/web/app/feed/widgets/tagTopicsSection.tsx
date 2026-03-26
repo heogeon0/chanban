@@ -30,34 +30,39 @@ export function TagTopicsSection() {
 
   return (
     <section>
-      <FeedSectionHeader
-        title="📂 카테고리별 토픽"
-        moreHref={`/topics?tag=${selectedTag}`}
-        moreLabel="더보기"
-      />
-
-      {/* 탭 */}
-      <div className="flex gap-2 mb-4">
-        {TABS.map(({ tag, label }) => (
-          <button
-            key={tag}
-            onClick={() => setSelectedTag(tag)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              selectedTag === tag
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="px-4 pt-5 pb-3">
+        <FeedSectionHeader
+          title="📂 카테고리별 토픽"
+          moreHref={`/topics?tag=${selectedTag}`}
+          moreLabel="더보기"
+        />
+        {/* 탭 */}
+        <div className="flex gap-2">
+          {TABS.map(({ tag, label }) => (
+            <button
+              key={tag}
+              onClick={() => setSelectedTag(tag)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedTag === tag
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* 토픽 그리드 */}
+      {/* 토픽 리스트 */}
       {isLoading ? (
-        <div className="grid desktop:grid-cols-2 gap-3 desktop:gap-4">
+        <div className="divide-y divide-border/50">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="w-full h-40 bg-muted rounded animate-pulse" />
+            <div key={i} className="px-4 py-4 space-y-2.5">
+              <div className="h-3 w-16 bg-muted rounded animate-pulse" />
+              <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
+              <div className="h-1.5 w-full bg-muted rounded-full animate-pulse" />
+            </div>
           ))}
         </div>
       ) : topics.length === 0 ? (
@@ -65,7 +70,7 @@ export function TagTopicsSection() {
           아직 토픽이 없습니다.
         </p>
       ) : (
-        <div className="grid desktop:grid-cols-2 gap-3 desktop:gap-4">
+        <div className="divide-y divide-border/50">
           {topics.map((topic) => (
             <TopicCard key={topic.id} post={topic} />
           ))}

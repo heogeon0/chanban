@@ -5,7 +5,7 @@ import { KakaoLoginButton } from "@/shared/components/kakao-login-button";
  */
 export function LoginCtaBanner() {
   return (
-    <section className="rounded-xl border border-border bg-card p-6 desktop:p-8 text-center">
+    <section className="rounded-xl border border-border bg-card p-6 text-center">
       <p className="text-2xl mb-2">🗳</p>
       <h3 className="text-lg font-bold mb-1">내 의견을 남겨보세요</h3>
       <p className="text-sm text-muted-foreground mb-6">
