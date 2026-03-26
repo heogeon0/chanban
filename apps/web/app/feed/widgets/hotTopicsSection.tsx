@@ -2,13 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { topicQueries } from "@/shared/queries/topic";
-import { TopicCard } from "@/app/topics/widgets/topicCard";
 import { FeedSectionHeader } from "./feedSectionHeader";
 import { PostResponse } from "@chanban/shared-types";
 import Link from "next/link";
 import { MessageSquare, Vote } from "lucide-react";
 import { TAG_MAP } from "@/app/topics/domains/constants";
 import { formatRelativeTime } from "@/app/topics/[id]/widgets/commentUtils";
+import { TopicCarousel } from "./topicCarousel";
 
 /**
  * 숫자를 포맷팅합니다 (1000 -> 1k)
@@ -34,7 +34,7 @@ function HeroBanner({ post }: { post: PostResponse }) {
       href={`/topics/${post.id}`}
       className="block rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors overflow-hidden"
     >
-      <div className="p-5 desktop:p-8">
+      <div className="p-5">
         {/* 태그 & 시간 */}
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-bold text-primary uppercase tracking-wide">
@@ -46,27 +46,23 @@ function HeroBanner({ post }: { post: PostResponse }) {
         </div>
 
         {/* 제목 */}
-        <h2 className="text-xl desktop:text-2xl font-bold mb-2 line-clamp-2">
-          {post.title}
-        </h2>
+        <h2 className="text-xl font-bold mb-2 line-clamp-2">{post.title}</h2>
 
         {/* 내용 미리보기 */}
-        <p className="text-sm desktop:text-base text-muted-foreground line-clamp-2 mb-6">
-          {post.content}
-        </p>
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-6">{post.content}</p>
 
         {/* 찬반 퍼센트 레이블 */}
         <div className="flex justify-between text-xs font-semibold mb-1.5">
           <span className="text-opinion-agree">찬성 {agreePercent}%</span>
           <span className="text-muted-foreground">중립 {neutralPercent}%</span>
-          <span className="text-destructive">반대 {disagreePercent}%</span>
+          <span className="text-opinion-disagree">반대 {disagreePercent}%</span>
         </div>
 
         {/* 3색 프로그레스 바 */}
         <div className="flex h-3 w-full rounded-full overflow-hidden bg-muted mb-4">
           <div className="bg-opinion-agree h-full transition-all" style={{ width: `${agreePercent}%` }} />
           <div className="bg-muted-foreground h-full transition-all" style={{ width: `${neutralPercent}%` }} />
-          <div className="bg-destructive h-full transition-all" style={{ width: `${disagreePercent}%` }} />
+          <div className="bg-opinion-disagree h-full transition-all" style={{ width: `${disagreePercent}%` }} />
         </div>
 
         {/* 통계 */}
@@ -87,7 +83,7 @@ function HeroBanner({ post }: { post: PostResponse }) {
 
 /**
  * 인기 토픽 섹션 컴포넌트
- * 1위 → 히어로 배너, 2~4위 → 그리드
+ * 1위 → 히어로 배너, 2~4위 → 오토 캐러셀
  * 비로그인 포함 모든 사용자에게 노출됩니다.
  */
 export function HotTopicsSection() {
@@ -100,17 +96,13 @@ export function HotTopicsSection() {
 
   if (isLoading) {
     return (
-      <section>
-        <div className="flex items-center justify-between mb-4">
+      <section className="px-4 py-6 space-y-3">
+        <div className="flex items-center justify-between">
           <div className="h-6 w-32 bg-muted rounded animate-pulse" />
           <div className="h-4 w-16 bg-muted rounded animate-pulse" />
         </div>
-        <div className="h-52 bg-muted rounded-xl animate-pulse mb-4" />
-        <div className="grid desktop:grid-cols-3 gap-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="w-full h-40 bg-muted rounded animate-pulse" />
-          ))}
-        </div>
+        <div className="h-52 bg-muted rounded-xl animate-pulse" />
+        <div className="h-32 bg-muted rounded-xl animate-pulse" />
       </section>
     );
   }
@@ -120,22 +112,14 @@ export function HotTopicsSection() {
   const [hero, ...rest] = topics as [PostResponse, ...PostResponse[]];
 
   return (
-    <section>
+    <section className="px-4 py-6 space-y-3">
       <FeedSectionHeader
         title="🔥 인기 토픽"
         moreHref="/topics?sort=popular"
         moreLabel="더보기"
       />
       <HeroBanner post={hero} />
-      {rest.length > 0 && (
-        <div className="flex desktop:grid desktop:grid-cols-3 gap-3 desktop:gap-4 mt-3 overflow-x-auto desktop:overflow-x-visible pb-2 desktop:pb-0">
-          {rest.map((topic) => (
-            <div key={topic.id} className="min-w-[280px] desktop:min-w-0 shrink-0">
-              <TopicCard post={topic} />
-            </div>
-          ))}
-        </div>
-      )}
+      {rest.length > 0 && <TopicCarousel topics={rest} />}
     </section>
   );
 }
