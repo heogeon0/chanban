@@ -1,4 +1,4 @@
-import { CreateTopicButton } from "@/shared/components/create-topic-button";
+import { BottomTabBar } from "@/shared/components/bottom-tab-bar";
 import { UserMenu } from "@/shared/components/user-menu";
 import { Providers } from "@/shared/providers";
 import "@/styles/globals.css";
@@ -40,20 +40,19 @@ export default function RootLayout({
                 <span>찬반</span>
               </Link>
 
-              {/* 네비게이션 & 액션 */}
-              <div className="flex items-center gap-4">
-                <CreateTopicButton />
-                <UserMenu />
-              </div>
+              <UserMenu />
             </div>
 
           </header>
 
-          {/* 메인 콘텐츠 */}
-          <main className="flex-1 flex flex-col">{children}</main>
+          {/* 메인 콘텐츠 — 탭바 높이만큼 하단 패딩 */}
+          <main className="flex-1 flex flex-col pb-16">{children}</main>
 
           {/* 모달 슬롯 */}
           {modal}
+
+          {/* 하단 탭바 */}
+          <BottomTabBar />
         </Providers>
       </body>
       {process.env.NEXT_PUBLIC_GA_ID && (
