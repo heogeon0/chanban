@@ -25,7 +25,7 @@ export default async function HomePage({
 
       {/* 필터 바 */}
       <div className="sticky top-14 z-40 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="px-4 py-2.5 flex items-center justify-between gap-3">
+        <div className="max-w-4xl mx-auto w-full px-4 py-2.5 flex items-center justify-between gap-3">
           <CategoryFilter selectedTag={selectedTag} selectedSort={selectedSort} />
           <ListToggle selectedTag={selectedTag} selectedSort={selectedSort} />
         </div>

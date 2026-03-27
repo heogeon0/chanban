@@ -96,13 +96,15 @@ export function HotTopicsSection() {
 
   if (isLoading) {
     return (
-      <section className="px-4 py-6 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="h-6 w-32 bg-muted rounded animate-pulse" />
-          <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+      <section className="py-6">
+        <div className="max-w-4xl mx-auto w-full px-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+          </div>
+          <div className="h-52 bg-muted rounded-xl animate-pulse" />
+          <div className="h-32 bg-muted rounded-xl animate-pulse" />
         </div>
-        <div className="h-52 bg-muted rounded-xl animate-pulse" />
-        <div className="h-32 bg-muted rounded-xl animate-pulse" />
       </section>
     );
   }
@@ -112,14 +114,16 @@ export function HotTopicsSection() {
   const [hero, ...rest] = topics as [PostResponse, ...PostResponse[]];
 
   return (
-    <section className="px-4 py-6 space-y-3">
-      <FeedSectionHeader
-        title="🔥 인기 토픽"
-        moreHref="/topics?sort=popular"
-        moreLabel="더보기"
-      />
-      <HeroBanner post={hero} />
-      {rest.length > 0 && <TopicCarousel topics={rest} />}
+    <section className="py-6">
+      <div className="max-w-4xl mx-auto w-full px-4 space-y-3">
+        <FeedSectionHeader
+          title="🔥 인기 토픽"
+          moreHref="/?sort=popular"
+          moreLabel="더보기"
+        />
+        <HeroBanner post={hero} />
+        {rest.length > 0 && <TopicCarousel topics={rest} />}
+      </div>
     </section>
   );
 }
