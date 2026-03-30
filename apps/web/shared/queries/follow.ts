@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/httpClient";
-import { ApiResponse, FollowCountsResponse, FollowStatusResponse } from "@chanban/shared-types";
+import { ApiResponse, FollowCountsResponse, FollowStatusResponse, FollowUserResponse, PaginatedResponse } from "@chanban/shared-types";
 import { queryKeys } from "./keys";
 
 /**
@@ -24,6 +24,32 @@ export const followQueries = {
     queryKey: queryKeys.follow.counts(userId),
     queryFn: async () =>
       httpClient.get<ApiResponse<FollowCountsResponse>>(`/api/users/${userId}/follow-counts`),
+  }),
+
+  /**
+   * 특정 사용자의 팔로워 목록 쿼리 옵션
+   * @param userId - 확인할 사용자 ID
+   * @param page - 페이지 번호
+   */
+  followers: (userId: string, page: number) => ({
+    queryKey: queryKeys.follow.followers(userId, page),
+    queryFn: async () =>
+      httpClient.get<PaginatedResponse<FollowUserResponse>>(
+        `/api/users/${userId}/followers?page=${page}&limit=20`
+      ),
+  }),
+
+  /**
+   * 특정 사용자의 팔로잉 목록 쿼리 옵션
+   * @param userId - 확인할 사용자 ID
+   * @param page - 페이지 번호
+   */
+  following: (userId: string, page: number) => ({
+    queryKey: queryKeys.follow.following(userId, page),
+    queryFn: async () =>
+      httpClient.get<PaginatedResponse<FollowUserResponse>>(
+        `/api/users/${userId}/following?page=${page}&limit=20`
+      ),
   }),
 };
 

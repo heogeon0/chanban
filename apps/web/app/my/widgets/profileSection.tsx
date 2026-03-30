@@ -8,6 +8,7 @@ import { Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useUpdateNickname } from '../features/use-update-nickname';
+import { FollowListSheet } from './follow-list-sheet';
 
 interface ProfileSectionProps {
   totalVotes?: number;
@@ -22,6 +23,7 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
   const { user, logout } = useAuth();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const [followSheet, setFollowSheet] = useState<'followers' | 'following' | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate, isPending } = useUpdateNickname();
 
@@ -52,6 +54,7 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
   };
 
   return (
+    <>
     <div className="px-4 py-8 border-b border-border flex flex-col items-center gap-3">
       {/* 아바타 */}
       <UserAvatar
@@ -104,14 +107,15 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
       {/* 통계 카드 */}
       <div className="grid grid-cols-4 gap-2 w-full mt-3">
         {[
-          { value: totalVotes ?? 0, label: 'VOTES' },
-          { value: totalTopics ?? 0, label: 'TOPICS' },
-          { value: followersCount, label: '팔로워' },
-          { value: followingCount, label: '팔로잉' },
-        ].map(({ value, label }) => (
+          { value: totalVotes ?? 0, label: 'VOTES', onClick: undefined },
+          { value: totalTopics ?? 0, label: 'TOPICS', onClick: undefined },
+          { value: followersCount, label: '팔로워', onClick: () => setFollowSheet('followers') },
+          { value: followingCount, label: '팔로잉', onClick: () => setFollowSheet('following') },
+        ].map(({ value, label, onClick }) => (
           <div
             key={label}
-            className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border py-3 px-1"
+            onClick={onClick}
+            className={`flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border py-3 px-1 ${onClick ? 'cursor-pointer hover:bg-muted/80 transition-colors' : ''}`}
           >
             <p className="text-xl font-bold text-opinion-agree">{value}</p>
             <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -129,5 +133,14 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
         로그아웃
       </button>
     </div>
+
+    {user?.id && (
+      <FollowListSheet
+        userId={user.id}
+        type={followSheet}
+        onClose={() => setFollowSheet(null)}
+      />
+    )}
+    </>
   );
 }
