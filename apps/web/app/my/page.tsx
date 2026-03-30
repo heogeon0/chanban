@@ -26,7 +26,7 @@ export default function MyPage() {
 
   return (
     <ProtectedRoute redirectTo="/auth/login?returnUrl=/my">
-      <div className="max-w-6xl mx-auto w-full">
+      <div className="max-w-4xl mx-auto w-full">
         <ProfileSection totalVotes={totalVotes} totalTopics={totalTopics} />
 
         {/* 탭 네비게이션 */}
