@@ -41,7 +41,7 @@ export function FollowListSheet({ userId, type, onClose }: FollowListSheetProps)
     }
   }, [entries, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const allUsers = data?.pages.flatMap((page) => page.data) ?? [];
+  const allUsers = data?.pages.flatMap((page) => page.data.data) ?? [];
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title={type ? TITLE[type] : ""}>

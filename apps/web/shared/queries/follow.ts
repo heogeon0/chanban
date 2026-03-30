@@ -34,7 +34,7 @@ export const followQueries = {
   followers: (userId: string, page: number) => ({
     queryKey: queryKeys.follow.followers(userId, page),
     queryFn: async () =>
-      httpClient.get<PaginatedResponse<FollowUserResponse>>(
+      httpClient.get<ApiResponse<PaginatedResponse<FollowUserResponse>>>(
         `/api/users/${userId}/followers?page=${page}&limit=20`
       ),
   }),
@@ -47,7 +47,7 @@ export const followQueries = {
   following: (userId: string, page: number) => ({
     queryKey: queryKeys.follow.following(userId, page),
     queryFn: async () =>
-      httpClient.get<PaginatedResponse<FollowUserResponse>>(
+      httpClient.get<ApiResponse<PaginatedResponse<FollowUserResponse>>>(
         `/api/users/${userId}/following?page=${page}&limit=20`
       ),
   }),
