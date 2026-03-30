@@ -5,9 +5,10 @@ export default function MyPageLoading() {
       <div className="px-4 py-8 border-b border-border flex flex-col items-center gap-3">
         <div className="size-20 rounded-full bg-muted animate-pulse" />
         <div className="h-6 w-32 rounded bg-muted animate-pulse" />
-        <div className="grid grid-cols-2 gap-3 w-full mt-3">
-          <div className="h-20 rounded-xl bg-muted animate-pulse" />
-          <div className="h-20 rounded-xl bg-muted animate-pulse" />
+        <div className="grid grid-cols-4 gap-2 w-full mt-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />
+          ))}
         </div>
         <div className="h-5 w-16 rounded bg-muted/50 animate-pulse mt-2" />
       </div>

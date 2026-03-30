@@ -1,7 +1,9 @@
 'use client';
 
 import { useAuth } from '@/shared/contexts/auth-context';
+import { followQueries } from '@/shared/queries/follow';
 import { UserAvatar } from '@/shared/ui/avatar';
+import { useQuery } from '@tanstack/react-query';
 import { Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
@@ -22,6 +24,13 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate, isPending } = useUpdateNickname();
+
+  const { data: countsData } = useQuery({
+    ...followQueries.counts(user?.id ?? ''),
+    enabled: !!user?.id,
+  });
+  const followersCount = countsData?.data?.followersCount ?? 0;
+  const followingCount = countsData?.data?.followingCount ?? 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,19 +102,23 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
       )}
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-2 gap-3 w-full mt-3">
-        <div className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border p-4">
-          <p className="text-2xl font-bold text-opinion-agree">{totalVotes ?? 0}</p>
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            VOTES
-          </p>
-        </div>
-        <div className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border p-4">
-          <p className="text-2xl font-bold text-opinion-agree">{totalTopics ?? 0}</p>
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            TOPICS
-          </p>
-        </div>
+      <div className="grid grid-cols-4 gap-2 w-full mt-3">
+        {[
+          { value: totalVotes ?? 0, label: 'VOTES' },
+          { value: totalTopics ?? 0, label: 'TOPICS' },
+          { value: followersCount, label: '팔로워' },
+          { value: followingCount, label: '팔로잉' },
+        ].map(({ value, label }) => (
+          <div
+            key={label}
+            className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border py-3 px-1"
+          >
+            <p className="text-xl font-bold text-opinion-agree">{value}</p>
+            <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              {label}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* 로그아웃 */}
