@@ -38,8 +38,7 @@ export default function MyPage() {
           onFollowSheetOpen={setFollowSheet}
         />
 
-        {/* 탭 네비게이션 + 컨텐츠: relative로 시트 위치 기준점 */}
-        <div className="relative overflow-hidden">
+        <div>
           {/* 탭 네비게이션 */}
           <div className="flex border-b border-border">
             <button
@@ -67,13 +66,11 @@ export default function MyPage() {
           {/* 탭 컨텐츠 */}
           {activeTab === 'votes' ? <MyVotesTab /> : <MyTopicsTab />}
 
-          {/* 팔로워/팔로잉 시트 — 탭 영역 기준으로 올라옴 */}
           {user?.id && (
             <FollowListSheet
               userId={user.id}
               type={followSheet}
               onClose={() => setFollowSheet(null)}
-              contained
             />
           )}
         </div>
