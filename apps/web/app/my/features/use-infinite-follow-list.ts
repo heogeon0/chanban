@@ -15,7 +15,7 @@ export function useInfiniteFollowList(userId: string, type: FollowListType) {
       followQueries[type](userId, pageParam).queryFn(),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      const { page, totalPages } = lastPage.data.meta;
+      const { page, totalPages } = lastPage.meta;
       return page < totalPages ? page + 1 : undefined;
     },
     enabled: !!userId,
