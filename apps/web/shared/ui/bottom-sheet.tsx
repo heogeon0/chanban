@@ -59,7 +59,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
 
       {/* 시트 */}
       <div
-        className={`absolute bottom-0 left-0 right-0 max-w-4xl mx-auto bg-background rounded-t-2xl max-h-[90vh] flex flex-col ${isClosing ? "animate-out slide-out-to-bottom duration-280" : "animate-in slide-in-from-bottom duration-300"}`}
+        className={`absolute bottom-0 left-0 right-0 max-w-4xl mx-auto bg-background rounded-t-2xl h-[90vh] flex flex-col ${isClosing ? "animate-out slide-out-to-bottom duration-280" : "animate-in slide-in-from-bottom duration-300"}`}
         onTouchStart={(e) => {
           touchStartY.current = e.touches[0].clientY;
         }}
