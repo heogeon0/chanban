@@ -26,11 +26,14 @@ export default function MyPage() {
 
   return (
     <ProtectedRoute redirectTo="/auth/login?returnUrl=/my">
-      <div className="max-w-4xl mx-auto w-full">
-        <ProfileSection totalVotes={totalVotes} totalTopics={totalTopics} />
+      <div className="max-w-4xl mx-auto w-full flex flex-col h-[calc(100dvh-3.5rem-4rem)]">
+        {/* 프로필 — 고정 높이 */}
+        <div className="shrink-0">
+          <ProfileSection totalVotes={totalVotes} totalTopics={totalTopics} />
+        </div>
 
-        {/* 탭 네비게이션 */}
-        <div className="flex border-b border-border">
+        {/* 탭 네비게이션 — 고정 */}
+        <div className="flex border-b border-border shrink-0">
           <button
             onClick={() => setActiveTab('votes')}
             className={`flex flex-1 items-center justify-center gap-2 py-3.5 text-sm font-bold transition-colors border-b-2 ${
@@ -53,8 +56,10 @@ export default function MyPage() {
           </button>
         </div>
 
-        {/* 탭 컨텐츠 */}
-        {activeTab === 'votes' ? <MyVotesTab /> : <MyTopicsTab />}
+        {/* 탭 컨텐츠 — 이 영역만 스크롤 */}
+        <div className="flex-1 overflow-y-auto">
+          {activeTab === 'votes' ? <MyVotesTab /> : <MyTopicsTab />}
+        </div>
       </div>
     </ProtectedRoute>
   );
