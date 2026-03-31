@@ -7,6 +7,11 @@ interface BottomSheetProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  /**
+   * contained 모드: fixed 대신 absolute를 사용합니다.
+   * 부모 요소에 `relative overflow-hidden`이 필요합니다.
+   */
+  contained?: boolean;
 }
 
 const SWIPE_CLOSE_THRESHOLD = 80;
@@ -22,8 +27,9 @@ const CLOSE_ANIMATION_DURATION = 280;
  * @param onClose - 닫기 핸들러
  * @param title - 시트 상단 제목
  * @param children - 시트 내용
+ * @param contained - true이면 fixed 대신 absolute 사용 (부모 기준 위치)
  */
-export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
+export function BottomSheet({ isOpen, onClose, title, children, contained = false }: BottomSheetProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const touchStartY = useRef(0);
@@ -49,8 +55,10 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
 
   if (!isMounted) return null;
 
+  const positionClass = contained ? "absolute inset-0 z-10" : "fixed inset-0 z-50";
+
   return (
-    <div className="fixed inset-0 z-50">
+    <div className={positionClass}>
       {/* 배경 */}
       <div
         className={`absolute inset-0 bg-black/40 ${isClosing ? "animate-out fade-out duration-280" : "animate-in fade-in duration-200"}`}
@@ -59,7 +67,7 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
 
       {/* 시트 */}
       <div
-        className={`absolute bottom-0 left-0 right-0 max-w-4xl mx-auto bg-background rounded-t-2xl max-h-[80vh] flex flex-col ${isClosing ? "animate-out slide-out-to-bottom duration-280" : "animate-in slide-in-from-bottom duration-300"}`}
+        className={`absolute bottom-0 left-0 right-0 max-w-4xl mx-auto bg-background rounded-t-2xl max-h-full flex flex-col ${isClosing ? "animate-out slide-out-to-bottom duration-280" : "animate-in slide-in-from-bottom duration-300"}`}
         onTouchStart={(e) => {
           touchStartY.current = e.touches[0].clientY;
         }}

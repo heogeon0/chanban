@@ -14,6 +14,7 @@ interface FollowListSheetProps {
   userId: string;
   type: FollowListType | null;
   onClose: () => void;
+  contained?: boolean;
 }
 
 const TITLE: Record<FollowListType, string> = {
@@ -27,7 +28,7 @@ const TITLE: Record<FollowListType, string> = {
  * @param type - 'followers' | 'following' | null (null이면 닫힘)
  * @param onClose - 닫기 핸들러
  */
-export function FollowListSheet({ userId, type, onClose }: FollowListSheetProps) {
+export function FollowListSheet({ userId, type, onClose, contained }: FollowListSheetProps) {
   const isOpen = type !== null;
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteFollowList(userId, type ?? "followers");
@@ -44,7 +45,7 @@ export function FollowListSheet({ userId, type, onClose }: FollowListSheetProps)
   const allUsers = data?.pages.flatMap((page) => page.data) ?? [];
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose} title={type ? TITLE[type] : ""}>
+    <BottomSheet isOpen={isOpen} onClose={onClose} title={type ? TITLE[type] : ""} contained={contained}>
       {isLoading ? (
         <FollowListSkeleton />
       ) : allUsers.length === 0 ? (

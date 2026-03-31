@@ -8,22 +8,23 @@ import { Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useUpdateNickname } from '../features/use-update-nickname';
-import { FollowListSheet } from './follow-list-sheet';
 
 interface ProfileSectionProps {
   totalVotes?: number;
   totalTopics?: number;
+  onFollowSheetOpen: (type: 'followers' | 'following') => void;
 }
 
 /**
  * 마이페이지 프로필 섹션
  * 아바타, 닉네임 수정, 통계, 로그아웃 포함
+ *
+ * @param onFollowSheetOpen - 팔로워/팔로잉 카드 클릭 시 호출되는 콜백
  */
-export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps) {
+export function ProfileSection({ totalVotes, totalTopics, onFollowSheetOpen }: ProfileSectionProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const [followSheet, setFollowSheet] = useState<'followers' | 'following' | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate, isPending } = useUpdateNickname();
 
@@ -54,7 +55,6 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
   };
 
   return (
-    <>
     <div className="px-4 py-8 border-b border-border flex flex-col items-center gap-3">
       {/* 아바타 */}
       <UserAvatar
@@ -109,8 +109,8 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
         {[
           { value: totalVotes ?? 0, label: 'VOTES', onClick: undefined },
           { value: totalTopics ?? 0, label: 'TOPICS', onClick: undefined },
-          { value: followersCount, label: '팔로워', onClick: () => setFollowSheet('followers') },
-          { value: followingCount, label: '팔로잉', onClick: () => setFollowSheet('following') },
+          { value: followersCount, label: '팔로워', onClick: () => onFollowSheetOpen('followers') },
+          { value: followingCount, label: '팔로잉', onClick: () => onFollowSheetOpen('following') },
         ].map(({ value, label, onClick }) => (
           <div
             key={label}
@@ -133,14 +133,5 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
         로그아웃
       </button>
     </div>
-
-    {user?.id && (
-      <FollowListSheet
-        userId={user.id}
-        type={followSheet}
-        onClose={() => setFollowSheet(null)}
-      />
-    )}
-    </>
   );
 }
