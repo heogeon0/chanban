@@ -2,15 +2,26 @@ export default function MyPageLoading() {
   return (
     <div className="max-w-4xl mx-auto w-full">
       {/* 프로필 스켈레톤 */}
-      <div className="px-4 py-8 border-b border-border flex flex-col items-center gap-3">
-        <div className="size-20 rounded-full bg-muted animate-pulse" />
-        <div className="h-6 w-32 rounded bg-muted animate-pulse" />
-        <div className="grid grid-cols-4 gap-2 w-full mt-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />
-          ))}
+      <div className="px-5 pt-6 pb-5 border-b border-border">
+        <div className="flex items-center gap-6">
+          <div className="size-[72px] rounded-full bg-muted animate-pulse shrink-0" />
+          <div className="flex flex-1 items-center justify-around">
+            <div className="flex flex-col items-center gap-1.5">
+              <div className="h-7 w-8 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-10 rounded bg-muted/60 animate-pulse" />
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="flex flex-col items-center gap-1.5">
+              <div className="h-7 w-8 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-10 rounded bg-muted/60 animate-pulse" />
+            </div>
+          </div>
         </div>
-        <div className="h-5 w-16 rounded bg-muted/50 animate-pulse mt-2" />
+        <div className="h-5 w-24 rounded bg-muted animate-pulse mt-3.5" />
+        <div className="flex gap-2 mt-3">
+          <div className="h-6 w-16 rounded-full bg-muted/70 animate-pulse" />
+          <div className="h-6 w-16 rounded-full bg-muted/70 animate-pulse" />
+        </div>
       </div>
 
       {/* 탭 스켈레톤 */}
