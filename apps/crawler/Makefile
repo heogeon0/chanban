@@ -1,4 +1,4 @@
-.PHONY: run crawl discuss setup test lint
+.PHONY: run crawl discuss discuss-post setup test lint
 
 # 전체 파이프라인 (크롤링 + 글작성 + 토론)
 run:
@@ -11,6 +11,11 @@ crawl:
 # 2단계: 토론만 (crawl 먼저 실행 필요)
 discuss:
 	.venv/bin/python -m src.main discuss
+
+# 특정 게시글 ID로 토론 실행 (예: make discuss-post id=abc123)
+discuss-post:
+	@test -n "$(id)" || (echo "사용법: make discuss-post id=<게시글_ID>"; exit 1)
+	.venv/bin/python -m src.main discuss --post-id $(id)
 
 # 환경 세팅 (최초 1회)
 setup:

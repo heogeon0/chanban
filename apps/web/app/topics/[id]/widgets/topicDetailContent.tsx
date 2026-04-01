@@ -18,6 +18,11 @@ import { VoteDistributionBar } from "./voteDistributionBar";
 interface TopicDetailContentProps {
   topicId: string;
   commentCount: number;
+  initialVoteCount?: {
+    agreeCount: number;
+    disagreeCount: number;
+    neutralCount: number;
+  };
 }
 
 /**
@@ -27,11 +32,11 @@ interface TopicDetailContentProps {
  * @param topicId - 토픽 ID
  * @param commentCount - 서버에서 받아온 전체 댓글 수
  */
-export function TopicDetailContent({ topicId, commentCount }: TopicDetailContentProps) {
+export function TopicDetailContent({ topicId, commentCount, initialVoteCount }: TopicDetailContentProps) {
   const [sortType, setSortType] = useState<CommentSortType>("popular");
   const { isAuthenticated, isLoading: isLoadingAuth, user } = useAuth();
 
-  const { mutate: postVote } = usePostVote();
+  const { mutate: postVote, isPending: isVotePending } = usePostVote();
   const {
     data: commentsData,
     isLoading: isLoadingComments,
@@ -48,7 +53,10 @@ export function TopicDetailContent({ topicId, commentCount }: TopicDetailContent
     return commentsData?.pages.flatMap((page) => page.data) ?? [];
   }, [commentsData]);
 
-  const { data: voteCount } = useQuery(voteQueries.count(topicId));
+  const { data: voteCount } = useQuery({
+    ...voteQueries.count(topicId),
+    initialData: initialVoteCount,
+  });
   const { data: myVote } = useQuery(voteQueries.my(topicId));
   const { mutate: likeComment } = useCommentLike();
 
@@ -90,6 +98,7 @@ export function TopicDetailContent({ topicId, commentCount }: TopicDetailContent
           <VoteButtons
             onVote={handleVote}
             selectedStatus={myVote?.currentStatus ?? null}
+            disabled={isVotePending}
           />
         </div>
 
@@ -212,7 +221,7 @@ export function TopicDetailContent({ topicId, commentCount }: TopicDetailContent
                   로그인해서 다른 사람들의 의견을 확인해보세요
                 </p>
                 <Button asChild size="lg">
-                  <Link href="/auth/login">로그인</Link>
+                  <Link href={`/auth/login?returnUrl=/topics/${topicId}`}>로그인</Link>
                 </Button>
               </div>
             </div>

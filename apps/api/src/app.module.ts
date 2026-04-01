@@ -9,6 +9,7 @@ import databaseConfig from './config/database.config';
 import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
 import { VoteModule } from './vote/vote.module';
+import { FollowModule } from './follow/follow.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { VoteModule } from './vote/vote.module';
     VoteModule,
     AuthModule,
     UserModule,
+    FollowModule,
   ],
   controllers: [AppController],
   providers: [AppService],

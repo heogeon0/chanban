@@ -1,11 +1,11 @@
 """LangChain 체인: 기사 + 댓글 → 찬반 토론 주제 생성."""
 
-from langchain_core.output_parsers import JsonOutputParser
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from src.analyzer.prompts import comment_prompt, debate_topic_prompt, reply_prompt
 from src.config import get_settings
 from src.models.schemas import (
+    AnalysisLLMOutput,
     AnalysisResult,
     Article,
     Comment,
@@ -48,9 +48,9 @@ async def analyze_article(
         google_api_key=settings.GOOGLE_API_KEY,
     )
 
-    chain = debate_topic_prompt | model | JsonOutputParser()
+    chain = debate_topic_prompt | model.with_structured_output(AnalysisLLMOutput)
 
-    result = await chain.ainvoke({
+    llm_output: AnalysisLLMOutput = await chain.ainvoke({
         "persona_description": persona.description,
         "persona_prompt": persona.system_prompt,
         "article_title": article.title,
@@ -58,7 +58,12 @@ async def analyze_article(
         "comments": _format_comments(comments),
     })
 
-    return AnalysisResult(**result)
+    return AnalysisResult(
+        title=llm_output.title,
+        content=llm_output.content,
+        tag=llm_output.tag,
+        creator_opinion=llm_output.creator_opinion,
+    )
 
 
 def _build_model():
@@ -88,14 +93,15 @@ async def generate_comment(
     Returns:
         CommentResult (content, vote_status).
     """
-    chain = comment_prompt | _build_model() | JsonOutputParser()
+    
+    chain = comment_prompt | _build_model().with_structured_output(CommentResult)
 
     if existing_comments:
         formatted = "\n".join(f"- {c}" for c in existing_comments)
     else:
         formatted = "(아직 댓글 없음)"
 
-    result = await chain.ainvoke({
+    result: CommentResult = await chain.ainvoke({
         "persona_description": persona.description,
         "persona_prompt": persona.system_prompt,
         "post_title": title,
@@ -103,7 +109,7 @@ async def generate_comment(
         "existing_comments": formatted,
     })
 
-    return CommentResult(**result)
+    return result
 
 
 async def generate_reply(
@@ -123,9 +129,9 @@ async def generate_reply(
     Returns:
         ReplyResult (content).
     """
-    chain = reply_prompt | _build_model() | JsonOutputParser()
+    chain = reply_prompt | _build_model().with_structured_output(ReplyResult)
 
-    result = await chain.ainvoke({
+    result: ReplyResult = await chain.ainvoke({
         "persona_description": persona.description,
         "persona_prompt": persona.system_prompt,
         "post_title": title,
@@ -133,4 +139,4 @@ async def generate_reply(
         "parent_comment": parent_comment,
     })
 
-    return ReplyResult(**result)
+    return result

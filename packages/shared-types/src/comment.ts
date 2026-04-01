@@ -2,6 +2,18 @@ import { VoteStatus } from './enums';
 
 export type CommentSortType = 'popular' | 'latest';
 
+export interface UserCommentResponse {
+  id: string;
+  content: string;
+  likeCount: number;
+  createdAt: Date;
+  myVote: VoteStatus | null;
+  post: {
+    id: string;
+    title: string;
+  };
+}
+
 export interface VoteHistoryResponse {
   fromStatus: VoteStatus | null;
   toStatus: VoteStatus;

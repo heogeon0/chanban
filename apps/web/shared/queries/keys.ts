@@ -20,4 +20,17 @@ export const queryKeys = {
     count: (postId: string) => ["voteCount", postId] as const,
     my: (postId: string) => ["myVote", postId] as const,
   },
+  user: {
+    myPosts: (page: number) => ["user", "posts", page] as const,
+    myVotes: (page: number) => ["user", "votes", page] as const,
+    profile: (userId: string) => ["user", "profile", userId] as const,
+    posts: (userId: string, page: number) => ["user", "posts", userId, page] as const,
+    comments: (userId: string, page: number) => ["user", "comments", userId, page] as const,
+  },
+  follow: {
+    status: (userId: string) => ["follow", "status", userId] as const,
+    counts: (userId: string) => ["follow", "counts", userId] as const,
+    followers: (userId: string, page: number) => ["follow", "followers", userId, page] as const,
+    following: (userId: string, page: number) => ["follow", "following", userId, page] as const,
+  },
 };

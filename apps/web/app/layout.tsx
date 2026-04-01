@@ -1,9 +1,19 @@
-import { CreateTopicButton } from "@/shared/components/create-topic-button";
+import { BottomTabBar } from "@/shared/components/bottom-tab-bar";
 import { UserMenu } from "@/shared/components/user-menu";
 import { Providers } from "@/shared/providers";
 import "@/styles/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | 찬반",
+    default: "찬반 - 함께 토론하는 찬반 플랫폼",
+  },
+  description:
+    "사회, 정치, 경제, 기술 이슈에 대해 찬반 의견을 나누는 토론 플랫폼",
+};
 
 export default function RootLayout({
   children,
@@ -13,15 +23,15 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning>
       <body className="font-sans antialiased min-h-screen flex flex-col">
         <Providers>
           {/* 헤더 */}
           <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-            <div className="max-w-6xl mx-auto px-4 desktop:px-8 py-3 flex items-center justify-between">
+            <div className="px-4 py-3 flex items-center justify-between">
               {/* 로고 */}
               <Link
-                href="/topics"
+                href="/"
                 className="flex items-center gap-2 text-primary font-bold text-xl"
               >
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
@@ -30,20 +40,19 @@ export default function RootLayout({
                 <span>찬반</span>
               </Link>
 
-              {/* 네비게이션 & 액션 */}
-              <div className="flex items-center gap-4">
-                <CreateTopicButton />
-                <UserMenu />
-              </div>
+              <UserMenu />
             </div>
 
           </header>
 
-          {/* 메인 콘텐츠 */}
-          <main className="flex-1 flex flex-col">{children}</main>
+          {/* 메인 콘텐츠 — 탭바 높이만큼 하단 패딩 */}
+          <main className="flex-1 flex flex-col pb-16">{children}</main>
 
           {/* 모달 슬롯 */}
           {modal}
+
+          {/* 하단 탭바 */}
+          <BottomTabBar />
         </Providers>
       </body>
       {process.env.NEXT_PUBLIC_GA_ID && (
