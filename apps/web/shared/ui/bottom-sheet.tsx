@@ -34,16 +34,19 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
       if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
       setIsClosing(false);
       setIsMounted(true);
+      document.body.style.overflow = "hidden";
     } else if (isMounted) {
       setIsClosing(true);
       closeTimerRef.current = setTimeout(() => {
         setIsMounted(false);
         setIsClosing(false);
       }, CLOSE_ANIMATION_DURATION);
+      document.body.style.overflow = "";
     }
 
     return () => {
       if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 

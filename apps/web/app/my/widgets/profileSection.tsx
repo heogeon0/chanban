@@ -5,7 +5,6 @@ import { followQueries } from '@/shared/queries/follow';
 import { UserAvatar } from '@/shared/ui/avatar';
 import { useQuery } from '@tanstack/react-query';
 import { Pencil } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useUpdateNickname } from '../features/use-update-nickname';
 
@@ -17,13 +16,12 @@ interface ProfileSectionProps {
 
 /**
  * 마이페이지 프로필 섹션
- * 아바타, 닉네임 수정, 통계, 로그아웃 포함
+ * 아바타, 닉네임 수정, 팔로워/팔로잉(클릭), 투표/토픽 통계 포함
  *
- * @param onFollowSheetOpen - 팔로워/팔로잉 카드 클릭 시 호출되는 콜백
+ * @param onFollowSheetOpen - 팔로워/팔로잉 클릭 시 호출되는 콜백
  */
 export function ProfileSection({ totalVotes, totalTopics, onFollowSheetOpen }: ProfileSectionProps) {
-  const { user, logout } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate, isPending } = useUpdateNickname();
@@ -49,89 +47,89 @@ export function ProfileSection({ totalVotes, totalTopics, onFollowSheetOpen }: P
     if (e.key === 'Escape') setIsEditing(false);
   };
 
-  const handleLogout = () => {
-    logout();
-    router.push('/');
-  };
-
   return (
-    <div className="px-4 py-8 border-b border-border flex flex-col items-center gap-3">
-      {/* 아바타 */}
-      <UserAvatar
-        user={user}
-        size="md"
-        className="size-20 text-2xl rounded-full ring-4 ring-primary/20"
-      />
+    <div className="px-4 pt-6 pb-4 border-b border-border">
+      {/* 아바타 + 팔로워/팔로잉 */}
+      <div className="flex items-center gap-6">
+        <UserAvatar
+          user={user}
+          size="lg"
+          className="size-20 text-2xl rounded-full ring-4 ring-primary/20 shrink-0"
+        />
 
-      {/* 닉네임 */}
-      {isEditing ? (
-        <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          <input
-            ref={inputRef}
-            defaultValue={user?.nickname}
-            minLength={2}
-            maxLength={20}
-            disabled={isPending}
-            onKeyDown={handleKeyDown}
-            autoFocus
-            className="text-xl font-bold bg-transparent border-b-2 border-primary outline-none w-40 text-center"
-          />
+        {/* 팔로워 / 팔로잉 */}
+        <div className="flex flex-1 justify-around">
           <button
-            type="submit"
-            disabled={isPending}
-            className="text-xs text-primary font-semibold hover:opacity-70 disabled:opacity-40"
+            onClick={() => onFollowSheetOpen('followers')}
+            className="flex flex-col items-center gap-0.5"
           >
-            {isPending ? '저장 중' : '저장'}
+            <span className="text-xl font-bold">{followersCount}</span>
+            <span className="text-xs text-muted-foreground">팔로워</span>
           </button>
           <button
-            type="button"
-            onClick={() => setIsEditing(false)}
-            className="text-xs text-muted-foreground hover:opacity-70"
+            onClick={() => onFollowSheetOpen('following')}
+            className="flex flex-col items-center gap-0.5"
           >
-            취소
-          </button>
-        </form>
-      ) : (
-        <div className="flex items-center gap-2">
-          <p className="text-xl font-bold">{user?.nickname}</p>
-          <button
-            onClick={() => setIsEditing(true)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="닉네임 수정"
-          >
-            <Pencil className="size-4" />
+            <span className="text-xl font-bold">{followingCount}</span>
+            <span className="text-xs text-muted-foreground">팔로잉</span>
           </button>
         </div>
-      )}
-
-      {/* 통계 카드 */}
-      <div className="grid grid-cols-4 gap-2 w-full mt-3">
-        {[
-          { value: totalVotes ?? 0, label: 'VOTES', onClick: undefined },
-          { value: totalTopics ?? 0, label: 'TOPICS', onClick: undefined },
-          { value: followersCount, label: '팔로워', onClick: () => onFollowSheetOpen('followers') },
-          { value: followingCount, label: '팔로잉', onClick: () => onFollowSheetOpen('following') },
-        ].map(({ value, label, onClick }) => (
-          <div
-            key={label}
-            onClick={onClick}
-            className={`flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border py-3 px-1 ${onClick ? 'cursor-pointer hover:bg-muted/80 transition-colors' : ''}`}
-          >
-            <p className="text-xl font-bold text-opinion-agree">{value}</p>
-            <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-              {label}
-            </p>
-          </div>
-        ))}
       </div>
 
-      {/* 로그아웃 */}
-      <button
-        onClick={handleLogout}
-        className="mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
-      >
-        로그아웃
-      </button>
+      {/* 닉네임 */}
+      <div className="mt-3">
+        {isEditing ? (
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <input
+              ref={inputRef}
+              defaultValue={user?.nickname}
+              minLength={2}
+              maxLength={20}
+              disabled={isPending}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              className="text-base font-bold bg-transparent border-b-2 border-primary outline-none w-40"
+            />
+            <button
+              type="submit"
+              disabled={isPending}
+              className="text-xs text-primary font-semibold hover:opacity-70 disabled:opacity-40"
+            >
+              {isPending ? '저장 중' : '저장'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="text-xs text-muted-foreground hover:opacity-70"
+            >
+              취소
+            </button>
+          </form>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <p className="text-base font-bold">{user?.nickname}</p>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="닉네임 수정"
+            >
+              <Pencil className="size-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 투표 / 토픽 통계 */}
+      <div className="flex gap-3 mt-3">
+        <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 border border-border px-3 py-2">
+          <span className="text-sm font-bold text-opinion-agree">{totalVotes ?? 0}</span>
+          <span className="text-xs text-muted-foreground">투표</span>
+        </div>
+        <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 border border-border px-3 py-2">
+          <span className="text-sm font-bold text-opinion-agree">{totalTopics ?? 0}</span>
+          <span className="text-xs text-muted-foreground">토픽</span>
+        </div>
+      </div>
     </div>
   );
 }
