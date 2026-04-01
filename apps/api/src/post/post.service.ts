@@ -19,6 +19,7 @@ import { Post } from '../entities/post.entity';
 import { User } from '../entities/user.entity';
 import { Vote } from '../entities/vote.entity';
 import { VoteHistory } from '../entities/vote-history.entity';
+import { SummaryService } from '../summary/summary.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
@@ -33,6 +34,7 @@ export class PostService {
     @InjectRepository(VoteHistory)
     private readonly voteHistoryRepository: Repository<VoteHistory>,
     private readonly dataSource: DataSource,
+    private readonly summaryService: SummaryService,
   ) {}
 
   async findRecentPosts(
@@ -111,7 +113,7 @@ export class PostService {
     }
 
     // Transaction으로 Post 생성 + Vote 생성
-    return await this.dataSource.transaction(async (manager) => {
+    const createdPost = await this.dataSource.transaction(async (manager) => {
       // Post 생성
       const post = manager.create(Post, {
         ...postData,
@@ -165,6 +167,11 @@ export class PostService {
 
       return postWithCreator;
     });
+
+    // 게시글 생성 후 본문 요약 비동기 생성 (실패해도 무관)
+    void this.summaryService.generateContentSummary(createdPost);
+
+    return createdPost;
   }
 
   findAll() {
