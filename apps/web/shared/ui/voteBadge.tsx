@@ -26,7 +26,7 @@ export function VoteBadge({ status }: { status: VoteStatus }) {
 
   return (
     <span
-      className={`inline-flex items-center justify-center px-1.5 py-1.5 rounded-full text-xs font-bold ${config.className}`}
+      className={`inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[11px] font-semibold ${config.className}`}
     >
       {config.label}
     </span>
