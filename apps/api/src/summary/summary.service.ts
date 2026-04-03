@@ -2,12 +2,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository } from 'typeorm';
 import { GoogleGenAI } from '@google/genai';
+import { VoteStatus } from '@chanban/shared-types';
 import { Post } from '../entities/post.entity';
 import { Comment } from '../entities/comment.entity';
+import { Vote } from '../entities/vote.entity';
 import { PostSummary } from './entities/post-summary.entity';
 
 const COMMENT_INVALIDATION_THRESHOLD = 10;
 const MAX_COMMENTS_FOR_SUMMARY = 50;
+const MIN_OPINION_COMMENTS = 3;
+const MIN_VOTES_FOR_VOTE_SUMMARY = 10;
 
 @Injectable()
 export class SummaryService {
@@ -21,6 +25,8 @@ export class SummaryService {
     private readonly postRepository: Repository<Post>,
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
+    @InjectRepository(Vote)
+    private readonly voteRepository: Repository<Vote>,
   ) {
     this.genai = new GoogleGenAI({
       apiKey: process.env.GOOGLE_AI_API_KEY,
@@ -73,7 +79,15 @@ export class SummaryService {
 
     if (!needsRegeneration) return cached;
 
-    return this.regenerateCommentVoteSummary(post, cached ?? null);
+    try {
+      return await this.regenerateCommentVoteSummary(post, cached ?? null);
+    } catch (err) {
+      this.logger.error(
+        `Failed to regenerate summary for post ${postId}`,
+        err,
+      );
+      return cached ?? null;
+    }
   }
 
   private async regenerateCommentVoteSummary(
@@ -87,23 +101,33 @@ export class SummaryService {
       relations: ['user'],
     });
 
-    const { commentSummary, voteSummary } =
-      await this.callCommentVoteSummaryApi(post, comments);
+    const votes = await this.voteRepository.find({
+      where: { postId: post.id },
+      select: ['userId', 'currentStatus'],
+    });
 
-    const result = await this.summaryRepository.upsert(
+    const [{ agreeSummary, disagreeSummary, voteSummary }, contentSummary] =
+      await Promise.all([
+        this.callCommentVoteSummaryApi(post, comments, votes),
+        cached?.contentSummary
+          ? Promise.resolve(cached.contentSummary)
+          : this.callContentSummaryApi(post.title, post.content),
+      ]);
+
+    await this.summaryRepository.upsert(
       {
         postId: post.id,
-        contentSummary: cached?.contentSummary ?? null,
-        commentSummary,
+        contentSummary,
         voteSummary,
+        agreeSummary,
+        disagreeSummary,
         commentCountAtGeneration: post.commentCount,
       },
       { conflictPaths: ['postId'] },
     );
 
-    const savedId = result.identifiers[0]?.id as string | undefined;
     const updated = await this.summaryRepository.findOne({
-      where: savedId ? { id: savedId } : { postId: post.id },
+      where: { postId: post.id },
     });
 
     return updated!;
@@ -130,42 +154,71 @@ export class SummaryService {
   private async callCommentVoteSummaryApi(
     post: Post,
     comments: Comment[],
-  ): Promise<{ commentSummary: string; voteSummary: string }> {
-    const commentLines = comments
-      .map((c, i) => `${i + 1}. ${c.user?.nickname ?? '익명'}: ${c.content}`)
-      .join('\n');
+    votes: Vote[],
+  ): Promise<{
+    agreeSummary: string | null;
+    disagreeSummary: string | null;
+    voteSummary: string | null;
+  }> {
+    const voteMap = new Map(votes.map((v) => [v.userId, v.currentStatus]));
+
+    const agreeComments = comments.filter(
+      (c) => voteMap.get(c.userId) === VoteStatus.AGREE,
+    );
+    const disagreeComments = comments.filter(
+      (c) => voteMap.get(c.userId) === VoteStatus.DISAGREE,
+    );
+
+    const totalVotes = post.agreeCount + post.disagreeCount + post.neutralCount;
+    const needsVoteSummary = totalVotes >= MIN_VOTES_FOR_VOTE_SUMMARY;
+    const needsAgreeSummary = agreeComments.length >= MIN_OPINION_COMMENTS;
+    const needsDisagreeSummary = disagreeComments.length >= MIN_OPINION_COMMENTS;
+
+    if (!needsVoteSummary && !needsAgreeSummary && !needsDisagreeSummary) {
+      return { voteSummary: null, agreeSummary: null, disagreeSummary: null };
+    }
+
+    const toLines = (list: Comment[]) =>
+      list.map((c, i) => `${i + 1}. ${c.user?.nickname ?? '익명'}: ${c.content}`).join('\n');
+
+    const sections: string[] = [
+      `[투표 현황]\n찬성: ${post.agreeCount}표 / 반대: ${post.disagreeCount}표 / 중립: ${post.neutralCount}표`,
+      ...(needsAgreeSummary ? [`[찬성 측 댓글]\n${toLines(agreeComments)}`] : []),
+      ...(needsDisagreeSummary ? [`[반대 측 댓글]\n${toLines(disagreeComments)}`] : []),
+    ];
+
+    const requiredFields = [
+      ...(needsVoteSummary ? ['"voteSummary": "전체 투표 현황 요약"'] : []),
+      ...(needsAgreeSummary ? ['"agreeSummary": "찬성 측 의견 요약"'] : []),
+      ...(needsDisagreeSummary ? ['"disagreeSummary": "반대 측 의견 요약"'] : []),
+    ].join(',\n  ');
 
     const prompt = `당신은 온라인 토론 게시글의 반응을 요약하는 어시스턴트입니다.
 
-[투표 현황]
-찬성: ${post.agreeCount}표 / 반대: ${post.disagreeCount}표 / 중립: ${post.neutralCount}표
+${sections.join('\n\n')}
 
-[댓글]
-${commentLines || '(댓글 없음)'}
-
-아래 두 가지를 각각 2~3문장으로 요약하고, 반드시 JSON 형식으로만 응답해주세요.
+아래 항목을 각각 2~3문장으로 요약하고, 반드시 JSON 형식으로만 응답해주세요.
 {
-  "commentSummary": "...",
-  "voteSummary": "..."
+  ${requiredFields}
 }`;
 
     const response = await this.genai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-      },
+      config: { responseMimeType: 'application/json' },
     });
 
     const raw = response.text ?? '{}';
     const parsed = JSON.parse(raw) as {
-      commentSummary?: string;
       voteSummary?: string;
+      agreeSummary?: string;
+      disagreeSummary?: string;
     };
 
     return {
-      commentSummary: parsed.commentSummary ?? '',
-      voteSummary: parsed.voteSummary ?? '',
+      voteSummary: needsVoteSummary ? (parsed.voteSummary ?? '') : null,
+      agreeSummary: needsAgreeSummary ? (parsed.agreeSummary ?? '') : null,
+      disagreeSummary: needsDisagreeSummary ? (parsed.disagreeSummary ?? '') : null,
     };
   }
 }
