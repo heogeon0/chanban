@@ -1,4 +1,5 @@
 import { BottomTabBar } from "@/shared/components/bottom-tab-bar";
+import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { UserMenu } from "@/shared/components/user-menu";
 import { Providers } from "@/shared/providers";
 import "@/styles/globals.css";
@@ -24,34 +25,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className="font-sans antialiased min-h-screen flex flex-col">
+      <body className="font-sans antialiased min-h-screen flex flex-col bg-background">
         <Providers>
           {/* 헤더 */}
-          <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-            <div className="px-4 py-3 flex items-center justify-between">
+          <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+            <div className="max-w-lg mx-auto px-5 py-3 flex items-center justify-between">
               {/* 로고 */}
-              <Link
-                href="/"
-                className="flex items-center gap-2 text-primary font-bold text-xl"
-              >
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
-                  <span className="text-sm font-black">찬</span>
-                </div>
-                <span>찬반</span>
+              <Link href="/" className="flex items-center gap-0.5">
+                <span className="text-[22px] font-extrabold tracking-tight text-foreground">찬반</span>
+                <span className="text-[22px] font-extrabold tracking-tight text-primary">토론</span>
               </Link>
 
-              <UserMenu />
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <UserMenu />
+              </div>
             </div>
-
           </header>
 
-          {/* 메인 콘텐츠 — 탭바 높이만큼 하단 패딩 */}
-          <main className="flex-1 flex flex-col pb-16">{children}</main>
+          {/* 메인 콘텐츠 */}
+          <main className="flex-1 flex flex-col max-w-lg mx-auto w-full pb-24">
+            {children}
+          </main>
 
-          {/* 모달 슬롯 */}
           {modal}
-
-          {/* 하단 탭바 */}
           <BottomTabBar />
         </Providers>
       </body>
