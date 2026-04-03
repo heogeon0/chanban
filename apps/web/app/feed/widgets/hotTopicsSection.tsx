@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { topicQueries } from "@/shared/queries/topic";
-import { FeedSectionHeader } from "./feedSectionHeader";
 import { PostResponse } from "@chanban/shared-types";
 import Link from "next/link";
 import { MessageSquare, Vote } from "lucide-react";
@@ -32,50 +31,63 @@ function HeroBanner({ post }: { post: PostResponse }) {
   return (
     <Link
       href={`/topics/${post.id}`}
-      className="block rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors overflow-hidden"
+      className="block rounded-2xl border border-border bg-card hover:bg-muted/10 transition-colors p-4"
     >
-      <div className="p-5">
-        {/* 태그 & 시간 */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold text-primary uppercase tracking-wide">
+      {/* 태그 & 시간 */}
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
             {tagInfo.name}
           </span>
-          <span className="text-xs text-muted-foreground">
-            {formatRelativeTime(post.createdAt)}
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-500 dark:bg-red-500/10">
+            🔥 HOT
           </span>
         </div>
+        <span className="text-[12px] text-muted-foreground">
+          {formatRelativeTime(post.createdAt)}
+        </span>
+      </div>
 
-        {/* 제목 */}
-        <h2 className="text-xl font-bold mb-2 line-clamp-2">{post.title}</h2>
+      {/* 제목 */}
+      <h2 className="text-[15px] font-semibold mb-2 line-clamp-2">{post.title}</h2>
 
-        {/* 내용 미리보기 */}
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-6">{post.content}</p>
+      {/* 내용 미리보기 */}
+      {post.content && (
+        <p className="text-[13px] text-muted-foreground line-clamp-2 mb-3">{post.content}</p>
+      )}
 
-        {/* 찬반 퍼센트 레이블 */}
-        <div className="flex justify-between text-xs font-semibold mb-1.5">
-          <span className="text-opinion-agree">찬성 {agreePercent}%</span>
-          <span className="text-muted-foreground">중립 {neutralPercent}%</span>
-          <span className="text-opinion-disagree">반대 {disagreePercent}%</span>
+      {/* 3색 투표 바 (% 내장) */}
+      <div className="flex gap-[3px] mb-3 rounded-lg overflow-hidden">
+        <div
+          className="h-[28px] flex items-center bg-opinion-agree rounded-l-lg"
+          style={{ flex: agreePercent, paddingLeft: agreePercent > 15 ? '8px' : '2px' }}
+        >
+          {agreePercent > 15 && <span className="text-[12px] font-bold text-white">{agreePercent}%</span>}
         </div>
-
-        {/* 3색 프로그레스 바 */}
-        <div className="flex h-3 w-full rounded-full overflow-hidden bg-muted mb-4">
-          <div className="bg-opinion-agree h-full transition-all" style={{ width: `${agreePercent}%` }} />
-          <div className="bg-muted-foreground h-full transition-all" style={{ width: `${neutralPercent}%` }} />
-          <div className="bg-opinion-disagree h-full transition-all" style={{ width: `${disagreePercent}%` }} />
+        <div
+          className="h-[28px] flex items-center justify-end bg-opinion-disagree"
+          style={{ flex: disagreePercent, paddingRight: disagreePercent > 15 ? '8px' : '2px' }}
+        >
+          {disagreePercent > 15 && <span className="text-[12px] font-bold text-white">{disagreePercent}%</span>}
         </div>
-
-        {/* 통계 */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <Vote className="w-4 h-4" />
-            <span className="font-semibold text-foreground">{formatCount(total)}</span>명 참여
-          </span>
-          <span className="flex items-center gap-1.5">
-            <MessageSquare className="w-4 h-4" />
-            {formatCount(post.commentCount)}
-          </span>
+        <div
+          className="h-[28px] flex items-center justify-center bg-muted rounded-r-lg"
+          style={{ flex: neutralPercent }}
+        >
+          {neutralPercent > 8 && <span className="text-[12px] font-semibold text-muted-foreground">{neutralPercent}%</span>}
         </div>
+      </div>
+
+      {/* 통계 */}
+      <div className="flex items-center gap-3 pt-2.5 border-t border-border text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <Vote className="w-3 h-3" />
+          {formatCount(total)}명 투표
+        </span>
+        <span className="flex items-center gap-1">
+          <MessageSquare className="w-3 h-3" />
+          {formatCount(post.commentCount)}
+        </span>
       </div>
     </Link>
   );
@@ -114,16 +126,9 @@ export function HotTopicsSection() {
   const [hero, ...rest] = topics as [PostResponse, ...PostResponse[]];
 
   return (
-    <section className="py-6">
-      <div className="max-w-4xl mx-auto w-full px-4 space-y-3">
-        <FeedSectionHeader
-          title="🔥 인기 토픽"
-          moreHref="/?sort=popular"
-          moreLabel="더보기"
-        />
-        <HeroBanner post={hero} />
-        {rest.length > 0 && <TopicCarousel topics={rest} />}
-      </div>
+    <section className="px-3 pt-3 pb-1 space-y-3">
+      <HeroBanner post={hero} />
+      {rest.length > 0 && <TopicCarousel topics={rest} />}
     </section>
   );
 }
