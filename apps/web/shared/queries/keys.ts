@@ -33,4 +33,7 @@ export const queryKeys = {
     followers: (userId: string, page: number) => ["follow", "followers", userId, page] as const,
     following: (userId: string, page: number) => ["follow", "following", userId, page] as const,
   },
+  summary: {
+    get: (postId: string) => ["summary", postId] as const,
+  },
 };
