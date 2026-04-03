@@ -16,9 +16,9 @@ const TABS = [
   },
   {
     label: "탐색",
-    href: "/topics",
+    href: "/search",
     icon: Search,
-    isActive: (pathname: string) => pathname.startsWith("/topics") && pathname !== "/topics/create",
+    isActive: (pathname: string) => pathname.startsWith("/search"),
     protected: false,
     isFab: false,
   },
