@@ -369,3 +369,36 @@ q?: string;  // 검색 키워드
 4. **선택사항**: 최근 검색 기록, 인기 검색어 등 고도화
 
 현재 디자인 토큰, 컴포넌트 패턴, API 구조 모두 일관성 있게 설계되어 있어 추가 기능 구현이 용이한 상태입니다.
+
+---
+
+### [2026-04-06] 검색 API 백엔드 구현
+
+#### Post 엔티티 주요 필드
+- `title` varchar(100) — 검색 대상
+- `content` text — 검색 대상
+- `creator` ManyToOne(User) — leftJoin으로 nickname 접근
+- `deletedAt` — soft delete, WHERE `IS NULL` 필수
+- `popularityScore` float (Index) — 인기순 정렬에 사용
+- `createdAt` — 최신순 정렬 기본값
+
+#### User 엔티티 (작성자 검색)
+- `nickname` varchar unique — 작성자 검색 대상
+- Post와 OneToMany 관계 (Post.creator로 접근)
+
+#### 기존 서비스 패턴
+- `findRecentPosts`, `findPostsByTag` 모두 `findAndCount` + `where` 오브젝트 사용
+- 검색은 OR 조건 + JOIN 필요 → `createQueryBuilder` 사용
+- `leftJoinAndSelect('post.creator', 'creator')` — relations 처리와 JOIN 조건을 동시에 해결
+- `getManyAndCount()` — `[items, total]` 반환 형태 (`findAndCount`와 동일)
+
+#### Pagination 처리
+- `skip = (page - 1) * limit`
+- `new ResponseWithMeta(items, { total, page, limit, totalPages })` 로 반환
+- 프론트 `PaginatedResponse<PostResponse>` 타입과 호환
+
+#### 검색 구현 시 고려사항
+- `ILIKE`: PostgreSQL 대소문자 무시 (MySQL이면 `LIKE`로 변경)
+- 라우팅 순서: `recent` → `search` → `tags/:tag` → `:id` (충돌 방지)
+- `SearchType` enum: `ALL`(title+content+nickname), `CONTENT`(title+content), `AUTHOR`(nickname)
+- `q` 필드는 필수 — 빈 검색 요청 자체를 막음 (`MinLength(1)`)

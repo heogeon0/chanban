@@ -64,18 +64,42 @@
 - [x] c: `apps/web/app/search/widgets/categoryGrid.tsx` — 7개 카테고리 그라데이션 카드
 - [x] d: `bottom-tab-bar.tsx` — 탐색 탭 href `/topics` → `/search` 변경
 
+## v8-ui. 검색 프론트 임시 UI (백엔드 연동 전)
+
+> **원칙**: 기존 디자인 컴포넌트를 최대한 재사용. 신규 컴포넌트는 꼭 필요한 것만 만든다.
+
+### 재사용할 기존 컴포넌트
+- `TopicCard` (`apps/web/app/topics/widgets/topicCard.tsx`) — 검색 결과 카드 그대로 사용
+- `TopicsListSkeleton` (`apps/web/app/topics/widgets/topicsListSkeleton.tsx`) — 로딩 중 스켈레톤
+- `CategoryGrid` (`apps/web/app/search/widgets/categoryGrid.tsx`) — 검색 결과 없을 때 하단 노출
+- `SearchBar` (`apps/web/app/search/widgets/searchBar.tsx`) — 기존 컴포넌트 확장
+
+### 신규로 필요한 컴포넌트
+- `SearchResults` (`apps/web/app/search/widgets/searchResults.tsx`) — 검색 결과 / 빈 상태 / 에러 분기 렌더러
+- `SearchEmptyState` — `SearchResults` 내부 인라인 컴포넌트로 처리 (별도 파일 불필요)
+
+### 작업 항목
+- [x] a: `apps/web/app/search/widgets/searchResults.tsx` (신규) — `isLoading` 시 `TopicsListSkeleton` 재사용, 결과 있을 때 `TopicCard` 목록, 빈 상태일 때 `<SearchX />` 아이콘 + 안내 문구 + `CategoryGrid` 노출
+- [x] b: `apps/web/app/search/widgets/searchBar.tsx` — `onQueryChange: (q: string) => void` prop 추가, debounce(300ms) 적용, 입력 중 `<Loader2 className="animate-spin" />` 표시 (Search 아이콘 대체)
+- [x] c: `apps/web/app/search/page.tsx` — `"use client"` 전환, `query` 상태 관리. query 없으면 `CategoryGrid + HotTopicsFeed`, query 있으면 `SearchResults` (isLoading=true 고정, 실제 데이터 없이 UI 흐름만 완성)
+
 ## v9. 백엔드 텍스트 검색 API
 
-- [ ] a: `apps/api/src/post/dto/post-query.dto.ts` — `q?: string` 필드 추가 (`@IsOptional @IsString @MinLength(1) @MaxLength(200)`)
-- [ ] b: `apps/api/src/post/post.service.ts` — `searchPosts(q, queryDto)` 메서드 추가 (QueryBuilder + LIKE 쿼리, sort/pagination 지원)
-- [ ] c: `apps/api/src/post/post.controller.ts` — `@Get('search')` 엔드포인트 추가 (`/api/posts/recent` 보다 앞에 등록)
+> Post 엔티티: title(varchar 100), content(text), creator.nickname(varchar). QueryBuilder + ILIKE 사용.
+> 라우팅 순서 주의: `recent` → `search` → `tags/:tag` → `:id` 순으로 배치해야 충돌 없음.
 
-## v10. 프론트 검색 도메인 & 쿼리 레이어
+- [ ] a: `apps/api/src/post/dto/search-query.dto.ts` (신규) — `PostQueryDto` 상속, `q: string` (필수, MinLength 1, MaxLength 200), `type?: SearchType = 'all'` 추가. `SearchType` enum: `ALL='all'`, `CONTENT='content'`, `AUTHOR='author'`
+- [ ] b: `apps/api/src/post/post.service.ts` — `searchPosts(dto: SearchQueryDto)` 메서드 추가. `createQueryBuilder('post').leftJoinAndSelect('post.creator', 'creator')` 기반. type에 따라 WHERE 분기: `all`→ title+content+nickname ILIKE, `content`→ title+content ILIKE, `author`→ nickname ILIKE. sort/order/skip/take는 기존 패턴 동일. `getManyAndCount()` → `ResponseWithMeta` 반환
+- [ ] c: `apps/api/src/post/post.controller.ts` — `@Get('search')` 엔드포인트 추가. 위치: `@Get('recent')` 바로 아래, `@Get('/tags/:tag')` 위. 인증 없이 공개 접근
 
-- [ ] a: `apps/web/app/topics/domains/index.ts` — `searchPosts(q, page?)` 함수 추가
-- [ ] b: `apps/web/shared/queries/keys.ts` — `queryKeys.topic.search(q, page)` 추가
-- [ ] c: `apps/web/shared/queries/topic.ts` — `topicQueries.search(q, page)` 쿼리 옵션 추가
-- [ ] d: `apps/web/app/search/features/use-search-topics.ts` (신규) — `useQuery` 훅, `enabled: q.trim().length >= 1`, `staleTime: 30_000`
+## v10. 프론트 검색 도메인 & React Query 레이어
+
+> 기존 topicDomains, topicQueries, queryKeys 패턴 그대로 유지.
+
+- [ ] a: `apps/web/app/topics/domains/index.ts` — `searchPosts(q, type='all', page=1)` 추가. `URLSearchParams`로 쿼리 문자열 생성. `topicDomains` 객체에 병합
+- [ ] b: `apps/web/shared/queries/keys.ts` — `topic.search: (q, type='all') => ["topics", "search", q, type]` 추가
+- [ ] c: `apps/web/shared/queries/topic.ts` — `topicQueries.search(q, type, page)` 추가. queryFn에서 `topicDomains.searchPosts` 호출
+- [ ] d: `apps/web/app/search/features/use-search-topics.ts` (신규) — `enabled: q.trim().length >= 1`, `staleTime: 30_000`, `placeholderData: (prev) => prev` (타이핑 중 이전 결과 유지, 깜빡임 방지)
 
 ## v11. SearchBar 검색 연동 + 결과 표시
 
