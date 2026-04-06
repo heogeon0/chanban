@@ -4,8 +4,11 @@ import { PostResponse } from "@chanban/shared-types";
 import { TrendingUp } from "lucide-react";
 import { useCallback, useState } from "react";
 import { TopicCard } from "@/app/topics/widgets/topicCard";
+import { useSearchTopics } from "../features/use-search-topics";
 import { SearchBar } from "./searchBar";
 import { SearchResults } from "./searchResults";
+
+type SearchType = "all" | "content" | "author";
 
 interface SearchContentProps {
   hotPosts: PostResponse[];
@@ -18,11 +21,14 @@ interface SearchContentProps {
  */
 export function SearchContent({ hotPosts }: SearchContentProps) {
   const [query, setQuery] = useState("");
+  const [searchType, setSearchType] = useState<SearchType>("all");
 
-  const handleQueryChange = useCallback((q: string) => {
+  const handleQueryChange = useCallback((q: string, type: SearchType) => {
     setQuery(q);
-    // searchType은 v10 실제 검색 연동 시 활용
+    setSearchType(type);
   }, []);
+
+  const { data, isLoading } = useSearchTopics(query, searchType);
 
   return (
     <div className="flex flex-col">
@@ -31,7 +37,11 @@ export function SearchContent({ hotPosts }: SearchContentProps) {
       </div>
 
       {query ? (
-        <SearchResults query={query} posts={[]} isLoading={false} />
+        <SearchResults
+          query={query}
+          posts={data?.data ?? []}
+          isLoading={isLoading}
+        />
       ) : (
         <div>
           {/* 인기 토픽 */}

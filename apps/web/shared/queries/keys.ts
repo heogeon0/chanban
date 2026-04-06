@@ -9,6 +9,8 @@ export const queryKeys = {
     all: ["topics"] as const,
     list: (tag: PostTag | "recent" | "hot") => ["topics", tag] as const,
     detail: (postId: string) => ["topic", postId] as const,
+    search: (q: string, type: string = "all") =>
+      ["topics", "search", q, type] as const,
   },
   comment: {
     all: ["comments"] as const,

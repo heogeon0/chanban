@@ -6,6 +6,7 @@ import {
   PostTag,
   VoteStatus,
 } from "@chanban/shared-types";
+import { topicDomains } from "@/app/topics/domains";
 import { queryKeys } from "./keys";
 
 export interface PostSummaryResponse {
@@ -59,6 +60,17 @@ export const topicQueries = {
 
       return await httpClient.get<PaginatedResponse<PostResponse>>(url);
     },
+  }),
+
+  /**
+   * 텍스트 검색 쿼리 옵션
+   * @param q - 검색 키워드
+   * @param type - 검색 범위 ('all' | 'content' | 'author')
+   * @param page - 페이지 번호
+   */
+  search: (q: string, type: 'all' | 'content' | 'author' = 'all', page = 1) => ({
+    queryKey: queryKeys.topic.search(q, type),
+    queryFn: async () => topicDomains.searchPosts(q, type, page),
   }),
 
   /**

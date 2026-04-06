@@ -61,9 +61,25 @@ async function getHotPostsByTag(tag: PostTag, limit = 3) {
 }
 
 
+type SearchType = 'all' | 'content' | 'author';
+
+/**
+ * 텍스트 검색 — GET /api/posts/search
+ * @param q - 검색 키워드 (1~200자)
+ * @param type - 검색 범위 ('all' | 'content' | 'author'), 기본 'all'
+ * @param page - 페이지 번호, 기본 1
+ */
+async function searchPosts(q: string, type: SearchType = 'all', page = 1) {
+  const params = new URLSearchParams({ q, type, page: String(page) });
+  return await httpClient.get<PaginatedResponse<PostResponse>>(
+    `/api/posts/search?${params.toString()}`
+  );
+}
+
 export const topicDomains = {
   parseSortSearchParams,
   getAllPosts,
   getLatestPostsByTag,
   getHotPostsByTag,
+  searchPosts,
 }

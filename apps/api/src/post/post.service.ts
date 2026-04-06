@@ -23,6 +23,7 @@ import { SummaryService } from '../summary/summary.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
+import { SearchQueryDto, SearchType } from './dto/search-query.dto';
 
 @Injectable()
 export class PostService {
@@ -100,6 +101,52 @@ export class PostService {
       limit,
       totalPages,
     });
+  }
+
+  async searchPosts(
+    searchQueryDto: SearchQueryDto,
+  ): Promise<ResponseWithMeta<Post[], PaginationMeta>> {
+    const {
+      q,
+      type = SearchType.ALL,
+      page = 1,
+      limit = 20,
+      sort = PostSortBy.RECENT,
+      order = SortOrder.DESC,
+    } = searchQueryDto;
+
+    const skip = (page - 1) * limit;
+    const keyword = `%${q}%`;
+
+    const qb = this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.creator', 'creator')
+      .where('post.deletedAt IS NULL');
+
+    if (type === SearchType.ALL) {
+      qb.andWhere(
+        '(post.title ILIKE :keyword OR post.content ILIKE :keyword OR creator.nickname ILIKE :keyword)',
+        { keyword },
+      );
+    } else if (type === SearchType.CONTENT) {
+      qb.andWhere(
+        '(post.title ILIKE :keyword OR post.content ILIKE :keyword)',
+        { keyword },
+      );
+    } else if (type === SearchType.AUTHOR) {
+      qb.andWhere('creator.nickname ILIKE :keyword', { keyword });
+    }
+
+    if (sort === PostSortBy.POPULAR) {
+      qb.orderBy('post.popularityScore', order).addOrderBy('post.createdAt', 'DESC');
+    } else {
+      qb.orderBy('post.createdAt', order);
+    }
+
+    const [items, total] = await qb.skip(skip).take(limit).getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
+
+    return new ResponseWithMeta(items, { total, page, limit, totalPages });
   }
 
   async create(createPostDto: CreatePostDto, user: User): Promise<Post> {

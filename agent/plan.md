@@ -88,18 +88,18 @@
 > Post 엔티티: title(varchar 100), content(text), creator.nickname(varchar). QueryBuilder + ILIKE 사용.
 > 라우팅 순서 주의: `recent` → `search` → `tags/:tag` → `:id` 순으로 배치해야 충돌 없음.
 
-- [ ] a: `apps/api/src/post/dto/search-query.dto.ts` (신규) — `PostQueryDto` 상속, `q: string` (필수, MinLength 1, MaxLength 200), `type?: SearchType = 'all'` 추가. `SearchType` enum: `ALL='all'`, `CONTENT='content'`, `AUTHOR='author'`
-- [ ] b: `apps/api/src/post/post.service.ts` — `searchPosts(dto: SearchQueryDto)` 메서드 추가. `createQueryBuilder('post').leftJoinAndSelect('post.creator', 'creator')` 기반. type에 따라 WHERE 분기: `all`→ title+content+nickname ILIKE, `content`→ title+content ILIKE, `author`→ nickname ILIKE. sort/order/skip/take는 기존 패턴 동일. `getManyAndCount()` → `ResponseWithMeta` 반환
-- [ ] c: `apps/api/src/post/post.controller.ts` — `@Get('search')` 엔드포인트 추가. 위치: `@Get('recent')` 바로 아래, `@Get('/tags/:tag')` 위. 인증 없이 공개 접근
+- [x] a: `apps/api/src/post/dto/search-query.dto.ts` (신규) — `PostQueryDto` 상속, `q: string` (필수, MinLength 1, MaxLength 200), `type?: SearchType = 'all'` 추가. `SearchType` enum: `ALL='all'`, `CONTENT='content'`, `AUTHOR='author'`
+- [x] b: `apps/api/src/post/post.service.ts` — `searchPosts(dto: SearchQueryDto)` 메서드 추가. `createQueryBuilder('post').leftJoinAndSelect('post.creator', 'creator')` 기반. type에 따라 WHERE 분기: `all`→ title+content+nickname ILIKE, `content`→ title+content ILIKE, `author`→ nickname ILIKE. sort/order/skip/take는 기존 패턴 동일. `getManyAndCount()` → `ResponseWithMeta` 반환
+- [x] c: `apps/api/src/post/post.controller.ts` — `@Get('search')` 엔드포인트 추가. 위치: `@Get('recent')` 바로 아래, `@Get('/tags/:tag')` 위. 인증 없이 공개 접근
 
 ## v10. 프론트 검색 도메인 & React Query 레이어
 
 > 기존 topicDomains, topicQueries, queryKeys 패턴 그대로 유지.
 
-- [ ] a: `apps/web/app/topics/domains/index.ts` — `searchPosts(q, type='all', page=1)` 추가. `URLSearchParams`로 쿼리 문자열 생성. `topicDomains` 객체에 병합
-- [ ] b: `apps/web/shared/queries/keys.ts` — `topic.search: (q, type='all') => ["topics", "search", q, type]` 추가
-- [ ] c: `apps/web/shared/queries/topic.ts` — `topicQueries.search(q, type, page)` 추가. queryFn에서 `topicDomains.searchPosts` 호출
-- [ ] d: `apps/web/app/search/features/use-search-topics.ts` (신규) — `enabled: q.trim().length >= 1`, `staleTime: 30_000`, `placeholderData: (prev) => prev` (타이핑 중 이전 결과 유지, 깜빡임 방지)
+- [x] a: `apps/web/app/topics/domains/index.ts` — `searchPosts(q, type='all', page=1)` 추가. `URLSearchParams`로 쿼리 문자열 생성. `topicDomains` 객체에 병합
+- [x] b: `apps/web/shared/queries/keys.ts` — `topic.search: (q, type='all') => ["topics", "search", q, type]` 추가
+- [x] c: `apps/web/shared/queries/topic.ts` — `topicQueries.search(q, type, page)` 추가. queryFn에서 `topicDomains.searchPosts` 호출
+- [x] d: `apps/web/app/search/features/use-search-topics.ts` (신규) — `enabled: q.trim().length >= 1`, `staleTime: 30_000`, `placeholderData: (prev) => prev` (타이핑 중 이전 결과 유지, 깜빡임 방지)
 
 ## v11. SearchBar 검색 연동 + 결과 표시
 
