@@ -103,19 +103,19 @@
 
 ## v11. SearchBar 검색 연동 + 결과 표시
 
-- [ ] a: `apps/web/app/search/widgets/searchBar.tsx` — debounce(300ms) 적용, 입력 중 `<Loader2 animate-spin />` 표시
-- [ ] b: `apps/web/app/search/widgets/searchResults.tsx` (신규) — 로딩 스켈레톤 / 빈 상태 / 결과 리스트 렌더링
-- [ ] c: `apps/web/app/search/page.tsx` — query 상태에 따라 CategoryGrid+HotFeed ↔ SearchResults 조건부 렌더링
+- [x] a: `apps/web/app/search/widgets/searchBar.tsx` — debounce(300ms) 적용, 입력 중 `<Loader2 animate-spin />` 표시
+- [x] b: `apps/web/app/search/widgets/searchResults.tsx` (신규) — 로딩 스켈레톤 / 빈 상태 / 결과 리스트 렌더링
+- [x] c: `apps/web/app/search/page.tsx` — query 상태에 따라 HotFeed ↔ SearchResults 조건부 렌더링
 
 ## v12. 최근 검색 기록 (localStorage)
 
-- [ ] a: `apps/web/app/search/features/use-recent-searches.ts` (신규) — 키 `chanban:recent-searches`, 최대 10개, SSR 안전 처리
-- [ ] b: `apps/web/app/search/widgets/recentSearches.tsx` (신규) — 검색어 태그 목록, 개별 삭제, 전체 삭제
-- [ ] c: `apps/web/app/search/widgets/searchBar.tsx` — 검색 실행 시 `addSearch(query)` 호출
-- [ ] d: `apps/web/app/search/page.tsx` — query 없을 때 CategoryGrid 위에 RecentSearches 배치
+- [x] a: `apps/web/app/search/features/use-recent-searches.ts` (신규) — 키 `chanban:recent-searches`, 최대 10개, SSR 안전 처리
+- [x] b: `apps/web/app/search/widgets/recentSearches.tsx` (신규) — 검색어 태그 목록, 개별 삭제, 전체 삭제
+- [x] c: `apps/web/app/search/widgets/searchContent.tsx` — 검색 실행 시 `addSearch(query)` 호출
+- [x] d: `apps/web/app/search/widgets/searchContent.tsx` — query 없을 때 인기 피드 위에 RecentSearches 배치
 
 ## v13. 검색 결과 UX 개선
 
-- [ ] a: `apps/web/app/search/widgets/searchResults.tsx` — 에러 상태: `<AlertCircle />` + 재시도 버튼
-- [ ] b: `apps/web/app/search/widgets/searchResults.tsx` — 빈 상태: `<SearchX />` + `"{query}"에 대한 결과가 없습니다` + 카테고리 탐색 유도
-- [ ] c: `apps/web/app/search/page.tsx` — 결과 상단에 `"{query}" 검색 결과 · {total}건` 요약 표시
+- [x] a: `apps/web/app/search/widgets/searchResults.tsx` — 에러 상태: `<AlertCircle />` + 재시도 버튼
+- [x] b: `apps/web/app/search/widgets/searchResults.tsx` — 빈 상태: `<SearchX />` + `"{query}"에 대한 결과가 없습니다`
+- [x] c: `apps/web/app/search/widgets/searchResults.tsx` — 결과 상단에 `"{query}" 검색 결과 · {total}건` 요약 표시

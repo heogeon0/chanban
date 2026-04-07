@@ -4,7 +4,9 @@ import { PostResponse } from "@chanban/shared-types";
 import { TrendingUp } from "lucide-react";
 import { useCallback, useState } from "react";
 import { TopicCard } from "@/app/topics/widgets/topicCard";
+import { useRecentSearches } from "../features/use-recent-searches";
 import { useSearchTopics } from "../features/use-search-topics";
+import { RecentSearches } from "./recentSearches";
 import { SearchBar } from "./searchBar";
 import { SearchResults } from "./searchResults";
 
@@ -16,19 +18,26 @@ interface SearchContentProps {
 
 /**
  * 검색 페이지 클라이언트 컴포넌트
- * - query 없음: 서버에서 받은 인기 토픽 피드 표시
- * - query 있음: SearchResults 표시
+ * - query 없음: 최근 검색 기록 + 인기 토픽 피드
+ * - query 있음: SearchResults
  */
 export function SearchContent({ hotPosts }: SearchContentProps) {
   const [query, setQuery] = useState("");
   const [searchType, setSearchType] = useState<SearchType>("all");
 
+  const { addSearch } = useRecentSearches();
+  const { data, isLoading, isError, refetch } = useSearchTopics(query, searchType);
+
   const handleQueryChange = useCallback((q: string, type: SearchType) => {
     setQuery(q);
     setSearchType(type);
-  }, []);
+    if (q.trim()) addSearch(q.trim());
+  }, [addSearch]);
 
-  const { data, isLoading } = useSearchTopics(query, searchType);
+  const handleRecentSelect = useCallback((q: string) => {
+    setQuery(q);
+    addSearch(q);
+  }, [addSearch]);
 
   return (
     <div className="flex flex-col">
@@ -39,11 +48,17 @@ export function SearchContent({ hotPosts }: SearchContentProps) {
       {query ? (
         <SearchResults
           query={query}
+          total={data?.meta.total}
           posts={data?.data ?? []}
           isLoading={isLoading}
+          isError={isError}
+          onRetry={refetch}
         />
       ) : (
         <div>
+          {/* 최근 검색 기록 */}
+          <RecentSearches onSelect={handleRecentSelect} />
+
           {/* 인기 토픽 */}
           <div className="px-5 pt-4 pb-1 flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4 text-primary" />
