@@ -136,19 +136,21 @@ export function SearchBar({ value: controlledValue, onQueryChange }: SearchBarPr
                 key={type}
                 type="button"
                 onMouseDown={() => handleSelectType(type)}
-                className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-muted/60 ${
+                className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors group hover:bg-muted ${
                   searchType === type ? "bg-primary/5" : ""
                 }`}
               >
                 <div>
-                  <p className={`text-[13px] font-semibold ${searchType === type ? "text-primary" : ""}`}>
+                  <p className={`text-[13px] font-semibold transition-colors ${
+                    searchType === type ? "text-primary" : "group-hover:text-primary/80"
+                  }`}>
                     {label}
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">{description}</p>
                 </div>
-                {searchType === type && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                )}
+                <div className={`w-1.5 h-1.5 rounded-full bg-primary shrink-0 transition-opacity ${
+                  searchType === type ? "opacity-100" : "opacity-0 group-hover:opacity-40"
+                }`} />
               </button>
             ))}
           </div>
