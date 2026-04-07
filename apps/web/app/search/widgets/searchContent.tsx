@@ -34,15 +34,15 @@ export function SearchContent({ hotPosts }: SearchContentProps) {
     if (q.trim()) addSearch(q.trim());
   }, [addSearch]);
 
+  // SearchBar의 value prop으로 전달 → SearchBar가 onQueryChange를 통해 addSearch까지 처리
   const handleRecentSelect = useCallback((q: string) => {
     setQuery(q);
-    addSearch(q);
-  }, [addSearch]);
+  }, []);
 
   return (
     <div className="flex flex-col">
       <div className="sticky top-[57px] z-40 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3">
-        <SearchBar onQueryChange={handleQueryChange} />
+        <SearchBar value={query} onQueryChange={handleQueryChange} />
       </div>
 
       {query ? (

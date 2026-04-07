@@ -12,6 +12,8 @@ const SEARCH_TYPES: { type: SearchType; label: string; description: string }[] =
 ];
 
 interface SearchBarProps {
+  /** 외부에서 제어할 검색어 (최근 검색 칩 클릭 등) */
+  value?: string;
   onQueryChange: (query: string, searchType: SearchType) => void;
 }
 
@@ -20,34 +22,45 @@ interface SearchBarProps {
  * - 포커스 시 검색 범위 드롭다운 표시 (전체/내용/작성자)
  * - debounce(300ms) 적용 후 onQueryChange 호출
  * - 입력 중 Loader2 스피너 표시
+ * - value prop으로 외부 제어 지원 (최근 검색 선택 등)
  */
-export function SearchBar({ onQueryChange }: SearchBarProps) {
-  const [value, setValue] = useState("");
+export function SearchBar({ value: controlledValue, onQueryChange }: SearchBarProps) {
+  const [value, setValue] = useState(controlledValue ?? "");
   const [searchType, setSearchType] = useState<SearchType>("all");
   const [isPending, setIsPending] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  // onQueryChange를 ref로 관리해 debounce effect의 dep에서 제거
+  const onQueryChangeRef = useRef(onQueryChange);
+  useEffect(() => { onQueryChangeRef.current = onQueryChange; });
+
+  // 외부에서 value가 변경될 때 내부 state 동기화 (최근 검색 칩 선택 등)
+  useEffect(() => {
+    if (controlledValue !== undefined) {
+      setValue(controlledValue);
+    }
+  }, [controlledValue]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (!value.trim()) {
       setIsPending(false);
-      onQueryChange("", searchType);
+      onQueryChangeRef.current("", searchType);
       return;
     }
 
     setIsPending(true);
     debounceRef.current = setTimeout(() => {
       setIsPending(false);
-      onQueryChange(value.trim(), searchType);
+      onQueryChangeRef.current(value.trim(), searchType);
     }, 300);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [value, searchType, onQueryChange]);
+  }, [value, searchType]);
 
   const handleClear = () => {
     setValue("");
