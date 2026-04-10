@@ -119,3 +119,40 @@
 - [x] a: `apps/web/app/search/widgets/searchResults.tsx` — 에러 상태: `<AlertCircle />` + 재시도 버튼
 - [x] b: `apps/web/app/search/widgets/searchResults.tsx` — 빈 상태: `<SearchX />` + `"{query}"에 대한 결과가 없습니다`
 - [x] c: `apps/web/app/search/widgets/searchResults.tsx` — 결과 상단에 `"{query}" 검색 결과 · {total}건` 요약 표시
+
+## v14. 투표 전용 컴팩트 카드 (MyVoteCard)
+
+> TopicCard 재사용 대신 마이페이지 전용 레이아웃. 내 투표 상태를 배지로 강조하고, 다수/소수 의견 인사이트 표시.
+> 참고: comment.tsx 좌측 컬러바 패턴, VoteBadge 컴포넌트 재사용.
+
+- [ ] a: `apps/web/app/my/widgets/myVoteCard.tsx` (신규) — 순수 UI 컴포넌트. Props: `{ vote: MyVoteResponse, majorityStatus?: 'majority' | 'minority' | 'tie' }`. 구조: 좌측 4px 컬러바(투표 상태별 opinion-agree/disagree/neutral) + 우측 카드 본문. 컬러바는 comment.tsx의 `w-1 rounded-l-xl shrink-0` 패턴 동일 적용
+- [ ] b: `apps/web/app/my/widgets/myVoteCard.tsx` — 카드 헤더: 투표 상태 배지(`rounded-full px-2 py-0.5 text-xs font-medium`, bg-opinion-agree/10 text-opinion-agree 등) + 다수/소수 인사이트 배지(다수 의견이면 `bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400`, 소수면 `bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400`) + 투표 시각(`formatRelativeTime(vote.firstVotedAt)`)
+- [ ] c: `apps/web/app/my/widgets/myVoteCard.tsx` — 카드 본문: 토픽 제목(`text-[15px] font-semibold line-clamp-2`) + 축소된 찬반 바(`h-2 rounded-full`, 텍스트 없이 비율만 표시) + footer(투표수 + 댓글수, `text-[11px] text-muted-foreground`). 전체를 `Link href={/topics/${vote.post.id}}`로 감싸기
+
+## v15. 투표 필터 칩 (클라이언트 사이드)
+
+> API 필터 미지원 → 클라이언트에서 allVotes를 currentStatus로 필터링.
+> categoryFilter.tsx의 pill 버튼 패턴 참고, 단 Link 대신 button + state 기반.
+
+- [ ] a: `apps/web/app/my/widgets/voteFilter.tsx` (신규) — 순수 UI 컴포넌트. Props: `{ value: VoteStatus | 'all', onChange: (v: VoteStatus | 'all') => void, counts: { all: number, agree: number, disagree: number, neutral: number } }`. 가로 스크롤 pill 버튼 4개(전체/찬성/반대/중립). 활성: `bg-primary text-primary-foreground`, 비활성: `bg-muted text-muted-foreground`. 각 버튼에 건수 표시(`전체 24`)
+- [ ] b: `apps/web/app/my/widgets/myVotesTab.tsx` — `useState<VoteStatus | 'all'>('all')` 필터 상태 추가. allVotes에서 filter !== 'all'이면 `vote.currentStatus === filter`로 필터링. VoteFilter를 목록 상단에 배치. counts는 allVotes에서 reduce로 집계
+- [ ] c: `apps/web/app/my/widgets/myVotesTab.tsx` — 다수/소수 인사이트 계산 로직 추가. 각 vote에 대해 `vote.post`의 agreeCount/disagreeCount/neutralCount에서 내 투표가 최다 득표인지 판별 → `majorityStatus` prop으로 MyVoteCard에 전달
+
+## v16. MyVotesTab TopicCard → MyVoteCard 교체
+
+> 기존 TopicCard 렌더링을 MyVoteCard로 교체하고, 필터 + 인사이트 통합.
+
+- [ ] a: `apps/web/app/my/widgets/myVotesTab.tsx` — import를 `TopicCard` → `MyVoteCard`로 변경. `allVotes.map(vote => <MyVoteCard vote={vote} majorityStatus={getMajorityStatus(vote)} />)` 형태로 교체
+- [ ] b: `apps/web/app/my/widgets/myVotesTab.tsx` — 스켈레톤을 MyVoteCard 레이아웃에 맞게 수정: 좌측 컬러바(w-1) + 우측 카드(배지 + 제목 + 축소바 + footer) 형태의 pulse 애니메이션
+- [ ] c: `apps/web/app/my/widgets/myVotesTab.tsx` — 빈 상태 개선: 필터 적용 중일 때 "{찬성|반대|중립} 투표가 없습니다.", 전체 비었을 때 기존 메시지 유지
+
+## v17. 탭 3개 확장 (내 투표 | 내 의견 | 내 토픽)
+
+> 기존 2탭 → 3탭. "내 의견" 탭은 내가 남긴 댓글 목록 표시.
+> 댓글 API: `GET /api/users/:id/comments` 이미 존재. user-comments-tab.tsx 패턴 참고하되, 마이페이지용 무한스크롤로 개선.
+> 주의: userQueries.userComments는 userId를 받으므로, 마이페이지에서는 useAuth()로 user.id 획득 필요.
+
+- [ ] a: `apps/web/app/my/features/use-infinite-my-comments.ts` (신규) — `useInfiniteQuery` 기반, `userQueries.userComments(userId, pageParam)` 활용. `useAuth().user.id` 사용. 기존 use-infinite-my-votes.ts 패턴 동일
+- [ ] b: `apps/web/app/my/widgets/myCommentsTab.tsx` (신규) — user-comments-tab.tsx의 CommentCard를 마이페이지 디자인에 맞게 조정: `rounded-2xl` 카드 + 좌측 컬러바(투표 상태) + 댓글 내용 + 원글 제목 배지 + 좋아요 수 + 시간. 무한스크롤 적용
+- [ ] c: `apps/web/app/my/page.tsx` — TabType을 `'votes' | 'comments' | 'topics'`로 확장. 탭 버튼 3개로 변경("내 투표 목록" / "내 의견" / "내 토픽 목록"). 조건부 렌더링에 `activeTab === 'comments' ? <MyCommentsTab /> : ...` 추가
+- [ ] d: `apps/web/app/my/page.tsx` — 프로필 통계에 댓글 수 추가: `userQueries.userComments(user.id, 1)` 쿼리로 `meta.total` 획득, ProfileSection에 전달 (백엔드 변경 불필요)

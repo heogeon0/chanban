@@ -402,3 +402,163 @@ q?: string;  // 검색 키워드
 - 라우팅 순서: `recent` → `search` → `tags/:tag` → `:id` (충돌 방지)
 - `SearchType` enum: `ALL`(title+content+nickname), `CONTENT`(title+content), `AUTHOR`(nickname)
 - `q` 필드는 필수 — 빈 검색 요청 자체를 막음 (`MinLength(1)`)
+
+### [2026-04-10] 마이페이지 내 투표 목록 디자인 개선
+
+#### 1. 투표 데이터 구조
+
+**VoteResponse** (`packages/shared-types/src/vote.ts`):
+```typescript
+interface VoteResponse {
+  id: string;
+  postId: string;
+  userId: string;
+  currentStatus: VoteStatus;  // 'agree' | 'disagree' | 'neutral'
+  changeCount: number;         // 투표 변경 횟수
+  firstVotedAt: Date;          // 최초 투표 시각
+  lastChangedAt: Date | null;  // 마지막 변경 시각
+}
+```
+
+**VoteStatus** (`packages/shared-types/src/enums.ts`):
+- `AGREE = 'agree'`
+- `DISAGREE = 'disagree'`
+- `NEUTRAL = 'neutral'`
+
+**Vote 엔티티** (`apps/api/src/entities/vote.entity.ts`):
+- `postId`, `userId` (Unique 제약: 1인 1투표)
+- `currentStatus: VoteStatus`
+- `changeCount: number` (default 0)
+- `firstVotedAt: Date` (CreateDateColumn)
+- `lastChangedAt: Date | null`
+- relations: `post (ManyToOne Post)`, `user (ManyToOne User)`, `history (OneToMany VoteHistory)`
+
+**VoteHistory 엔티티** (`apps/api/src/entities/vote-history.entity.ts`):
+- `fromStatus: VoteStatus | null` (최초 투표 시 null)
+- `toStatus: VoteStatus`
+- `changedAt: Date`
+- 투표 변경 이력 추적용
+
+**CreateVoteDto** (`apps/api/src/vote/dto/create-vote.dto.ts`):
+- `postId: string` + `status: VoteStatus` 만 전달
+- **의견(comment) 필드 없음** — 투표 시 의견을 함께 남기는 기능은 존재하지 않음
+
+#### 2. API 응답: myVotes
+
+**엔드포인트**: `GET /api/users/me/votes?page=1&limit=10`
+
+**프론트 쿼리** (`apps/web/shared/queries/user.ts`):
+```typescript
+interface MyVoteResponse extends VoteResponse {
+  post: PostResponse;  // post + post.creator 관계 포함
+}
+// 반환: PaginatedResponse<MyVoteResponse>
+```
+
+**백엔드 서비스** (`apps/api/src/user/user.service.ts` — `findMyVotes`):
+- `voteRepository.findAndCount({ where: { userId }, order: { firstVotedAt: 'DESC' }, relations: ['post', 'post.creator'] })`
+- 정렬: `firstVotedAt DESC` (최초 투표일 기준 내림차순)
+- **현재 필터/정렬 파라미터 미지원** (page, limit만)
+
+**프론트 무한스크롤 훅** (`apps/web/app/my/features/use-infinite-my-votes.ts`):
+- `useInfiniteQuery` 사용, pageParam 기반 페이지네이션
+- 페이지당 10개
+
+#### 3. 투표 기능 흐름 (투표 시 의견 남기기 여부)
+
+**투표 버튼** (`apps/web/app/topics/[id]/widgets/voteButtons.tsx`):
+- 찬성/반대/중립 3개 버튼, 선택 시 `onVote(status)` 호출
+- `onShowCommentForm` 콜백 prop 존재하나 **현재 사용되지 않음** (topicDetailContent.tsx에서 전달하지 않음)
+- 투표와 댓글은 완전히 **분리된 기능** — 투표 후 별도로 댓글 작성 가능
+
+**댓글과 투표의 관계**:
+- 댓글 자체에는 투표 상태 필드가 없음
+- 댓글 작성자의 투표 이력은 `user.voteHistory: VoteHistoryResponse[]`로 간접 참조
+- 댓글 컴포넌트에서 `latestVote = comment.user.voteHistory.at(-1)?.toStatus`로 작성자의 최신 투표 상태를 좌측 컬러바에 표시
+
+#### 4. 현재 내 투표 탭 구현 분석
+
+**MyVotesTab** (`apps/web/app/my/widgets/myVotesTab.tsx`):
+- `useInfiniteMyVotes()` → `allVotes.map(vote => <TopicCard post={vote.post} myVote={vote.currentStatus} />)`
+- TopicCard를 그대로 재사용 — **투표 관련 추가 정보(투표 시각, 변경 횟수 등) 미표시**
+- 카드 레이아웃: `flex flex-col gap-3 px-3 pb-3`
+- 빈 상태: 센터 텍스트 "투표한 내역이 없습니다."
+
+**TopicCard에서 myVote 표시** (`apps/web/app/topics/widgets/topicCard.tsx`):
+- 카드 footer 맨 오른쪽에 `내 선택: {찬성|반대|중립}` 텍스트 (11px, font-semibold)
+- `ml-auto`로 우측 정렬
+- opinion-agree/disagree/neutral 색상 적용
+- **매우 작고 눈에 띄지 않음** — 투표 목록 전용 카드에서는 더 강조 필요
+
+#### 5. 현재 필터 UI 패턴
+
+**CategoryFilter** (`apps/web/app/topics/widgets/categoryFilter.tsx`):
+- 가로 스크롤 pill 버튼 (`overflow-x-auto`)
+- 활성: `bg-primary text-primary-foreground`
+- 비활성: `bg-muted text-muted-foreground hover:text-foreground`
+- `rounded-full text-xs font-semibold`
+- Link 기반 (searchParams 라우팅)
+
+**댓글 정렬 토글** (`topicDetailContent.tsx`):
+- pill 형태 `bg-muted` 컨테이너 안에 인기/최신 버튼
+- 활성: `bg-card shadow-sm text-foreground`
+- 비활성: `text-muted-foreground`
+- `rounded-full text-xs font-medium`
+- 클라이언트 state 기반
+
+**마이페이지 탭** (`apps/web/app/my/page.tsx`):
+- 2탭 (내 투표 목록 / 내 토픽 목록)
+- 활성: `border-b-2 border-opinion-agree text-opinion-agree`
+- 비활성: `border-transparent text-muted-foreground`
+- `text-sm font-bold`
+- 클라이언트 state 기반 (`useState<TabType>`)
+
+#### 6. 카드/리스트 아이템 패턴
+
+**TopicCard** (범용 — 홈, 검색, 마이페이지에서 모두 사용):
+- `rounded-2xl border border-border bg-card p-4 hover:bg-muted/10 transition-colors`
+- 구조: 헤더(태그배지 + HOT배지 + 작성자의견 + 시간) → 제목(2줄) → 찬반바(28px) → footer(투표수 + 댓글수 + 내선택)
+
+**댓글 카드** (`comment.tsx`):
+- 좌측 컬러바(w-1) + 우측 카드(`rounded-r-xl border border-l-0 border-border bg-card p-3`)
+- 헤더: 아바타배지 + 닉네임 + 시간 + 투표상태배지
+- 본문 + 액션버튼(좋아요, 답글)
+
+**피드 MyVotesSection** (`apps/web/app/feed/widgets/myVotesSection.tsx`):
+- 홈 피드에서 최근 3개 투표를 보여주는 섹션
+- `divide-y divide-border/50` 구분선 패턴 사용
+- TopicCard 재사용 (동일 문제)
+
+#### 7. 디자인 시스템 요약 (`.interface-design/system.md`)
+
+- **Spacing**: 4px 단위, 카드 내부 p-4, 리스트 gap-3
+- **Border Radius**: 카드 rounded-xl, pill rounded-full, 입력 rounded-md
+- **Depth**: border-only (shadow는 overlay/modal만), `border border-border`
+- **Color**: OKLch, opinion-agree(보라), opinion-disagree(빨강), opinion-neutral(회색)
+- **Typography**: Pretendard, body-md(14px), micro-md(11px), label-md(13px)
+- **Card 패턴**: `border border-border bg-card rounded-xl p-4`, hover `hover:bg-muted/10 transition-colors`
+- **Badge/Chip**: `px-2 py-0.5 rounded-full text-xs font-medium bg-muted`
+
+#### 8. 핵심 발견 사항
+
+**투표 시 의견(comment) 기능은 없음**:
+- CreateVoteDto에 comment/reason 필드 없음
+- Vote 엔티티에도 의견 필드 없음
+- 투표와 댓글은 완전 분리된 도메인
+
+**MyVoteResponse에서 활용 가능한 추가 데이터**:
+- `firstVotedAt` — 투표 시각 (현재 미표시)
+- `lastChangedAt` — 마지막 변경 시각 (현재 미표시)
+- `changeCount` — 투표 변경 횟수 (현재 미표시)
+- `currentStatus` — 현재 투표 상태 (카드 footer에 작게 표시)
+
+**현재 API 한계**:
+- `/api/users/me/votes`는 필터 파라미터 미지원 (찬성/반대/중립 필터 불가)
+- 정렬도 `firstVotedAt DESC` 고정 (인기순 등 불가)
+- 필터/정렬 추가 시 백엔드 수정 필요
+
+**디자인 개선 포인트**:
+- 내 투표 상태가 카드 footer에 11px 텍스트로만 표시 — 투표 목록에서는 더 강조 필요
+- 투표 시각, 변경 횟수 등 부가 정보 표시 가능
+- 찬성/반대/중립 필터 추가하면 목록 탐색성 향상
+- 투표 상태별 시각적 구분 (좌측 컬러바, 카드 테두리 등) 댓글 컴포넌트의 컬러바 패턴 참고 가능
