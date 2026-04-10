@@ -22,9 +22,9 @@ export function MyVotesTab() {
 
   if (isLoading) {
     return (
-      <div className="divide-y divide-border/50">
+      <div className="flex flex-col gap-3 px-3 pb-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="px-4 py-4 space-y-2.5">
+          <div key={i} className="rounded-2xl border border-border bg-card p-4 space-y-2.5">
             <div className="h-3 w-16 bg-muted rounded animate-pulse" />
             <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
             <div className="h-1.5 w-full bg-muted rounded-full animate-pulse" />
@@ -50,7 +50,7 @@ export function MyVotesTab() {
 
   return (
     <>
-      <div className="divide-y divide-border/50">
+      <div className="flex flex-col gap-3 px-3 pb-3">
         {allVotes.map((vote) => {
           if (!vote.post) return null;
           return (
