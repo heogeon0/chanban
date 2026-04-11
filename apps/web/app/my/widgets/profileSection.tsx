@@ -11,6 +11,7 @@ import { useUpdateNickname } from '../features/use-update-nickname';
 interface ProfileSectionProps {
   totalVotes?: number;
   totalTopics?: number;
+  totalComments?: number;
   onFollowSheetOpen: (type: 'followers' | 'following') => void;
 }
 
@@ -20,7 +21,7 @@ interface ProfileSectionProps {
  *
  * @param onFollowSheetOpen - 팔로워/팔로잉 클릭 시 호출되는 콜백
  */
-export function ProfileSection({ totalVotes, totalTopics, onFollowSheetOpen }: ProfileSectionProps) {
+export function ProfileSection({ totalVotes, totalTopics, totalComments, onFollowSheetOpen }: ProfileSectionProps) {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -124,6 +125,10 @@ export function ProfileSection({ totalVotes, totalTopics, onFollowSheetOpen }: P
         <span className="inline-flex items-center gap-1 text-[11px] bg-muted/70 rounded-full px-2.5 py-1">
           <span className="font-bold text-opinion-agree">{totalVotes ?? 0}</span>
           <span className="text-muted-foreground">투표</span>
+        </span>
+        <span className="inline-flex items-center gap-1 text-[11px] bg-muted/70 rounded-full px-2.5 py-1">
+          <span className="font-bold text-opinion-agree">{totalComments ?? 0}</span>
+          <span className="text-muted-foreground">의견</span>
         </span>
         <span className="inline-flex items-center gap-1 text-[11px] bg-muted/70 rounded-full px-2.5 py-1">
           <span className="font-bold text-opinion-agree">{totalTopics ?? 0}</span>

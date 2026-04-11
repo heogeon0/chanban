@@ -29,7 +29,7 @@ export default function RootLayout({
         <Providers>
           {/* 헤더 */}
           <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-            <div className="max-w-lg mx-auto px-5 py-3 flex items-center justify-between">
+            <div className="max-w-4xl mx-auto px-5 py-3 flex items-center justify-between">
               {/* 로고 */}
               <Link href="/" className="flex items-center gap-0.5">
                 <span className="text-[22px] font-extrabold tracking-tight text-foreground">찬반</span>
@@ -44,7 +44,7 @@ export default function RootLayout({
           </header>
 
           {/* 메인 콘텐츠 */}
-          <main className="flex-1 flex flex-col max-w-lg mx-auto w-full pb-24">
+          <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full pb-24">
             {children}
           </main>
 
