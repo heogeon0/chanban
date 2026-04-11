@@ -24,7 +24,7 @@ export function LoginContent({ onSuccess }: LoginContentProps) {
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push("/topics");
+        router.push("/");
       }
     }
   }, [isAuthenticated, router, onSuccess]);

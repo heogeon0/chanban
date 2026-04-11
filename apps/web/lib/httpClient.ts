@@ -36,11 +36,57 @@ class HttpClient {
   private baseURL: string;
   private defaultHeaders: HeadersInit;
   private timeout: number;
+  /** refresh 중이면 하나의 Promise를 공유해서 thundering herd 방지 */
+  private refreshPromise: Promise<string> | null = null;
 
   constructor(config: HttpClientConfig = {}) {
     this.baseURL = config.baseURL || '';
     this.defaultHeaders = config.headers || {};
     this.timeout = config.timeout || 30000;
+  }
+
+  /**
+   * 토큰 갱신 — 동시에 여러 요청이 401을 받아도 refresh는 1회만 실행.
+   * 나머지 요청은 같은 Promise를 공유해서 대기.
+   * @returns 새 accessToken, 또는 갱신 실패 시 null (로그아웃 처리됨)
+   */
+  private async refreshAccessToken(): Promise<string | null> {
+    // 이미 갱신 중이면 기존 Promise 재사용
+    if (this.refreshPromise) {
+      try {
+        return await this.refreshPromise;
+      } catch {
+        return null;
+      }
+    }
+
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+      clearTokens();
+      return null;
+    }
+
+    this.refreshPromise = this.post<{ accessToken: string }>(
+      '/api/auth/refresh',
+      { refreshToken },
+      { skipAuth: true }
+    )
+      .then((res) => {
+        setAccessToken(res.accessToken);
+        return res.accessToken;
+      })
+      .catch(() => {
+        clearTokens();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/login';
+        }
+        throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+      })
+      .finally(() => {
+        this.refreshPromise = null;
+      });
+
+    return this.refreshPromise;
   }
 
   private buildURL(url: string, params?: Record<string, string | number | boolean>): string {
@@ -88,31 +134,15 @@ class HttpClient {
 
       clearTimeout(timeoutId);
 
-      // 401 Unauthorized 에러 처리 (토큰 갱신)
+      // 401 Unauthorized — 토큰 갱신 후 1회만 재시도
       if (response.status === 401 && !skipAuth) {
-        const refreshToken = getRefreshToken();
-        if (refreshToken) {
-          try {
-            // 토큰 갱신 시도
-            const refreshResponse = await this.post<{ accessToken: string }>(
-              '/api/auth/refresh',
-              { refreshToken },
-              { skipAuth: true }
-            );
-
-            // 새로운 액세스 토큰 저장
-            setAccessToken(refreshResponse.accessToken);
-
-            // 원래 요청 재시도
-            return this.request<T>(url, config);
-          } catch (refreshError) {
-            // 토큰 갱신 실패 시 로그아웃 처리
-            clearTokens();
-            if (typeof window !== 'undefined') {
-              window.location.href = '/auth/login';
-            }
-            throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
-          }
+        const newToken = await this.refreshAccessToken();
+        if (newToken) {
+          // 재시도는 skipAuth로 무한 루프 차단
+          return this.request<T>(url, { ...config, skipAuth: true, headers: {
+            ...config.headers,
+            Authorization: `Bearer ${newToken}`,
+          }});
         }
       }
 

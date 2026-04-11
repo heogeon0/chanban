@@ -1,8 +1,6 @@
 import { httpClient } from "@/lib/httpClient";
-import { UserAvatar } from "@/shared/ui/avatar";
 import { VoteBadge } from "@/shared/ui/voteBadge";
 import { ApiResponse, PostResponse } from "@chanban/shared-types";
-import { ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
@@ -108,70 +106,57 @@ export default async function TopicDetailPage(props: {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="max-w-[840px] mx-auto px-6 py-8">
-        {/* 브레드크럼 */}
-        <nav className="flex items-center gap-2 mb-6">
-          <Link
-            href="/topics"
-            className="text-muted-foreground text-sm font-medium hover:underline"
-          >
-            홈
-          </Link>
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          <Link
-            href={`/topics?tag=${topic.tag}`}
-            className="text-muted-foreground text-sm font-medium hover:underline"
-          >
-            {tagInfo.name}
-          </Link>
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          <span className="text-primary text-sm font-semibold">토론</span>
-        </nav>
 
-        {/* 페이지 헤더 */}
-        <header className="mb-8">
-          <h1 className="text-3xl desktop:text-4xl font-black leading-tight tracking-[-0.033em] mb-4">
-            {topic.title}
-          </h1>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Link href={`/users/${topic.creator.id}`}>
-              <UserAvatar user={topic.creator} size="sm" className="hover:opacity-80 transition-opacity cursor-pointer" />
-            </Link>
-            <p className="text-muted-foreground text-sm">
-              Posted by{" "}
-              <Link href={`/users/${topic.creator.id}`} className="text-primary font-medium hover:underline">
-                @{topic.creator.nickname}
-              </Link>
-              <span className="mx-1">•</span>
-              <span>{formatRelativeTime(topic.createdAt)}</span>
-              <span className="mx-1">in</span>
-              <span className="font-medium">#{tagInfo.name}</span>
-            </p>
-            {topic.showCreatorOpinion && topic.creatorVote && (
-              <VoteBadge status={topic.creatorVote} />
-            )}
-            <FollowButton userId={topic.creator.id} />
+      {/* 포스트 헤더 */}
+      <div className="px-5 pt-4 pb-3">
+        {/* 카테고리 뱃지 */}
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+            {tagInfo.name}
+          </span>
+          {topic.showCreatorOpinion && topic.creatorVote && (
+            <VoteBadge status={topic.creatorVote} />
+          )}
+        </div>
+
+        {/* 제목 */}
+        <h1 className="text-[20px] font-bold leading-tight mb-3">
+          {topic.title}
+        </h1>
+
+        {/* 작성자 정보 */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+            {topic.creator.nickname.charAt(0)}
           </div>
-        </header>
+          <Link href={`/users/${topic.creator.id}`} className="text-[13px] font-medium hover:underline">
+            {topic.creator.nickname}
+          </Link>
+          <span className="text-[12px] text-muted-foreground">{formatRelativeTime(topic.createdAt)}</span>
+          <FollowButton userId={topic.creator.id} />
+        </div>
 
         {/* 본문 */}
-        <article className="prose dark:prose-invert max-w-none mb-12">
-          <p className="text-lg leading-relaxed whitespace-pre-wrap text-muted-foreground">
+        {topic.content && (
+          <p className="text-[14px] leading-relaxed text-muted-foreground whitespace-pre-wrap">
             {topic.content}
           </p>
-        </article>
-
-        {/* 투표 및 댓글 섹션 */}
-        <TopicDetailContent
-          topicId={id}
-          commentCount={topic.commentCount}
-          initialVoteCount={{
-            agreeCount: topic.agreeCount,
-            disagreeCount: topic.disagreeCount,
-            neutralCount: topic.neutralCount,
-          }}
-        />
+        )}
       </div>
+
+      {/* 구분선 */}
+      <div className="h-[1px] mx-5 bg-border" />
+
+      {/* 투표 및 댓글 섹션 */}
+      <TopicDetailContent
+        topicId={id}
+        commentCount={topic.commentCount}
+        initialVoteCount={{
+          agreeCount: topic.agreeCount,
+          disagreeCount: topic.disagreeCount,
+          neutralCount: topic.neutralCount,
+        }}
+      />
     </div>
   );
 }

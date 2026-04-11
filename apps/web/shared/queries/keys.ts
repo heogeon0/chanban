@@ -9,6 +9,8 @@ export const queryKeys = {
     all: ["topics"] as const,
     list: (tag: PostTag | "recent" | "hot") => ["topics", tag] as const,
     detail: (postId: string) => ["topic", postId] as const,
+    search: (q: string, type: string = "all") =>
+      ["topics", "search", q, type] as const,
   },
   comment: {
     all: ["comments"] as const,
@@ -32,5 +34,8 @@ export const queryKeys = {
     counts: (userId: string) => ["follow", "counts", userId] as const,
     followers: (userId: string, page: number) => ["follow", "followers", userId, page] as const,
     following: (userId: string, page: number) => ["follow", "following", userId, page] as const,
+  },
+  summary: {
+    get: (postId: string) => ["summary", postId] as const,
   },
 };

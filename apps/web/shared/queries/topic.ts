@@ -6,12 +6,39 @@ import {
   PostTag,
   VoteStatus,
 } from "@chanban/shared-types";
+import { topicDomains } from "@/app/topics/domains";
 import { queryKeys } from "./keys";
+
+export interface PostSummaryResponse {
+  id: string;
+  postId: string;
+  contentSummary: string | null;
+  voteSummary: string | null;
+  agreeSummary: string | null;
+  disagreeSummary: string | null;
+  commentCountAtGeneration: number;
+  generatedAt: string;
+}
 
 /**
  * 토픽 관련 쿼리 옵션
  * queryKey와 queryFn을 함께 관리합니다.
  */
+export const summaryQueries = {
+  /**
+   * 게시물 AI 요약 조회
+   * @param postId - 게시물 ID
+   */
+  get: (postId: string) => ({
+    queryKey: queryKeys.summary.get(postId),
+    queryFn: async () => {
+      return await httpClient
+        .get<ApiResponse<PostSummaryResponse>>(`/api/posts/${postId}/summary`)
+        .then((res) => res.data);
+    },
+  }),
+};
+
 export const topicQueries = {
   /**
    * 토픽 목록 조회 쿼리 옵션
@@ -33,6 +60,17 @@ export const topicQueries = {
 
       return await httpClient.get<PaginatedResponse<PostResponse>>(url);
     },
+  }),
+
+  /**
+   * 텍스트 검색 쿼리 옵션
+   * @param q - 검색 키워드
+   * @param type - 검색 범위 ('all' | 'content' | 'author')
+   * @param page - 페이지 번호
+   */
+  search: (q: string, type: 'all' | 'content' | 'author' = 'all', page = 1) => ({
+    queryKey: queryKeys.topic.search(q, type),
+    queryFn: async () => topicDomains.searchPosts(q, type, page),
   }),
 
   /**

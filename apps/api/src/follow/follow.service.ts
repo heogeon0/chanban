@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Follow } from '../entities/follow.entity';
 import { User } from '../entities/user.entity';
 import { ErrorCode } from '@chanban/shared-types';
+import { ResponseWithMeta } from '../common/dto/response.dto';
 
 @Injectable()
 export class FollowService {
@@ -98,10 +99,8 @@ export class FollowService {
       profileImageUrl: f.follower.profileImageUrl,
     }));
 
-    return {
-      data: items,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
-    };
+    const totalPages = Math.ceil(total / limit);
+    return new ResponseWithMeta(items, { total, page, limit, totalPages });
   }
 
   /**
@@ -124,9 +123,7 @@ export class FollowService {
       profileImageUrl: f.following.profileImageUrl,
     }));
 
-    return {
-      data: items,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
-    };
+    const totalPages = Math.ceil(total / limit);
+    return new ResponseWithMeta(items, { total, page, limit, totalPages });
   }
 }

@@ -1,5 +1,5 @@
 import { PostResponse, VoteStatus } from "@chanban/shared-types";
-import { CheckCircle2, MessageSquare, Minus, Vote, XCircle } from "lucide-react";
+import { MessageSquare, Vote } from "lucide-react";
 import Link from "next/link";
 import { TAG_MAP } from "../domains/constants";
 import { formatRelativeTime } from "@/app/topics/[id]/widgets/commentUtils";
@@ -7,47 +7,28 @@ import { formatRelativeTime } from "@/app/topics/[id]/widgets/commentUtils";
 const MY_VOTE_CONFIG = {
   [VoteStatus.AGREE]: {
     label: "찬성",
-    Icon: CheckCircle2,
     className: "text-opinion-agree",
   },
   [VoteStatus.DISAGREE]: {
     label: "반대",
-    Icon: XCircle,
     className: "text-opinion-disagree",
   },
   [VoteStatus.NEUTRAL]: {
     label: "중립",
-    Icon: Minus,
     className: "text-opinion-neutral",
   },
 } as const;
 
-/**
- * 작성자의 의견에 따른 border 색상 클래스를 반환합니다.
- * @param opinion - 작성자의 의견 (agree, disagree, neutral, null)
- * @param showOpinion - 의견 공개 여부
- * @returns Tailwind border 색상 클래스
- */
-const getOpinionBorderClass = (
-  opinion: VoteStatus | null,
-  showOpinion: boolean
-): string => {
-  if (!showOpinion || opinion === null) {
-    return "border-l-muted-foreground";
-  }
-
-  const borderClassMap: Record<VoteStatus, string> = {
-    [VoteStatus.AGREE]: "border-l-opinion-agree",
-    [VoteStatus.DISAGREE]: "border-l-opinion-disagree",
-    [VoteStatus.NEUTRAL]: "border-l-opinion-neutral",
-  };
-
-  return borderClassMap[opinion];
-};
+const CREATOR_OPINION_CONFIG = {
+  [VoteStatus.AGREE]: { label: "찬성", className: "text-opinion-agree" },
+  [VoteStatus.DISAGREE]: { label: "반대", className: "text-opinion-disagree" },
+  [VoteStatus.NEUTRAL]: { label: "중립", className: "text-opinion-neutral" },
+} as const;
 
 interface TopicCardProps {
   post: PostResponse;
   myVote?: VoteStatus;
+  isHot?: boolean;
 }
 
 /**
@@ -64,11 +45,11 @@ const formatCount = (num: number): string => {
 
 /**
  * 토픽 목록에서 사용되는 카드 컴포넌트
- * 왼쪽 컬러 보더 + 3색 프로그레스 바 디자인
+ * 블라인드형 리스트 + 찬반 % 분포 강조 디자인
  *
  * @param post - 게시글 데이터
  */
-export function TopicCard({ post, myVote }: TopicCardProps) {
+export function TopicCard({ post, myVote, isHot = false }: TopicCardProps) {
   const total = post.agreeCount + post.disagreeCount + post.neutralCount;
   const agreePercent =
     total === 0 ? 33 : Math.round((post.agreeCount / total) * 100);
@@ -76,78 +57,90 @@ export function TopicCard({ post, myVote }: TopicCardProps) {
     total === 0 ? 34 : Math.round((post.neutralCount / total) * 100);
   const disagreePercent = total === 0 ? 33 : 100 - agreePercent - neutralPercent;
 
-  const tagInfo = TAG_MAP[post.tag] || { name: post.tag, variant: "default" };
-  const borderColorClass = getOpinionBorderClass(
-    post.creatorVote ?? null,
-    post.showCreatorOpinion
-  );
+  const tagInfo = TAG_MAP[post.tag] || { name: post.tag };
+  const creatorOpinion =
+    post.showCreatorOpinion && post.creatorVote
+      ? CREATOR_OPINION_CONFIG[post.creatorVote]
+      : null;
 
   return (
     <Link
       href={`/topics/${post.id}`}
-      className={`flex flex-col min-h-[160px] p-4 desktop:p-5 border-l-4 ${borderColorClass} border border-border bg-card hover:bg-muted/40 transition-colors cursor-pointer rounded-sm`}
+      className="block rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-muted/10"
     >
-      {/* 상단: 카테고리/시간 + 제목 + 설명 — flex-1로 가변 공간 차지 */}
-      <div className="flex-1 flex flex-col">
-        {/* 카테고리 & 시간 */}
-        <div className="flex justify-between items-center mb-2">
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] desktop:text-xs font-semibold bg-muted text-primary">
+      {/* 카테고리 & 작성자 의견 & 시간 */}
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
             {tagInfo.name}
           </span>
-          <span className="text-[10px] desktop:text-xs text-muted-foreground">
-            {formatRelativeTime(post.createdAt)}
-          </span>
+          {isHot && (
+            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-400">
+              🔥 HOT
+            </span>
+          )}
+          {creatorOpinion && (
+            <span className={`text-[10px] font-semibold ${creatorOpinion.className}`}>
+              {creatorOpinion.label}
+            </span>
+          )}
         </div>
-
-        {/* 제목 */}
-        <h3 className="text-sm desktop:text-base font-bold mb-2 line-clamp-2">
-          {post.title}
-        </h3>
-
-        {/* 내용 미리보기 - 데스크탑에서만 표시 */}
-        <p className="hidden desktop:block text-sm text-muted-foreground line-clamp-2 flex-1">
-          {post.content}
-        </p>
+        <span className="text-[12px] text-muted-foreground">
+          {formatRelativeTime(post.createdAt)}
+        </span>
       </div>
 
-      {/* 하단: 프로그레스 바 + 메타 — 항상 카드 바닥에 위치 */}
-      <div className="mt-3">
-        {/* 3색 프로그레스 바 */}
-        <div className="flex h-2 desktop:h-2.5 w-full rounded-full overflow-hidden bg-muted mb-3">
-          <div
-            className="bg-opinion-agree h-full transition-all"
-            style={{ width: `${agreePercent}%` }}
-          />
-          <div
-            className="bg-muted-foreground h-full transition-all"
-            style={{ width: `${neutralPercent}%` }}
-          />
-          <div
-            className="bg-destructive h-full transition-all"
-            style={{ width: `${disagreePercent}%` }}
-          />
-        </div>
+      {/* 제목 */}
+      <h3 className="text-[15px] font-semibold leading-snug mb-3 line-clamp-2">
+        {post.title}
+      </h3>
 
-        {/* 투표 수 & 댓글 수 & 내 선택 */}
-        <div className="flex items-center gap-3 text-[10px] desktop:text-xs font-medium text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Vote className="w-3.5 h-3.5 desktop:w-4 desktop:h-4" />
-            {formatCount(total)}
-          </span>
-          <span className="flex items-center gap-1">
-            <MessageSquare className="w-3.5 h-3.5 desktop:w-4 desktop:h-4" />
-            {formatCount(post.commentCount)}
-          </span>
-          {myVote && (() => {
-            const { Icon, label, className } = MY_VOTE_CONFIG[myVote];
-            return (
-              <span className={`ml-auto flex items-center gap-1 font-semibold ${className}`}>
-                <Icon className="w-3.5 h-3.5 desktop:w-4 desktop:h-4" />
-                내 선택: {label}
-              </span>
-            );
-          })()}
+      {/* 찬반 분포 바 — 퍼센트 내장 */}
+      <div className="flex gap-[3px] mb-3 rounded-lg overflow-hidden">
+        <div
+          className="h-[28px] flex items-center bg-opinion-agree rounded-l-lg"
+          style={{ flex: agreePercent, paddingLeft: agreePercent > 15 ? '8px' : '2px' }}
+        >
+          {agreePercent > 15 && (
+            <span className="text-[12px] font-bold text-white">{agreePercent}%</span>
+          )}
         </div>
+        <div
+          className="h-[28px] flex items-center justify-end bg-opinion-disagree"
+          style={{ flex: disagreePercent, paddingRight: disagreePercent > 15 ? '8px' : '2px' }}
+        >
+          {disagreePercent > 15 && (
+            <span className="text-[12px] font-bold text-white">{disagreePercent}%</span>
+          )}
+        </div>
+        <div
+          className="h-[28px] flex items-center justify-center bg-muted rounded-r-lg"
+          style={{ flex: neutralPercent }}
+        >
+          {neutralPercent > 8 && (
+            <span className="text-[12px] font-semibold text-muted-foreground">{neutralPercent}%</span>
+          )}
+        </div>
+      </div>
+
+      {/* 투표 수 & 댓글 수 & 내 선택 */}
+      <div className="flex items-center gap-3 pt-2.5 text-[11px] font-medium text-muted-foreground border-t border-border">
+        <span className="flex items-center gap-1">
+          <Vote className="w-3 h-3" />
+          {formatCount(total)}명 투표
+        </span>
+        <span className="flex items-center gap-1">
+          <MessageSquare className="w-3 h-3" />
+          {formatCount(post.commentCount)}
+        </span>
+        {myVote && (() => {
+          const { label, className } = MY_VOTE_CONFIG[myVote];
+          return (
+            <span className={`ml-auto font-semibold ${className}`}>
+              내 선택: {label}
+            </span>
+          );
+        })()}
       </div>
     </Link>
   );

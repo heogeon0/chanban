@@ -24,8 +24,8 @@ export function CategoryFilter({
         return (
           <Link
             key={category.id}
-            href={`/topics?tag=${category.id}&sort=${selectedSort}`}
-            className={`px-3 desktop:px-4 py-1.5 desktop:py-2 rounded-full text-xs desktop:text-sm font-semibold whitespace-nowrap transition-colors ${
+            href={`/?tag=${category.id}&sort=${selectedSort}`}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
               isActive
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:text-foreground"

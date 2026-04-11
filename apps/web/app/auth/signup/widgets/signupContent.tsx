@@ -114,7 +114,7 @@ export function SignupContent({ onSuccess, onBackToLogin }: SignupContentProps) 
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push("/topics");
+        router.push("/");
       }
     } catch (err: unknown) {
       console.error("Signup failed:", err);

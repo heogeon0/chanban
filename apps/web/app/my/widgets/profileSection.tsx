@@ -1,7 +1,9 @@
 'use client';
 
 import { useAuth } from '@/shared/contexts/auth-context';
+import { followQueries } from '@/shared/queries/follow';
 import { UserAvatar } from '@/shared/ui/avatar';
+import { useQuery } from '@tanstack/react-query';
 import { Pencil } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useUpdateNickname } from '../features/use-update-nickname';
@@ -9,20 +11,28 @@ import { useUpdateNickname } from '../features/use-update-nickname';
 interface ProfileSectionProps {
   totalVotes?: number;
   totalTopics?: number;
+  totalComments?: number;
+  onFollowSheetOpen: (type: 'followers' | 'following') => void;
 }
 
 /**
  * 마이페이지 프로필 섹션
- * 모바일: 중앙 정렬 + 통계 카드 그리드
- * 데스크탑: 수평 레이아웃 + 통계 인라인
+ * 아바타, 닉네임 수정, 팔로워/팔로잉(클릭), 투표/토픽 통계 포함
+ *
+ * @param onFollowSheetOpen - 팔로워/팔로잉 클릭 시 호출되는 콜백
  */
-export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps) {
+export function ProfileSection({ totalVotes, totalTopics, totalComments, onFollowSheetOpen }: ProfileSectionProps) {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate, isPending } = useUpdateNickname();
 
-  const hasStats = totalVotes !== undefined || totalTopics !== undefined;
+  const { data: countsData } = useQuery({
+    ...followQueries.counts(user?.id ?? ''),
+    enabled: !!user?.id,
+  });
+  const followersCount = countsData?.data?.followersCount ?? 0;
+  const followingCount = countsData?.data?.followingCount ?? 0;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,95 +49,92 @@ export function ProfileSection({ totalVotes, totalTopics }: ProfileSectionProps)
   };
 
   return (
-    <div className="px-4 py-8 desktop:px-8 desktop:py-10 border-b border-border">
-      {/* 모바일: 중앙 정렬 컬럼 / 데스크탑: 수평 row */}
-      <div className="flex flex-col items-center gap-4 desktop:flex-row desktop:items-center desktop:justify-start">
-        {/* 아바타 */}
+    <div className="px-5 pt-6 pb-5 border-b border-border">
+      {/* 아바타 + 팔로워/팔로잉 */}
+      <div className="flex items-center gap-6">
         <UserAvatar
           user={user}
-          size="md"
-          className="size-24 desktop:size-28 text-2xl rounded-full ring-4 ring-primary/20"
+          size="lg"
+          className="size-[72px] text-xl rounded-full ring-2 ring-opinion-agree/40 shrink-0"
         />
 
-        {/* 닉네임 + 수정 */}
-        <div className="flex flex-col items-center gap-1.5 desktop:items-start">
-          {isEditing ? (
-            <form onSubmit={handleSubmit} className="flex items-center gap-2">
-              <input
-                ref={inputRef}
-                defaultValue={user?.nickname}
-                minLength={2}
-                maxLength={20}
-                disabled={isPending}
-                onKeyDown={handleKeyDown}
-                autoFocus
-                className="text-2xl desktop:text-3xl font-bold leading-tight bg-transparent border-b-2 border-primary outline-none w-40 desktop:w-52 text-center desktop:text-left"
-              />
-              <button
-                type="submit"
-                disabled={isPending}
-                className="text-xs text-primary font-semibold hover:opacity-70 disabled:opacity-40"
-              >
-                {isPending ? '저장 중' : '저장'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="text-xs text-muted-foreground hover:opacity-70"
-              >
-                취소
-              </button>
-            </form>
-          ) : (
-            <div className="flex items-center gap-2">
-              <p className="text-2xl desktop:text-3xl font-bold leading-tight">
-                {user?.nickname}
-              </p>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="text-muted-foreground hover:text-foreground transition-colors mt-0.5"
-                aria-label="닉네임 수정"
-              >
-                <Pencil className="size-4" />
-              </button>
-            </div>
-          )}
+        {/* 팔로워 / 팔로잉 */}
+        <div className="flex flex-1 items-center justify-around">
+          <button
+            onClick={() => onFollowSheetOpen('followers')}
+            className="flex flex-col items-center gap-0.5 active:opacity-50 transition-opacity"
+          >
+            <span className="text-2xl font-bold tracking-tight">{followersCount}</span>
+            <span className="text-[11px] text-muted-foreground font-medium">팔로워</span>
+          </button>
 
-          {/* 통계 - 데스크탑 인라인 */}
-          {hasStats && (
-            <p className="text-sm text-muted-foreground hidden desktop:block">
-              {[
-                totalVotes !== undefined && `${totalVotes} Votes`,
-                totalTopics !== undefined && `${totalTopics} Topics`,
-              ]
-                .filter(Boolean)
-                .join(' • ')}
-            </p>
-          )}
+          <div className="w-px h-8 bg-border" />
+
+          <button
+            onClick={() => onFollowSheetOpen('following')}
+            className="flex flex-col items-center gap-0.5 active:opacity-50 transition-opacity"
+          >
+            <span className="text-2xl font-bold tracking-tight">{followingCount}</span>
+            <span className="text-[11px] text-muted-foreground font-medium">팔로잉</span>
+          </button>
         </div>
       </div>
 
-      {/* 통계 카드 - 모바일 전용 */}
-      {hasStats && (
-        <div className="grid grid-cols-2 gap-3 mt-6 desktop:hidden">
-          <div className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border p-4">
-            <p className="text-2xl font-bold text-opinion-agree leading-tight">
-              {totalVotes ?? 0}
-            </p>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              VOTES
-            </p>
-          </div>
-          <div className="flex flex-col items-center gap-1 rounded-xl bg-muted/50 border border-border p-4">
-            <p className="text-2xl font-bold text-opinion-agree leading-tight">
-              {totalTopics ?? 0}
-            </p>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              TOPICS
-            </p>
-          </div>
-        </div>
-      )}
+      {/* 닉네임 */}
+      <div className="mt-3.5">
+        {isEditing ? (
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <input
+              ref={inputRef}
+              defaultValue={user?.nickname}
+              minLength={2}
+              maxLength={20}
+              disabled={isPending}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              className="text-[15px] font-bold bg-transparent border-b-2 border-primary outline-none w-36"
+            />
+            <button
+              type="submit"
+              disabled={isPending}
+              className="text-xs text-primary font-semibold hover:opacity-70 disabled:opacity-40 transition-opacity"
+            >
+              {isPending ? '저장 중' : '저장'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="text-xs text-muted-foreground hover:opacity-70 transition-opacity"
+            >
+              취소
+            </button>
+          </form>
+        ) : (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-1.5 group"
+          >
+            <span className="text-[15px] font-bold">{user?.nickname}</span>
+            <Pencil className="size-3 text-muted-foreground/60 group-hover:text-muted-foreground transition-colors" />
+          </button>
+        )}
+      </div>
+
+      {/* 투표 / 토픽 */}
+      <div className="flex items-center gap-2 mt-3">
+        <span className="inline-flex items-center gap-1 text-[11px] bg-muted/70 rounded-full px-2.5 py-1">
+          <span className="font-bold text-opinion-agree">{totalVotes ?? 0}</span>
+          <span className="text-muted-foreground">투표</span>
+        </span>
+        <span className="inline-flex items-center gap-1 text-[11px] bg-muted/70 rounded-full px-2.5 py-1">
+          <span className="font-bold text-opinion-agree">{totalComments ?? 0}</span>
+          <span className="text-muted-foreground">의견</span>
+        </span>
+        <span className="inline-flex items-center gap-1 text-[11px] bg-muted/70 rounded-full px-2.5 py-1">
+          <span className="font-bold text-opinion-agree">{totalTopics ?? 0}</span>
+          <span className="text-muted-foreground">토픽</span>
+        </span>
+      </div>
     </div>
   );
 }

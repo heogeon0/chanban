@@ -10,6 +10,7 @@ import { MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useCommentLike, usePostVote } from "../features";
+import { AiSummarySection } from "./aiSummarySection";
 import { CommentForm } from "./commentForm";
 import { CommentList } from "./commentList";
 import { VoteButtons } from "./voteButtons";
@@ -86,47 +87,56 @@ export function TopicDetailContent({ topicId, commentCount, initialVoteCount }: 
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-0">
       {/* 투표 섹션 */}
-      <section className="bg-card border border-border rounded-xl p-6 desktop:p-8 shadow-sm">
-        <h3 className="text-center font-bold text-xl mb-8 uppercase tracking-widest">
-          투표하기
-        </h3>
+      <section className="px-5 py-4">
+        {/* 투표 현황 바 */}
+        {voteCount && (
+          <div className="mb-3">
+            <VoteDistributionBar
+              agreeCount={voteCount.agreeCount}
+              disagreeCount={voteCount.disagreeCount}
+              neutralCount={voteCount.neutralCount}
+              hasVoted={!!myVote?.currentStatus}
+            />
+          </div>
+        )}
 
         {/* 투표 버튼 */}
-        <div className="mb-10">
-          <VoteButtons
-            onVote={handleVote}
-            selectedStatus={myVote?.currentStatus ?? null}
-            disabled={isVotePending}
-          />
-        </div>
-
-        {/* 투표 현황 */}
-        {voteCount && (
-          <VoteDistributionBar
-            agreeCount={voteCount.agreeCount}
-            disagreeCount={voteCount.disagreeCount}
-            neutralCount={voteCount.neutralCount}
-          />
-        )}
+        <VoteButtons
+          onVote={handleVote}
+          selectedStatus={myVote?.currentStatus ?? null}
+          disabled={isVotePending}
+        />
       </section>
 
+      {/* 섹션 구분선 */}
+      <div className="h-2 bg-muted" />
+
+      {/* AI 요약 섹션 */}
+      <div className="px-5 py-4">
+        <AiSummarySection topicId={topicId} />
+      </div>
+
+      {/* 섹션 구분선 */}
+      <div className="h-2 bg-muted" />
+
       {/* 댓글 섹션 */}
-      <section className="space-y-8">
+      <section className="space-y-4 px-5 py-4">
         {/* 헤더 */}
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <MessageSquare className="w-6 h-6" />
-            토론 ({commentCount})
-          </h2>
-          <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
+          <div className="flex items-center gap-1.5">
+            <MessageSquare className="w-4 h-4" />
+            <h2 className="text-[15px] font-bold">토론</h2>
+            <span className="text-[14px] font-semibold text-primary">{commentCount}</span>
+          </div>
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted">
             <button
               type="button"
               onClick={() => setSortType("popular")}
-              className={`px-3 py-1 text-xs font-bold rounded transition-all ${
+              className={`px-2 py-0.5 text-xs font-medium rounded-full transition-all ${
                 sortType === "popular"
-                  ? "bg-card shadow-sm"
+                  ? "bg-card shadow-sm text-foreground"
                   : "text-muted-foreground"
               }`}
             >
@@ -135,9 +145,9 @@ export function TopicDetailContent({ topicId, commentCount, initialVoteCount }: 
             <button
               type="button"
               onClick={() => setSortType("latest")}
-              className={`px-3 py-1 text-xs font-bold rounded transition-all ${
+              className={`px-2 py-0.5 text-xs font-medium rounded-full transition-all ${
                 sortType === "latest"
-                  ? "bg-card shadow-sm"
+                  ? "bg-card shadow-sm text-foreground"
                   : "text-muted-foreground"
               }`}
             >

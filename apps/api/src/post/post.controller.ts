@@ -16,6 +16,7 @@ import { User } from 'src/entities';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
+import { SearchQueryDto } from './dto/search-query.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ParsePostTagPipe } from './pipes/parse-post-tag.pipe';
 import { PostService } from './post.service';
@@ -27,6 +28,11 @@ export class PostController {
   @Get('recent')
   findRecentPosts(@Query() paginationQuery: PaginationQueryDto) {
     return this.postService.findRecentPosts(paginationQuery);
+  }
+
+  @Get('search')
+  searchPosts(@Query() searchQueryDto: SearchQueryDto) {
+    return this.postService.searchPosts(searchQueryDto);
   }
 
   @Get('/tags/:tag')
