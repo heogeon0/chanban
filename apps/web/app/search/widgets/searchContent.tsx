@@ -1,8 +1,9 @@
 "use client";
 
-import { PostResponse } from "@chanban/shared-types";
 import { TrendingUp } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { topicQueries } from "@/shared/queries/topic";
 import { TopicCard } from "@/app/topics/widgets/topicCard";
 import { useRecentSearches } from "../features/use-recent-searches";
 import { useSearchTopics } from "../features/use-search-topics";
@@ -12,19 +13,17 @@ import { SearchResults } from "./searchResults";
 
 type SearchType = "all" | "content" | "author";
 
-interface SearchContentProps {
-  hotPosts: PostResponse[];
-}
-
 /**
  * 검색 페이지 클라이언트 컴포넌트
  * - query 없음: 최근 검색 기록 + 인기 토픽 피드
  * - query 있음: SearchResults
  */
-export function SearchContent({ hotPosts }: SearchContentProps) {
+export function SearchContent() {
   const [query, setQuery] = useState("");
   const [searchType, setSearchType] = useState<SearchType>("all");
 
+  const { data: hotData } = useQuery(topicQueries.list("hot", 1));
+  const hotPosts = hotData?.data ?? [];
   const { addSearch } = useRecentSearches();
   const { data, isLoading, isError, refetch } = useSearchTopics(query, searchType);
 
