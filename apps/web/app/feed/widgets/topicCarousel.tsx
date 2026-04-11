@@ -75,7 +75,8 @@ export function TopicCarousel({ topics, intervalMs = 3500 }: TopicCarouselProps)
     }
   };
 
-  if (topics.length === 0) return null;
+  const currentTopic = topics[current];
+  if (!currentTopic) return null;
 
   return (
     <div>
@@ -89,7 +90,7 @@ export function TopicCarousel({ topics, intervalMs = 3500 }: TopicCarouselProps)
         onTouchEnd={(e) => e.changedTouches[0] && handleDragEnd(e.changedTouches[0].clientX)}
         onClickCapture={handleClickCapture}
       >
-        <TopicCard post={topics[current]!} />
+        <TopicCard post={currentTopic} />
       </div>
 
       {/* 인디케이터 */}
