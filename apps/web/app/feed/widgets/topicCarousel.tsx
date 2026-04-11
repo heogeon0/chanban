@@ -85,11 +85,11 @@ export function TopicCarousel({ topics, intervalMs = 3500 }: TopicCarouselProps)
         className="animate-in fade-in duration-200 rounded-xl border border-border bg-card overflow-hidden select-none"
         onMouseDown={(e) => handleDragStart(e.clientX)}
         onMouseUp={(e) => handleDragEnd(e.clientX)}
-        onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
-        onTouchEnd={(e) => handleDragEnd(e.changedTouches[0].clientX)}
+        onTouchStart={(e) => e.touches[0] && handleDragStart(e.touches[0].clientX)}
+        onTouchEnd={(e) => e.changedTouches[0] && handleDragEnd(e.changedTouches[0].clientX)}
         onClickCapture={handleClickCapture}
       >
-        <TopicCard post={topics[current]} />
+        <TopicCard post={topics[current]!} />
       </div>
 
       {/* 인디케이터 */}

@@ -26,10 +26,13 @@ export class PostSummary {
   contentSummary: string | null;
 
   @Column({ type: 'text', nullable: true })
-  commentSummary: string | null;
+  voteSummary: string | null;
 
   @Column({ type: 'text', nullable: true })
-  voteSummary: string | null;
+  agreeSummary: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  disagreeSummary: string | null;
 
   /** 마지막 commentSummary/voteSummary 생성 시점의 댓글 수 */
   @Column({ type: 'integer', default: 0 })

@@ -1,5 +1,5 @@
 import { PostResponse, VoteStatus } from "@chanban/shared-types";
-import { CheckCircle2, MessageSquare, Minus, Vote, XCircle } from "lucide-react";
+import { MessageSquare, Vote } from "lucide-react";
 import Link from "next/link";
 import { TAG_MAP } from "../domains/constants";
 import { formatRelativeTime } from "@/app/topics/[id]/widgets/commentUtils";
@@ -7,17 +7,14 @@ import { formatRelativeTime } from "@/app/topics/[id]/widgets/commentUtils";
 const MY_VOTE_CONFIG = {
   [VoteStatus.AGREE]: {
     label: "찬성",
-    Icon: CheckCircle2,
     className: "text-opinion-agree",
   },
   [VoteStatus.DISAGREE]: {
     label: "반대",
-    Icon: XCircle,
     className: "text-opinion-disagree",
   },
   [VoteStatus.NEUTRAL]: {
     label: "중립",
-    Icon: Minus,
     className: "text-opinion-neutral",
   },
 } as const;
@@ -31,6 +28,7 @@ const CREATOR_OPINION_CONFIG = {
 interface TopicCardProps {
   post: PostResponse;
   myVote?: VoteStatus;
+  isHot?: boolean;
 }
 
 /**
@@ -51,7 +49,7 @@ const formatCount = (num: number): string => {
  *
  * @param post - 게시글 데이터
  */
-export function TopicCard({ post, myVote }: TopicCardProps) {
+export function TopicCard({ post, myVote, isHot = false }: TopicCardProps) {
   const total = post.agreeCount + post.disagreeCount + post.neutralCount;
   const agreePercent =
     total === 0 ? 33 : Math.round((post.agreeCount / total) * 100);
@@ -68,66 +66,77 @@ export function TopicCard({ post, myVote }: TopicCardProps) {
   return (
     <Link
       href={`/topics/${post.id}`}
-      className="block px-4 py-4 hover:bg-muted/30 transition-colors"
+      className="block rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-muted/10"
     >
       {/* 카테고리 & 작성자 의견 & 시간 */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-semibold text-primary">{tagInfo.name}</span>
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+            {tagInfo.name}
+          </span>
+          {isHot && (
+            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-400">
+              🔥 HOT
+            </span>
+          )}
           {creatorOpinion && (
             <span className={`text-[10px] font-semibold ${creatorOpinion.className}`}>
-              · {creatorOpinion.label}
+              {creatorOpinion.label}
             </span>
           )}
         </div>
-        <span className="text-[10px] text-muted-foreground">
+        <span className="text-[12px] text-muted-foreground">
           {formatRelativeTime(post.createdAt)}
         </span>
       </div>
 
       {/* 제목 */}
-      <h3 className="text-sm font-bold leading-snug mb-3 line-clamp-2">
+      <h3 className="text-[15px] font-semibold leading-snug mb-3 line-clamp-2">
         {post.title}
       </h3>
 
-      {/* 찬반 분포 — 핵심 정보 */}
-      <div className="mb-3">
-        <div className="flex justify-between text-[10px] font-semibold mb-1">
-          <span className="text-opinion-agree">찬성 {agreePercent}%</span>
-          <span className="text-muted-foreground">중립 {neutralPercent}%</span>
-          <span className="text-opinion-disagree">반대 {disagreePercent}%</span>
+      {/* 찬반 분포 바 — 퍼센트 내장 */}
+      <div className="flex gap-[3px] mb-3 rounded-lg overflow-hidden">
+        <div
+          className="h-[28px] flex items-center bg-opinion-agree rounded-l-lg"
+          style={{ flex: agreePercent, paddingLeft: agreePercent > 15 ? '8px' : '2px' }}
+        >
+          {agreePercent > 15 && (
+            <span className="text-[12px] font-bold text-white">{agreePercent}%</span>
+          )}
         </div>
-        <div className="flex h-1.5 w-full rounded-full overflow-hidden bg-muted">
-          <div
-            className="bg-opinion-agree h-full transition-all"
-            style={{ width: `${agreePercent}%` }}
-          />
-          <div
-            className="bg-muted-foreground/40 h-full transition-all"
-            style={{ width: `${neutralPercent}%` }}
-          />
-          <div
-            className="bg-opinion-disagree h-full transition-all"
-            style={{ width: `${disagreePercent}%` }}
-          />
+        <div
+          className="h-[28px] flex items-center justify-end bg-opinion-disagree"
+          style={{ flex: disagreePercent, paddingRight: disagreePercent > 15 ? '8px' : '2px' }}
+        >
+          {disagreePercent > 15 && (
+            <span className="text-[12px] font-bold text-white">{disagreePercent}%</span>
+          )}
+        </div>
+        <div
+          className="h-[28px] flex items-center justify-center bg-muted rounded-r-lg"
+          style={{ flex: neutralPercent }}
+        >
+          {neutralPercent > 8 && (
+            <span className="text-[12px] font-semibold text-muted-foreground">{neutralPercent}%</span>
+          )}
         </div>
       </div>
 
       {/* 투표 수 & 댓글 수 & 내 선택 */}
-      <div className="flex items-center gap-3 text-[10px] font-medium text-muted-foreground">
+      <div className="flex items-center gap-3 pt-2.5 text-[11px] font-medium text-muted-foreground border-t border-border">
         <span className="flex items-center gap-1">
           <Vote className="w-3 h-3" />
-          {formatCount(total)}
+          {formatCount(total)}명 투표
         </span>
         <span className="flex items-center gap-1">
           <MessageSquare className="w-3 h-3" />
           {formatCount(post.commentCount)}
         </span>
         {myVote && (() => {
-          const { Icon, label, className } = MY_VOTE_CONFIG[myVote];
+          const { label, className } = MY_VOTE_CONFIG[myVote];
           return (
-            <span className={`ml-auto flex items-center gap-1 font-semibold ${className}`}>
-              <Icon className="w-3 h-3" />
+            <span className={`ml-auto font-semibold ${className}`}>
               내 선택: {label}
             </span>
           );

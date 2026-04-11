@@ -7,27 +7,37 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { MyTopicsTab } from './widgets/myTopicsTab';
 import { MyVotesTab } from './widgets/myVotesTab';
+import { MyCommentsTab } from './widgets/myCommentsTab';
 import { ProfileSection } from './widgets/profileSection';
 import { FollowListSheet } from './widgets/follow-list-sheet';
 
-type TabType = 'votes' | 'topics';
+type TabType = 'votes' | 'comments' | 'topics';
+
+const TABS: { id: TabType; label: string }[] = [
+  { id: 'votes', label: '내 투표' },
+  { id: 'comments', label: '내 의견' },
+  { id: 'topics', label: '내 토픽' },
+];
 
 /**
  * 마이페이지
- * 내 프로필(통계 포함), 내 투표, 내 토픽을 탭으로 구분하여 표시합니다.
- * 팔로워/팔로잉 시트는 탭 영역 기준으로 올라옵니다.
+ * 내 프로필(통계 포함), 내 투표, 내 의견, 내 토픽을 탭으로 구분하여 표시합니다.
  */
 export default function MyPage() {
   const [activeTab, setActiveTab] = useState<TabType>('votes');
   const [followSheet, setFollowSheet] = useState<'followers' | 'following' | null>(null);
   const { user } = useAuth();
 
-  // 프로필 통계용 첫 페이지 쿼리 (meta.total 활용)
   const { data: votesData } = useQuery(userQueries.myVotes(1));
   const { data: postsData } = useQuery(userQueries.myPosts(1));
+  const { data: commentsData } = useQuery({
+    ...userQueries.userComments(user?.id ?? '', 1),
+    enabled: !!user?.id,
+  });
 
   const totalVotes = votesData?.meta.total;
   const totalTopics = postsData?.meta.total;
+  const totalComments = commentsData?.meta.total;
 
   return (
     <ProtectedRoute redirectTo="/auth/login?returnUrl=/my">
@@ -35,36 +45,32 @@ export default function MyPage() {
         <ProfileSection
           totalVotes={totalVotes}
           totalTopics={totalTopics}
+          totalComments={totalComments}
           onFollowSheetOpen={setFollowSheet}
         />
 
         <div>
           {/* 탭 네비게이션 */}
           <div className="flex border-b border-border">
-            <button
-              onClick={() => setActiveTab('votes')}
-              className={`flex flex-1 items-center justify-center gap-2 py-3.5 text-sm font-bold transition-colors border-b-2 ${
-                activeTab === 'votes'
-                  ? 'border-opinion-agree text-opinion-agree'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              내 투표 목록
-            </button>
-            <button
-              onClick={() => setActiveTab('topics')}
-              className={`flex flex-1 items-center justify-center gap-2 py-3.5 text-sm font-bold transition-colors border-b-2 ${
-                activeTab === 'topics'
-                  ? 'border-opinion-agree text-opinion-agree'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              내 토픽 목록
-            </button>
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-1 items-center justify-center gap-2 py-3.5 text-sm font-bold transition-colors border-b-2 ${
+                  activeTab === tab.id
+                    ? 'border-opinion-agree text-opinion-agree'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           {/* 탭 컨텐츠 */}
-          {activeTab === 'votes' ? <MyVotesTab /> : <MyTopicsTab />}
+          {activeTab === 'votes' && <MyVotesTab />}
+          {activeTab === 'comments' && <MyCommentsTab />}
+          {activeTab === 'topics' && <MyTopicsTab />}
 
           {user?.id && (
             <FollowListSheet
