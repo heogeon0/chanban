@@ -64,9 +64,10 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
       <div
         className={`absolute bottom-0 left-0 right-0 max-w-4xl mx-auto bg-background rounded-t-2xl h-[90vh] flex flex-col ${isClosing ? "animate-out slide-out-to-bottom duration-280" : "animate-in slide-in-from-bottom duration-300"}`}
         onTouchStart={(e) => {
-          touchStartY.current = e.touches[0].clientY;
+          if (e.touches[0]) touchStartY.current = e.touches[0].clientY;
         }}
         onTouchEnd={(e) => {
+          if (!e.changedTouches[0]) return;
           const diff = e.changedTouches[0].clientY - touchStartY.current;
           if (diff > SWIPE_CLOSE_THRESHOLD) onClose();
         }}
