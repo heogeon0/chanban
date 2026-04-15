@@ -11,6 +11,8 @@ export const queryKeys = {
     detail: (postId: string) => ["topic", postId] as const,
     search: (q: string, type: string = "all") =>
       ["topics", "search", q, type] as const,
+    official: (page: number) => ["topics", "official", page] as const,
+    officialInfinite: () => ["topics", "official", "infinite"] as const,
   },
   comment: {
     all: ["comments"] as const,

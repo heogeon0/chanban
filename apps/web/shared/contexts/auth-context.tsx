@@ -3,13 +3,14 @@
 import { clearTokens, getAccessToken, getRefreshToken } from '@/lib/auth/token';
 import { User } from '@/lib/auth/types';
 import { httpClient } from '@/lib/httpClient';
-import { ApiResponse } from '@chanban/shared-types';
+import { ApiResponse, UserRole } from '@chanban/shared-types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   setUser: (user: User | null) => void;
   logout: () => void;
 }
@@ -71,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     isLoading,
     isAuthenticated: !!user,
+    isAdmin: user?.role === UserRole.ADMIN,
     setUser,
     logout,
   };

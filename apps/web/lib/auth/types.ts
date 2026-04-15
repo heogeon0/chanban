@@ -1,7 +1,10 @@
+import { UserRole } from "@chanban/shared-types";
+
 export interface User {
   id: string;
   nickname: string;
   profileImageUrl: string | null;
+  role?: UserRole;
 }
 
 /**
