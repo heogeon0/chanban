@@ -8,6 +8,7 @@ import {
   OneToMany,
   Index,
 } from 'typeorm';
+import { UserRole } from '@chanban/shared-types';
 import { Post } from './post.entity';
 import { Vote } from './vote.entity';
 import { Comment } from './comment.entity';
@@ -29,6 +30,9 @@ export class User {
 
   @Column({ type: 'text', nullable: true })
   profileImageUrl: string | null;
+
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
   @CreateDateColumn()
   createdAt: Date;

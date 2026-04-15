@@ -2,6 +2,7 @@ import {
   IsString,
   IsEnum,
   IsBoolean,
+  IsIn,
   IsOptional,
   MaxLength,
   MinLength,
@@ -26,6 +27,10 @@ export class CreatePostDto {
   showCreatorOpinion?: boolean;
 
   @IsOptional()
-  @IsEnum(VoteStatus)
+  @IsIn([VoteStatus.AGREE, VoteStatus.DISAGREE])
   creatorOpinion?: VoteStatus;
+
+  @IsOptional()
+  @IsBoolean()
+  isOfficial?: boolean;
 }
