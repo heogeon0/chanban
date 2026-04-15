@@ -1,0 +1,180 @@
+"use client";
+
+import { usePostVote } from "@/app/topics/[id]/features/use-post-vote";
+import { useAuth } from "@/shared/contexts/auth-context";
+import { queryKeys } from "@/shared/queries/keys";
+import { voteQueries } from "@/shared/queries/vote";
+import {
+  PostResponse,
+  VoteStatus,
+} from "@chanban/shared-types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Eye, MessageCircle, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { MouseEvent } from "react";
+
+interface OfficialFeedCardProps {
+  post: PostResponse;
+}
+
+const TAG_LABEL: Record<string, string> = {
+  politics: "정치",
+  society: "사회",
+  economy: "경제",
+  technology: "기술",
+  entertainment: "연예",
+  sports: "스포츠",
+  other: "기타",
+};
+
+/**
+ * 인스타그램형 공식 투표 피드 카드.
+ * 카드 전체를 Link로 감싸 상세 이동, 찬반 버튼은 stopPropagation로 카드 내에서 즉시 투표.
+ */
+export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const { data: myVote } = useQuery({
+    ...voteQueries.my(post.id),
+    enabled: isAuthenticated,
+  });
+
+  const voteMutation = usePostVote();
+
+  const total = post.agreeCount + post.disagreeCount;
+  const agreePercent = total === 0 ? 50 : Math.round((post.agreeCount / total) * 100);
+  const disagreePercent = total === 0 ? 50 : 100 - agreePercent;
+
+  const myStatus = myVote?.currentStatus ?? null;
+  const isAgreeSelected = myStatus === VoteStatus.AGREE;
+  const isDisagreeSelected = myStatus === VoteStatus.DISAGREE;
+
+  const handleVote = (e: MouseEvent, status: VoteStatus) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      router.push(`/auth/login?returnUrl=/`);
+      return;
+    }
+
+    voteMutation.mutate(
+      { postId: post.id, status },
+      {
+        onSettled: () => {
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.topic.officialInfinite(),
+          });
+        },
+      },
+    );
+  };
+
+  return (
+    <Link
+      href={`/topics/${post.id}`}
+      className="block border-b border-border bg-card hover:bg-muted/5 transition-colors"
+    >
+      <article className="px-4 pt-4 pb-5 flex flex-col gap-3">
+        {/* 헤더: 공식 배지 + 작성자 + 카테고리 */}
+        <header className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary text-primary-foreground">
+            <ShieldCheck className="w-3 h-3" />
+            공식
+          </span>
+          <span className="text-[13px] font-semibold text-foreground">
+            {post.creator.nickname}
+          </span>
+          <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground">
+            {TAG_LABEL[post.tag] ?? post.tag}
+          </span>
+        </header>
+
+        {/* 제목 */}
+        <h2 className="text-lg font-bold leading-tight line-clamp-2">
+          {post.title}
+        </h2>
+
+        {/* 본문 미리보기 */}
+        {post.content && (
+          <p className="text-sm text-foreground/80 line-clamp-3 whitespace-pre-wrap">
+            {post.content}
+          </p>
+        )}
+
+        {/* 찬반 분포 바 (중립 제외) */}
+        <div className="flex gap-[3px] rounded-lg overflow-hidden">
+          <div
+            className="h-7 bg-opinion-agree flex items-center rounded-l-lg"
+            style={{
+              flex: agreePercent,
+              paddingLeft: agreePercent >= 15 ? "10px" : "2px",
+            }}
+          >
+            {agreePercent >= 15 && (
+              <span className="text-[12px] font-bold text-white">
+                찬성 {agreePercent}%
+              </span>
+            )}
+          </div>
+          <div
+            className="h-7 bg-opinion-disagree flex items-center justify-end rounded-r-lg"
+            style={{
+              flex: disagreePercent,
+              paddingRight: disagreePercent >= 15 ? "10px" : "2px",
+            }}
+          >
+            {disagreePercent >= 15 && (
+              <span className="text-[12px] font-bold text-white">
+                반대 {disagreePercent}%
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* 찬성/반대 버튼 */}
+        <div className="flex gap-2.5">
+          <button
+            type="button"
+            disabled={voteMutation.isPending}
+            onClick={(e) => handleVote(e, VoteStatus.AGREE)}
+            className={`flex-1 h-11 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
+              isAgreeSelected
+                ? "bg-opinion-agree text-white shadow-md shadow-opinion-agree/30"
+                : "bg-opinion-agree/15 text-opinion-agree hover:bg-opinion-agree/25"
+            }`}
+          >
+            <span className="text-[14px] font-extrabold">찬성</span>
+          </button>
+          <button
+            type="button"
+            disabled={voteMutation.isPending}
+            onClick={(e) => handleVote(e, VoteStatus.DISAGREE)}
+            className={`flex-1 h-11 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
+              isDisagreeSelected
+                ? "bg-opinion-disagree text-white shadow-md shadow-opinion-disagree/30"
+                : "bg-opinion-disagree/15 text-opinion-disagree hover:bg-opinion-disagree/25"
+            }`}
+          >
+            <span className="text-[14px] font-extrabold">반대</span>
+          </button>
+        </div>
+
+        {/* 메타 */}
+        <footer className="flex items-center gap-4 text-[12px] text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <MessageCircle className="w-3.5 h-3.5" />
+            {post.commentCount}
+          </span>
+          <span className="flex items-center gap-1">
+            <Eye className="w-3.5 h-3.5" />
+            {post.viewCount}
+          </span>
+        </footer>
+      </article>
+    </Link>
+  );
+}
