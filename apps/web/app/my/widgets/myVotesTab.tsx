@@ -24,14 +24,13 @@ function getMajorityStatus(vote: MyVoteResponse): MajorityStatus {
   const post = vote.post;
   if (!post) return 'tie';
 
-  const countMap = {
+  const countMap: Partial<Record<VoteStatus, number>> = {
     [VoteStatus.AGREE]: post.agreeCount,
     [VoteStatus.DISAGREE]: post.disagreeCount,
-    [VoteStatus.NEUTRAL]: post.neutralCount,
   };
 
-  const myCount = countMap[vote.currentStatus];
-  const maxCount = Math.max(post.agreeCount, post.disagreeCount, post.neutralCount);
+  const myCount = countMap[vote.currentStatus] ?? 0;
+  const maxCount = Math.max(post.agreeCount, post.disagreeCount);
   const maxStatuses = Object.values(countMap).filter((c) => c === maxCount);
 
   if (maxStatuses.length > 1 && myCount === maxCount) return 'tie';
@@ -66,10 +65,9 @@ export function MyVotesTab() {
         acc.all++;
         if (vote.currentStatus === VoteStatus.AGREE) acc.agree++;
         else if (vote.currentStatus === VoteStatus.DISAGREE) acc.disagree++;
-        else acc.neutral++;
         return acc;
       },
-      { all: 0, agree: 0, disagree: 0, neutral: 0 }
+      { all: 0, agree: 0, disagree: 0 }
     );
   }, [allVotes]);
 

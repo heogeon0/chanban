@@ -25,7 +25,6 @@ export function VoteButtons({
 }: VoteButtonsProps) {
   const isAgreeSelected = selectedStatus === VoteStatus.AGREE;
   const isDisagreeSelected = selectedStatus === VoteStatus.DISAGREE;
-  const isNeutralSelected = selectedStatus === VoteStatus.NEUTRAL;
 
   const handleVote = (status: VoteStatus) => {
     onVote(status);
@@ -62,19 +61,6 @@ export function VoteButtons({
         <span className="text-[15px] font-extrabold">반대</span>
       </button>
 
-      {/* 중립 버튼 */}
-      <button
-        type="button"
-        disabled={disabled}
-        className={`flex-[0.7] h-12 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed ${
-          isNeutralSelected
-            ? "bg-muted-foreground text-white"
-            : "bg-muted text-muted-foreground hover:bg-muted/80"
-        }`}
-        onClick={() => handleVote(VoteStatus.NEUTRAL)}
-      >
-        <span className="text-[14px] font-bold">중립</span>
-      </button>
     </div>
   );
 }
