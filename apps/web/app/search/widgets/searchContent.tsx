@@ -2,9 +2,8 @@
 
 import { TrendingUp } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { topicQueries } from "@/shared/queries/topic";
 import { TopicCard } from "@/app/topics/widgets/topicCard";
+import { useGetInfiniteTopics } from "@/app/topics/features/use-infinite-topics";
 import { useRecentSearches } from "../features/use-recent-searches";
 import { useSearchTopics } from "../features/use-search-topics";
 import { RecentSearches } from "./recentSearches";
@@ -22,8 +21,9 @@ export function SearchContent() {
   const [query, setQuery] = useState("");
   const [searchType, setSearchType] = useState<SearchType>("all");
 
-  const { data: hotData } = useQuery(topicQueries.list("hot", 1));
-  const hotPosts = hotData?.data ?? [];
+  // /topics의 "전체" 탭과 동일한 인기순 피드 (캐시 공유)
+  const { data: hotData } = useGetInfiniteTopics("hot");
+  const hotPosts = hotData?.pages[0]?.data ?? [];
   const { addSearch } = useRecentSearches();
   const { data, isLoading, isError, refetch } = useSearchTopics(query, searchType);
 
