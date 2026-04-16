@@ -37,7 +37,7 @@ export function VoteButtons({
       <button
         type="button"
         disabled={disabled}
-        className={`flex-1 h-12 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed ${
+        className={`flex-1 h-14 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed ${
           isAgreeSelected
             ? "bg-opinion-agree text-white shadow-lg shadow-opinion-agree/30"
             : "bg-opinion-agree/15 text-opinion-agree hover:bg-opinion-agree/25"
@@ -51,7 +51,7 @@ export function VoteButtons({
       <button
         type="button"
         disabled={disabled}
-        className={`flex-1 h-12 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed ${
+        className={`flex-1 h-14 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-80 disabled:cursor-not-allowed ${
           isDisagreeSelected
             ? "bg-opinion-disagree text-white shadow-lg shadow-opinion-disagree/30"
             : "bg-opinion-disagree/15 text-opinion-disagree hover:bg-opinion-disagree/25"

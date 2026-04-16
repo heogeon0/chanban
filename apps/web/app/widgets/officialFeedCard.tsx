@@ -2,14 +2,12 @@
 
 import { usePostVote } from "@/app/topics/[id]/features/use-post-vote";
 import { useAuth } from "@/shared/contexts/auth-context";
+import { commentQueries } from "@/shared/queries/comment";
 import { queryKeys } from "@/shared/queries/keys";
 import { voteQueries } from "@/shared/queries/vote";
-import {
-  PostResponse,
-  VoteStatus,
-} from "@chanban/shared-types";
+import { PostResponse, VoteStatus } from "@chanban/shared-types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, MessageCircle, ShieldCheck } from "lucide-react";
+import { Eye, Heart, MessageCircle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MouseEvent } from "react";
@@ -30,7 +28,7 @@ const TAG_LABEL: Record<string, string> = {
 
 /**
  * 인스타그램형 공식 투표 피드 카드.
- * 카드 전체를 Link로 감싸 상세 이동, 찬반 버튼은 stopPropagation로 카드 내에서 즉시 투표.
+ * 한 스크롤당 한 카드 (snap-start) + 찬반 바 + 찬/반 투표 버튼 + 인기 댓글 TOP 5.
  */
 export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
   const { isAuthenticated } = useAuth();
@@ -41,6 +39,12 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
     ...voteQueries.my(post.id),
     enabled: isAuthenticated,
   });
+
+  const { data: topCommentsData } = useQuery({
+    ...commentQueries.top(post.id, 5),
+    enabled: isAuthenticated,
+  });
+  const topComments = topCommentsData?.data ?? [];
 
   const voteMutation = usePostVote();
 
@@ -76,10 +80,10 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
   return (
     <Link
       href={`/topics/${post.id}`}
-      className="block border-b border-border bg-card hover:bg-muted/5 transition-colors"
+      className="snap-start snap-always min-h-full flex flex-col border-b border-border bg-card"
     >
-      <article className="px-4 pt-4 pb-5 flex flex-col gap-3">
-        {/* 헤더: 공식 배지 + 작성자 + 카테고리 */}
+      <article className="flex flex-col gap-3.5 px-4 pt-5 pb-8">
+        {/* 헤더 */}
         <header className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary text-primary-foreground">
             <ShieldCheck className="w-3 h-3" />
@@ -94,9 +98,7 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
         </header>
 
         {/* 제목 */}
-        <h2 className="text-lg font-bold leading-tight line-clamp-2">
-          {post.title}
-        </h2>
+        <h2 className="text-lg font-bold leading-tight">{post.title}</h2>
 
         {/* 본문 미리보기 */}
         {post.content && (
@@ -105,10 +107,10 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
           </p>
         )}
 
-        {/* 찬반 분포 바 (중립 제외) */}
+        {/* 찬반 분포 바 */}
         <div className="flex gap-[3px] rounded-lg overflow-hidden">
           <div
-            className="h-7 bg-opinion-agree flex items-center rounded-l-lg"
+            className="h-8 bg-opinion-agree flex items-center rounded-l-lg"
             style={{
               flex: agreePercent,
               paddingLeft: agreePercent >= 15 ? "10px" : "2px",
@@ -121,7 +123,7 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
             )}
           </div>
           <div
-            className="h-7 bg-opinion-disagree flex items-center justify-end rounded-r-lg"
+            className="h-8 bg-opinion-disagree flex items-center justify-end rounded-r-lg"
             style={{
               flex: disagreePercent,
               paddingRight: disagreePercent >= 15 ? "10px" : "2px",
@@ -141,25 +143,25 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
             type="button"
             disabled={voteMutation.isPending}
             onClick={(e) => handleVote(e, VoteStatus.AGREE)}
-            className={`flex-1 h-11 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
+            className={`flex-1 h-14 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
               isAgreeSelected
                 ? "bg-opinion-agree text-white shadow-md shadow-opinion-agree/30"
                 : "bg-opinion-agree/15 text-opinion-agree hover:bg-opinion-agree/25"
             }`}
           >
-            <span className="text-[14px] font-extrabold">찬성</span>
+            <span className="text-[15px] font-extrabold">찬성</span>
           </button>
           <button
             type="button"
             disabled={voteMutation.isPending}
             onClick={(e) => handleVote(e, VoteStatus.DISAGREE)}
-            className={`flex-1 h-11 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
+            className={`flex-1 h-14 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
               isDisagreeSelected
                 ? "bg-opinion-disagree text-white shadow-md shadow-opinion-disagree/30"
                 : "bg-opinion-disagree/15 text-opinion-disagree hover:bg-opinion-disagree/25"
             }`}
           >
-            <span className="text-[14px] font-extrabold">반대</span>
+            <span className="text-[15px] font-extrabold">반대</span>
           </button>
         </div>
 
@@ -174,6 +176,35 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
             {post.viewCount}
           </span>
         </footer>
+
+        {/* 인기 댓글 TOP 5 */}
+        {isAuthenticated && topComments.length > 0 && (
+          <section className="mt-1 rounded-xl bg-muted/40 p-3 flex flex-col gap-2.5">
+            <div className="flex items-center gap-1.5 text-[12px] font-bold text-muted-foreground">
+              <MessageCircle className="w-3.5 h-3.5" />
+              인기 댓글 TOP {topComments.length}
+            </div>
+            <ul className="flex flex-col gap-2.5">
+              {topComments.map((c) => (
+                <li key={c.id} className="flex items-start gap-2">
+                  <span className="text-[12px] font-semibold text-foreground shrink-0">
+                    {c.user.nickname}
+                  </span>
+                  <p className="text-[13px] text-foreground/90 line-clamp-2 flex-1">
+                    {c.content}
+                  </p>
+                  <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground shrink-0">
+                    <Heart className="w-3 h-3" />
+                    {c.likeCount}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <span className="text-[12px] font-semibold text-primary">
+              전체 토론 보기 →
+            </span>
+          </section>
+        )}
       </article>
     </Link>
   );

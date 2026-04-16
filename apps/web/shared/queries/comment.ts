@@ -38,6 +38,24 @@ export const commentQueries = {
   }),
 
   /**
+   * 인기 댓글 TOP N 조회 (피드 카드 미리보기용)
+   * @param postId - 게시글 ID
+   * @param limit - 가져올 개수 (기본 5)
+   */
+  top: (postId: string, limit = 5) => ({
+    queryKey: [...queryKeys.comment.list(postId, "popular"), "top", limit] as const,
+    queryFn: async () => {
+      const response = await httpClient.get<PaginatedResponse<CommentResponse>>(
+        `/api/comments/posts/${postId}`,
+        {
+          params: { sort: "popular", page: 1, limit },
+        }
+      );
+      return response;
+    },
+  }),
+
+  /**
    * 답글 목록 조회 쿼리 옵션
    * @param commentId - 부모 댓글 ID
    * @param page - 페이지 번호
