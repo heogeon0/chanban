@@ -22,6 +22,17 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
+  /** 피드 카드 미리보기용 인기 댓글 TOP N — 비로그인도 조회 가능 */
+  @Get('posts/:postId/top')
+  findTopByPostId(
+    @Param('postId') postId: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsed = limit ? parseInt(limit, 10) : 5;
+    const safeLimit = Number.isFinite(parsed) ? Math.min(Math.max(parsed, 1), 20) : 5;
+    return this.commentService.findTopByPostId(postId, safeLimit);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('posts/:postId')
   async findByPostId(

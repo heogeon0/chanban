@@ -282,6 +282,42 @@ export class CommentService {
     });
   }
 
+  /**
+   * 피드 카드 미리보기용 인기 댓글 TOP N (비로그인 public)
+   * 답글/voteHistory/isLiked 제외, 최상위 댓글만 likeCount DESC 순
+   */
+  async findTopByPostId(postId: string, limit = 5): Promise<CommentResponse[]> {
+    const comments = await this.commentRepository
+      .createQueryBuilder('comment')
+      .leftJoinAndSelect('comment.user', 'user')
+      .where('comment.postId = :postId', { postId })
+      .andWhere('comment.parentId IS NULL')
+      .andWhere('comment.deletedAt IS NULL')
+      .orderBy('comment.likeCount', 'DESC')
+      .addOrderBy('comment.createdAt', 'DESC')
+      .take(limit)
+      .getMany();
+
+    return comments.map((c) => ({
+      id: c.id,
+      content: c.content,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+      deletedAt: c.deletedAt,
+      user: {
+        id: c.user.id,
+        nickname: c.user.nickname,
+        voteHistory: [],
+      },
+      postId: c.postId,
+      parentId: c.parentId,
+      replies: [],
+      totalReplies: 0,
+      isLiked: false,
+      likeCount: c.likeCount,
+    }));
+  }
+
   async findRepliesByCommentId(
     commentId: string,
     paginationQuery: PaginationQueryDto,

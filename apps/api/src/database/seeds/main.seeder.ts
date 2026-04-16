@@ -387,6 +387,78 @@ export class MainSeeder implements Seeder {
         content: '생산성이 높아진다면 충분히 가능하다고 생각해요!',
         likeCount: 0,
       },
+      // === 공식 투표 1 (posts[15]): 주 4.5일 근무제 ===
+      {
+        postId: posts[15].id,
+        userId: users[0].id,
+        parentId: null,
+        content: '직원 복지 향상, 이직률 감소는 결국 기업에도 이득입니다. 찬성!',
+        likeCount: 842,
+      },
+      {
+        postId: posts[15].id,
+        userId: users[2].id,
+        parentId: null,
+        content: '서비스업·제조업 현장 인력 구조상 도입이 쉽지 않아 보입니다.',
+        likeCount: 617,
+      },
+      {
+        postId: posts[15].id,
+        userId: users[3].id,
+        parentId: null,
+        content: '생산성 대비 근무 시간이 너무 길다는 통계가 계속 나오잖아요. 축소 필요.',
+        likeCount: 531,
+      },
+      {
+        postId: posts[15].id,
+        userId: users[1].id,
+        parentId: null,
+        content: '단계적 도입이라는 게 핵심. 일괄 강제가 아니면 합의할 만 합니다.',
+        likeCount: 408,
+      },
+      {
+        postId: posts[15].id,
+        userId: users[4].id,
+        parentId: null,
+        content: '중소기업은 인건비 부담 때문에 오히려 고용 축소로 이어질 겁니다.',
+        likeCount: 352,
+      },
+      // === 공식 투표 2 (posts[16]): AI 콘텐츠 라벨 의무화 ===
+      {
+        postId: posts[16].id,
+        userId: users[2].id,
+        parentId: null,
+        content: '딥페이크 피해가 이미 심각한데 표시는 당연히 필요합니다.',
+        likeCount: 1204,
+      },
+      {
+        postId: posts[16].id,
+        userId: users[0].id,
+        parentId: null,
+        content: '창작물 전체에 적용하면 예술 영역까지 위축시킬 위험이 큽니다.',
+        likeCount: 876,
+      },
+      {
+        postId: posts[16].id,
+        userId: users[3].id,
+        parentId: null,
+        content: '허위정보 유포 목적에 한정해서 처벌 강화가 맞는 방향.',
+        likeCount: 712,
+      },
+      {
+        postId: posts[16].id,
+        userId: users[1].id,
+        parentId: null,
+        content: '기술적으로 100% 탐지는 불가능해서 실효성 의문입니다.',
+        likeCount: 589,
+      },
+      {
+        postId: posts[16].id,
+        userId: users[4].id,
+        parentId: null,
+        content: '플랫폼 자율 표시부터 시작해서 점진적 확대가 현실적.',
+        likeCount: 421,
+      },
     ]);
 
     console.log(`✅ ${comments.length}개의 댓글 생성 완료`);

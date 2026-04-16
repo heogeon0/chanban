@@ -28,7 +28,8 @@ const TAG_LABEL: Record<string, string> = {
 
 /**
  * 인스타그램형 공식 투표 피드 카드.
- * 한 스크롤당 한 카드 (snap-start) + 찬반 바 + 찬/반 투표 버튼 + 인기 댓글 TOP 5.
+ * 레이아웃: 헤더 + 제목 + 본문(세로 60% 스크롤) + 찬반 바 + 찬/반 버튼 + 인기 댓글 TOP 5.
+ * 한 스크롤당 카드 1장 (snap-start).
  */
 export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
   const { isAuthenticated } = useAuth();
@@ -40,11 +41,7 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
     enabled: isAuthenticated,
   });
 
-  const { data: topCommentsData } = useQuery({
-    ...commentQueries.top(post.id, 5),
-    enabled: isAuthenticated,
-  });
-  const topComments = topCommentsData?.data ?? [];
+  const { data: topComments = [] } = useQuery(commentQueries.top(post.id, 5));
 
   const voteMutation = usePostVote();
 
@@ -80,11 +77,11 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
   return (
     <Link
       href={`/topics/${post.id}`}
-      className="snap-start snap-always min-h-full flex items-stretch px-3 py-3"
+      className="snap-start snap-always h-full flex items-stretch px-3 py-3"
     >
-      <article className="flex-1 flex flex-col justify-center gap-3.5 rounded-2xl border border-border bg-card shadow-sm px-4 py-5">
+      <article className="flex-1 min-h-0 flex flex-col rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         {/* 헤더 */}
-        <header className="flex items-center gap-2">
+        <header className="flex items-center gap-2 px-4 pt-4 pb-2 shrink-0">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary text-primary-foreground">
             <ShieldCheck className="w-3 h-3" />
             공식
@@ -98,123 +95,122 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
         </header>
 
         {/* 제목 */}
-        <h2 className="text-lg font-bold leading-tight">{post.title}</h2>
+        <h2 className="text-lg font-bold leading-tight px-4 pb-3 shrink-0">
+          {post.title}
+        </h2>
 
-        {/* 본문 미리보기 */}
-        {post.content && (
-          <p className="text-sm text-foreground/80 line-clamp-3 whitespace-pre-wrap">
-            {post.content}
-          </p>
-        )}
-
-        {/* 찬반 분포 바 */}
-        <div className="flex gap-[3px] rounded-lg overflow-hidden">
-          <div
-            className="h-8 bg-opinion-agree flex items-center rounded-l-lg"
-            style={{
-              flex: agreePercent,
-              paddingLeft: agreePercent >= 15 ? "10px" : "2px",
-            }}
-          >
-            {agreePercent >= 15 && (
-              <span className="text-[12px] font-bold text-white">
-                찬성 {agreePercent}%
-              </span>
-            )}
-          </div>
-          <div
-            className="h-8 bg-opinion-disagree flex items-center justify-end rounded-r-lg"
-            style={{
-              flex: disagreePercent,
-              paddingRight: disagreePercent >= 15 ? "10px" : "2px",
-            }}
-          >
-            {disagreePercent >= 15 && (
-              <span className="text-[12px] font-bold text-white">
-                반대 {disagreePercent}%
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* 찬성/반대 버튼 */}
-        <div className="flex gap-2.5">
-          <button
-            type="button"
-            disabled={voteMutation.isPending}
-            onClick={(e) => handleVote(e, VoteStatus.AGREE)}
-            className={`flex-1 h-14 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
-              isAgreeSelected
-                ? "bg-opinion-agree text-white shadow-md shadow-opinion-agree/30"
-                : "bg-opinion-agree/15 text-opinion-agree hover:bg-opinion-agree/25"
-            }`}
-          >
-            <span className="text-[15px] font-extrabold">찬성</span>
-          </button>
-          <button
-            type="button"
-            disabled={voteMutation.isPending}
-            onClick={(e) => handleVote(e, VoteStatus.DISAGREE)}
-            className={`flex-1 h-14 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
-              isDisagreeSelected
-                ? "bg-opinion-disagree text-white shadow-md shadow-opinion-disagree/30"
-                : "bg-opinion-disagree/15 text-opinion-disagree hover:bg-opinion-disagree/25"
-            }`}
-          >
-            <span className="text-[15px] font-extrabold">반대</span>
-          </button>
-        </div>
-
-        {/* 메타 */}
-        <footer className="flex items-center gap-4 text-[12px] text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <MessageCircle className="w-3.5 h-3.5" />
-            {post.commentCount}
-          </span>
-          <span className="flex items-center gap-1">
-            <Eye className="w-3.5 h-3.5" />
-            {post.viewCount}
-          </span>
-        </footer>
-
-        {/* 비로그인 CTA */}
-        {!isAuthenticated && (
-          <section className="mt-1 flex flex-col gap-2 items-center justify-center rounded-xl border border-dashed border-border px-4 py-6 text-center">
-            <MessageCircle className="w-5 h-5 text-muted-foreground" />
-            <p className="text-[13px] text-muted-foreground">
-              로그인하고 다른 사람들의 의견을 확인해보세요
+        {/* 본문 — 카드의 60% 영역, 내부 스크롤 */}
+        <div
+          className="basis-[60%] min-h-0 overflow-y-auto px-4 pb-3 border-t border-border/60"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {post.content ? (
+            <p className="text-[14px] leading-relaxed text-foreground/85 whitespace-pre-wrap pt-3">
+              {post.content}
             </p>
-          </section>
-        )}
+          ) : (
+            <p className="pt-3 text-sm text-muted-foreground">본문이 없습니다.</p>
+          )}
+        </div>
 
-        {/* 인기 댓글 TOP 5 */}
-        {isAuthenticated && topComments.length > 0 && (
-          <section className="mt-1 rounded-xl bg-muted/40 p-3 flex flex-col gap-2.5">
-            <div className="flex items-center gap-1.5 text-[12px] font-bold text-muted-foreground">
-              <MessageCircle className="w-3.5 h-3.5" />
-              인기 댓글 TOP {topComments.length}
+        {/* 하단 고정 영역: 투표바 + 버튼 + 메타 + 인기 댓글 */}
+        <div className="shrink-0 px-4 pt-3 pb-4 flex flex-col gap-3 border-t border-border bg-card">
+          {/* 찬반 분포 바 */}
+          <div className="flex gap-[3px] rounded-lg overflow-hidden">
+            <div
+              className="h-8 bg-opinion-agree flex items-center rounded-l-lg"
+              style={{
+                flex: agreePercent,
+                paddingLeft: agreePercent >= 15 ? "10px" : "2px",
+              }}
+            >
+              {agreePercent >= 15 && (
+                <span className="text-[12px] font-bold text-white">
+                  찬성 {agreePercent}%
+                </span>
+              )}
             </div>
-            <ul className="flex flex-col gap-2.5">
-              {topComments.map((c) => (
-                <li key={c.id} className="flex items-start gap-2">
-                  <span className="text-[12px] font-semibold text-foreground shrink-0">
-                    {c.user.nickname}
-                  </span>
-                  <p className="text-[13px] text-foreground/90 line-clamp-2 flex-1">
-                    {c.content}
-                  </p>
-                  <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground shrink-0">
-                    <Heart className="w-3 h-3" />
-                    {c.likeCount}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <span className="text-[12px] font-semibold text-primary">
-              전체 토론 보기 →
+            <div
+              className="h-8 bg-opinion-disagree flex items-center justify-end rounded-r-lg"
+              style={{
+                flex: disagreePercent,
+                paddingRight: disagreePercent >= 15 ? "10px" : "2px",
+              }}
+            >
+              {disagreePercent >= 15 && (
+                <span className="text-[12px] font-bold text-white">
+                  반대 {disagreePercent}%
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* 찬성/반대 버튼 */}
+          <div className="flex gap-2.5">
+            <button
+              type="button"
+              disabled={voteMutation.isPending}
+              onClick={(e) => handleVote(e, VoteStatus.AGREE)}
+              className={`flex-1 h-14 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
+                isAgreeSelected
+                  ? "bg-opinion-agree text-white shadow-md shadow-opinion-agree/30"
+                  : "bg-opinion-agree/15 text-opinion-agree hover:bg-opinion-agree/25"
+              }`}
+            >
+              <span className="text-[15px] font-extrabold">찬성</span>
+            </button>
+            <button
+              type="button"
+              disabled={voteMutation.isPending}
+              onClick={(e) => handleVote(e, VoteStatus.DISAGREE)}
+              className={`flex-1 h-14 rounded-xl flex items-center justify-center transition-all duration-200 disabled:opacity-60 ${
+                isDisagreeSelected
+                  ? "bg-opinion-disagree text-white shadow-md shadow-opinion-disagree/30"
+                  : "bg-opinion-disagree/15 text-opinion-disagree hover:bg-opinion-disagree/25"
+              }`}
+            >
+              <span className="text-[15px] font-extrabold">반대</span>
+            </button>
+          </div>
+
+          {/* 메타 */}
+          <div className="flex items-center gap-4 text-[12px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <MessageCircle className="w-3.5 h-3.5" />
+              {post.commentCount}
             </span>
-          </section>
-        )}
+            <span className="flex items-center gap-1">
+              <Eye className="w-3.5 h-3.5" />
+              {post.viewCount}
+            </span>
+          </div>
+
+          {/* 인기 댓글 TOP 5 — 비로그인도 표시 */}
+          {topComments.length > 0 && (
+            <section className="rounded-xl bg-muted/40 p-3 flex flex-col gap-2">
+              <div className="flex items-center gap-1.5 text-[12px] font-bold text-muted-foreground">
+                <MessageCircle className="w-3.5 h-3.5" />
+                인기 댓글 TOP {topComments.length}
+              </div>
+              <ul className="flex flex-col gap-1.5">
+                {topComments.map((c) => (
+                  <li key={c.id} className="flex items-start gap-2">
+                    <span className="text-[12px] font-semibold text-foreground shrink-0">
+                      {c.user.nickname}
+                    </span>
+                    <p className="text-[13px] text-foreground/90 line-clamp-1 flex-1">
+                      {c.content}
+                    </p>
+                    <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground shrink-0">
+                      <Heart className="w-3 h-3" />
+                      {c.likeCount}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
       </article>
     </Link>
   );
