@@ -1,4 +1,5 @@
 import { topicQueries } from "@/shared/queries";
+import { queryKeys } from "@/shared/queries/keys";
 import { PaginationMeta, PostTag } from "@chanban/shared-types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
@@ -17,7 +18,7 @@ export function useGetInfiniteTopics(
   const nextPage = initialMeta.page + 1;
 
   const query = useInfiniteQuery({
-    queryKey: topicQueries.list(tag, nextPage).queryKey,
+    queryKey: queryKeys.topic.infiniteList(tag),
     queryFn: async ({ pageParam }) => {
       return topicQueries.list(tag, pageParam).queryFn();
     },

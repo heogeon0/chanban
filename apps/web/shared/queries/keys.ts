@@ -8,6 +8,8 @@ export const queryKeys = {
   topic: {
     all: ["topics"] as const,
     list: (tag: PostTag | "recent" | "hot") => ["topics", tag] as const,
+    infiniteList: (tag: PostTag | "recent" | "hot") =>
+      ["topics", "infinite", tag] as const,
     detail: (postId: string) => ["topic", postId] as const,
     search: (q: string, type: string = "all") =>
       ["topics", "search", q, type] as const,
