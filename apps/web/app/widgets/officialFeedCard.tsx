@@ -80,9 +80,9 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
   return (
     <Link
       href={`/topics/${post.id}`}
-      className="snap-start snap-always min-h-full flex flex-col border-b border-border bg-card"
+      className="snap-start snap-always min-h-full flex items-stretch px-3 py-3"
     >
-      <article className="flex flex-col gap-3.5 px-4 pt-5 pb-8">
+      <article className="flex-1 flex flex-col justify-center gap-3.5 rounded-2xl border border-border bg-card shadow-sm px-4 py-5">
         {/* 헤더 */}
         <header className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary text-primary-foreground">
@@ -176,6 +176,16 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
             {post.viewCount}
           </span>
         </footer>
+
+        {/* 비로그인 CTA */}
+        {!isAuthenticated && (
+          <section className="mt-1 flex flex-col gap-2 items-center justify-center rounded-xl border border-dashed border-border px-4 py-6 text-center">
+            <MessageCircle className="w-5 h-5 text-muted-foreground" />
+            <p className="text-[13px] text-muted-foreground">
+              로그인하고 다른 사람들의 의견을 확인해보세요
+            </p>
+          </section>
+        )}
 
         {/* 인기 댓글 TOP 5 */}
         {isAuthenticated && topComments.length > 0 && (
