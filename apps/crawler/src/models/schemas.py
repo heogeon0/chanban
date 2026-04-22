@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -30,6 +31,7 @@ class Persona(BaseModel):
     jwt_token: str
     description: str
     system_prompt: str
+    tags: list[str] = Field(default_factory=list)
 
 
 class Article(BaseModel):
@@ -49,6 +51,18 @@ class Comment(BaseModel):
     disagree_count: int = 0
 
 
+class CommunityPost(BaseModel):
+    """커뮤니티에서 크롤링한 게시글."""
+
+    url: str
+    title: str
+    content: str
+    comments: list[Comment] = Field(default_factory=list)
+    source: str
+    category: str = "other"
+    reaction_count: int = 0
+
+
 class AnalysisResult(BaseModel):
     """LangChain 분석 결과 — 찬반 토론 주제."""
 
@@ -57,6 +71,16 @@ class AnalysisResult(BaseModel):
     tag: PostTag
     show_creator_opinion: bool = True
     creator_opinion: VoteStatus
+
+
+class PersonaSelectionResult(BaseModel):
+    """LangChain 페르소나 선발 결과."""
+
+    writer: str
+    participants: list[str] = Field(..., min_length=2, max_length=5)
+    reply_rounds: int = Field(..., ge=1, le=3)
+    controversy_level: Literal["low", "medium", "high"]
+    reason: str
 
 
 class CommentResult(BaseModel):
