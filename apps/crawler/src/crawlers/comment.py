@@ -1,11 +1,14 @@
 """기사 URL에서 댓글 목록을 수집한다."""
 
 import json
+import logging
 import re
 
 import httpx
 
 from src.models.schemas import Comment
+
+logger = logging.getLogger(__name__)
 
 COMMENT_API_URL = (
     "https://apis.naver.com/commentBox/cbox/web_neo_list_jsonp.json"
@@ -33,6 +36,7 @@ async def fetch_comments(article_url: str, limit: int = 30) -> list[Comment]:
     """
     oid, aid = _extract_oid_aid(article_url)
     if not oid or not aid:
+        logger.warning("oid/aid 추출 실패 url=%s", article_url)
         return []
 
     object_id = f"news{oid},{aid}"
@@ -43,28 +47,32 @@ async def fetch_comments(article_url: str, limit: int = 30) -> list[Comment]:
         "pool": "cbox5",
         "objectId": object_id,
         "pageSize": str(limit),
-        "sort": "FAVORITE",  # 공감순
+        "sort": "FAVORITE",
         "indexSize": "10",
         "page": "1",
         "lang": "ko",
         "country": "KR",
     }
 
-    async with httpx.AsyncClient(headers=HEADERS, timeout=30) as client:
-        resp = await client.get(COMMENT_API_URL, params=params)
-        resp.raise_for_status()
+    try:
+        async with httpx.AsyncClient(headers=HEADERS, timeout=30) as client:
+            resp = await client.get(COMMENT_API_URL, params=params)
+            resp.raise_for_status()
+    except httpx.HTTPError as e:
+        logger.warning("댓글 API 요청 실패 url=%s error=%s", article_url, e)
+        return []
 
-    return _parse_comments(resp.text)
+    comments = _parse_comments(resp.text)
+    logger.debug("댓글 %d개 수집 url=%s", len(comments), article_url)
+    return comments
 
 
 def _extract_oid_aid(url: str) -> tuple[str, str]:
     """기사 URL에서 언론사 ID(oid)와 기사 ID(aid)를 추출한다."""
-    # n.news.naver.com/mnews/article/001/0015012345
     match = re.search(r"/article/(\d+)/(\d+)", url)
     if match:
         return match.group(1), match.group(2)
 
-    # news.naver.com/main/read.naver?oid=001&aid=0015012345
     oid_match = re.search(r"oid=(\d+)", url)
     aid_match = re.search(r"aid=(\d+)", url)
     if oid_match and aid_match:
@@ -75,12 +83,16 @@ def _extract_oid_aid(url: str) -> tuple[str, str]:
 
 def _parse_comments(response_text: str) -> list[Comment]:
     """JSONP 응답에서 댓글 목록을 파싱한다."""
-    # JSONP 콜백 제거 → JSON 추출
     json_match = re.search(r"\((\{.*\})\)", response_text, re.DOTALL)
     if not json_match:
         return []
 
-    data = json.loads(json_match.group(1))
+    try:
+        data = json.loads(json_match.group(1))
+    except json.JSONDecodeError as e:
+        logger.warning("댓글 JSON 파싱 실패 error=%s", e)
+        return []
+
     comment_list = data.get("result", {}).get("commentList", [])
 
     comments = []
