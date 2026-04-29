@@ -284,7 +284,8 @@ export class CommentService {
 
   /**
    * 피드 카드 미리보기용 인기 댓글 TOP N (비로그인 public)
-   * 답글/voteHistory/isLiked 제외, 최상위 댓글만 likeCount DESC 순
+   * 답글/isLiked 제외, 최상위 댓글만 likeCount DESC 순.
+   * voteHistory에는 "해당 post에 대한 작성자 투표" 한 건만 담아 피드 dot 표시에 사용.
    */
   async findTopByPostId(postId: string, limit = 5): Promise<CommentResponse[]> {
     const comments = await this.commentRepository
@@ -298,24 +299,47 @@ export class CommentService {
       .take(limit)
       .getMany();
 
-    return comments.map((c) => ({
-      id: c.id,
-      content: c.content,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
-      deletedAt: c.deletedAt,
-      user: {
-        id: c.user.id,
-        nickname: c.user.nickname,
-        voteHistory: [],
-      },
-      postId: c.postId,
-      parentId: c.parentId,
-      replies: [],
-      totalReplies: 0,
-      isLiked: false,
-      likeCount: c.likeCount,
-    }));
+    if (comments.length === 0) return [];
+
+    const userIds = [...new Set(comments.map((c) => c.user.id))];
+    const votes = await this.voteRepository
+      .createQueryBuilder('v')
+      .where('v.postId = :postId', { postId })
+      .andWhere('v.userId IN (:...userIds)', { userIds })
+      .getMany();
+    const voteByUserId = new Map(votes.map((v) => [v.userId, v]));
+
+    return comments.map((c) => {
+      const userVote = voteByUserId.get(c.user.id);
+      const voteHistory: VoteHistoryResponse[] = userVote
+        ? [
+            {
+              fromStatus: null,
+              toStatus: userVote.currentStatus,
+              changedAt: userVote.lastChangedAt ?? userVote.firstVotedAt,
+            },
+          ]
+        : [];
+
+      return {
+        id: c.id,
+        content: c.content,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+        deletedAt: c.deletedAt,
+        user: {
+          id: c.user.id,
+          nickname: c.user.nickname,
+          voteHistory,
+        },
+        postId: c.postId,
+        parentId: c.parentId,
+        replies: [],
+        totalReplies: 0,
+        isLiked: false,
+        likeCount: c.likeCount,
+      };
+    });
   }
 
   async findRepliesByCommentId(
