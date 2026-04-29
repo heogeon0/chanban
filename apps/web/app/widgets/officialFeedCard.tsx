@@ -230,8 +230,13 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
             </span>
           </div>
 
-          {/* 인기 댓글 TOP 5 — 비로그인도 표시 */}
-          {topComments.length > 0 && (
+          {/* 인기 댓글 TOP 5 — 비로그인도 표시. 0건이면 placeholder 노출 */}
+          {topComments.length === 0 ? (
+            <div className="rounded-xl bg-muted/30 px-4 py-5 flex items-center justify-center gap-2 text-[13px] text-muted-foreground">
+              <MessageCircle className="w-4 h-4" />
+              아직 댓글이 없어요. 첫 댓글을 남겨보세요
+            </div>
+          ) : (
             <section className="rounded-xl bg-muted/40 p-4 flex flex-col gap-3">
               <div className="flex items-center gap-2 text-[13px] font-bold text-muted-foreground">
                 <MessageCircle className="w-4 h-4" />
