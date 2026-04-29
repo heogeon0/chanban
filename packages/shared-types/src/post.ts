@@ -12,6 +12,7 @@ export interface PostResponse {
   creator: UserResponse;
   title: string;
   content: string;
+  images: string[];
   tag: PostTag;
   showCreatorOpinion: boolean;
   creatorVote?: VoteStatus | null;

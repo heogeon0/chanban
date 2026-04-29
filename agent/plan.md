@@ -172,34 +172,34 @@
 
 > Post / Comment 엔티티에 `images text[]` 컬럼 추가, Create DTO 및 Response 매핑도 함께 확장. `synchronize: true`라 부팅 시 자동 반영되지만 `ValidationPipe { forbidNonWhitelisted: true }` 때문에 DTO에 반드시 선언해야 한다.
 
-- [ ] a: `apps/api/src/entities/post.entity.ts` — `@Column('text', { array: true, default: () => "'{}'" }) images: string[];` 필드 추가 (content 필드 다음 적절한 위치)
-- [ ] b: `apps/api/src/entities/comment.entity.ts` — 동일하게 `@Column('text', { array: true, default: () => "'{}'" }) images: string[];` 필드 추가
-- [ ] c: `apps/api/src/post/dto/create-post.dto.ts` — `@IsOptional() @IsArray() @ArrayMaxSize(5) @IsString({ each: true }) images?: string[];` 추가. `class-validator`에서 `ArrayMaxSize`, `IsArray`, `IsString` import
-- [ ] d: `apps/api/src/comment/dto/create-comment.dto.ts` — 동일 패턴으로 `@IsOptional() @IsArray() @ArrayMaxSize(2) @IsString({ each: true }) images?: string[];` 추가
-- [ ] e: `apps/api/src/post/dto/post-response.dto.ts` (또는 매핑 지점) — `images: string[]` 필드 노출 확인. 엔티티 그대로 반환하는 경로면 무변경, 별도 매퍼 있으면 명시 추가
-- [ ] f: `apps/api/src/comment/comment.service.ts` 줄 107~118 — `findByPostId`의 `.select([...])` 배열에 `'reply.images'` 추가 (누락 시 답글 이미지 필드가 API 응답에서 빠짐). 같은 메서드에서 원 댓글 select 항목에도 `'comment.images'` 추가
-- [ ] g: `apps/api/src/post/post.service.ts` — `create(dto, user)` 메서드에서 `images: dto.images ?? []`를 엔티티 생성 시 포함. AI 요약 등 기존 로직엔 영향 없음 확인
+- [x] a: `apps/api/src/entities/post.entity.ts` — `@Column('text', { array: true, default: () => "'{}'" }) images: string[];` 필드 추가 (content 필드 다음 적절한 위치)
+- [x] b: `apps/api/src/entities/comment.entity.ts` — 동일하게 `@Column('text', { array: true, default: () => "'{}'" }) images: string[];` 필드 추가
+- [x] c: `apps/api/src/post/dto/create-post.dto.ts` — `@IsOptional() @IsArray() @ArrayMaxSize(5) @IsString({ each: true }) images?: string[];` 추가. `class-validator`에서 `ArrayMaxSize`, `IsArray`, `IsString` import
+- [x] d: `apps/api/src/comment/dto/create-comment.dto.ts` — 동일 패턴으로 `@IsOptional() @IsArray() @ArrayMaxSize(2) @IsString({ each: true }) images?: string[];` 추가
+- [x] e: `apps/api/src/post/dto/post-response.dto.ts` (또는 매핑 지점) — `images: string[]` 필드 노출 확인. 엔티티 그대로 반환하는 경로면 무변경, 별도 매퍼 있으면 명시 추가
+- [x] f: `apps/api/src/comment/comment.service.ts` 줄 107~118 — `findByPostId`의 `.select([...])` 배열에 `'reply.images'` 추가 (누락 시 답글 이미지 필드가 API 응답에서 빠짐). 같은 메서드에서 원 댓글 select 항목에도 `'comment.images'` 추가
+- [x] g: `apps/api/src/post/post.service.ts` — `create(dto, user)` 메서드에서 `images: dto.images ?? []`를 엔티티 생성 시 포함. AI 요약 등 기존 로직엔 영향 없음 확인
 
 ## v20. 소유권 검증 유틸 & Signed Upload URL 엔드포인트
 
 > 프론트 직접 업로드(A안)를 안전하게 쓰기 위한 서버측 발급/검증 로직. path prefix = userId를 강제해 소유권을 보장한다.
 
-- [ ] a: `apps/api/package.json` — `@supabase/supabase-js` 의존성 추가 (pnpm workspace 루트에서 `pnpm add @supabase/supabase-js --filter api`)
-- [ ] b: `apps/api/src/upload/upload.module.ts` 신규 — `UploadController` + `UploadService` 등록, `ConfigModule` import
-- [ ] c: `apps/api/src/upload/upload.service.ts` 신규 — `createSupabaseClient()` (service role key 사용), `createSignedUploadUrl(scope, userId, filename, mimeType)` 메서드. 로직: MIME 화이트리스트 검증(`image/jpeg|png|webp|gif`), 확장자 추출, `key = \`${userId}/${yyyy}/${mm}/${uuid}.${ext}\``, `supabase.storage.from(bucket).createSignedUploadUrl(key)` 호출 후 `{ uploadUrl, token, publicUrl, key }` 반환. bucket은 scope별로 `post-images` / `comment-images` 선택
-- [ ] d: `apps/api/src/upload/dto/sign-upload.dto.ts` 신규 — `@IsIn(['post', 'comment']) scope`, `@IsString() @MaxLength(200) filename`, `@IsIn(['image/jpeg','image/png','image/webp','image/gif']) mimeType`, `@IsInt() @Max(2 * 1024 * 1024) size` 필드
-- [ ] e: `apps/api/src/upload/upload.controller.ts` 신규 — `@Controller('uploads')` + `@UseGuards(JwtAuthGuard)` + `@Post('sign')` 엔드포인트. `@CurrentUser() user` 받아서 `uploadService.createSignedUploadUrl(...)` 호출. 응답 `{ uploadUrl, token, key, publicUrl }`
-- [ ] f: `apps/api/src/app.module.ts` — `UploadModule` import 추가
-- [ ] g: `apps/api/src/common/utils/image-key.util.ts` 신규 — `validateImageKeyOwnership(key: string, userId: string): boolean` 함수. key의 첫 세그먼트가 userId와 일치하는지 체크. `apps/api/src/post/post.service.ts#create` 및 `comment.service.ts#create` 트랜잭션 안에서 각 `dto.images`를 순회하며 검증, 불일치 시 `BadRequestException` throw
+- [x] a: `apps/api/package.json` — `@supabase/supabase-js` 의존성 추가 (pnpm workspace 루트에서 `pnpm add @supabase/supabase-js --filter api`)
+- [x] b: `apps/api/src/upload/upload.module.ts` 신규 — `UploadController` + `UploadService` 등록, `ConfigModule` import
+- [x] c: `apps/api/src/upload/upload.service.ts` 신규 — `createSupabaseClient()` (service role key 사용), `createSignedUploadUrl(scope, userId, filename, mimeType)` 메서드. 로직: MIME 화이트리스트 검증(`image/jpeg|png|webp|gif`), 확장자 추출, `key = \`${userId}/${yyyy}/${mm}/${uuid}.${ext}\``, `supabase.storage.from(bucket).createSignedUploadUrl(key)` 호출 후 `{ uploadUrl, token, publicUrl, key }` 반환. bucket은 scope별로 `post-images` / `comment-images` 선택
+- [x] d: `apps/api/src/upload/dto/sign-upload.dto.ts` 신규 — `@IsIn(['post', 'comment']) scope`, `@IsString() @MaxLength(200) filename`, `@IsIn(['image/jpeg','image/png','image/webp','image/gif']) mimeType`, `@IsInt() @Max(2 * 1024 * 1024) size` 필드
+- [x] e: `apps/api/src/upload/upload.controller.ts` 신규 — `@Controller('uploads')` + `@UseGuards(JwtAuthGuard)` + `@Post('sign')` 엔드포인트. `@CurrentUser() user` 받아서 `uploadService.createSignedUploadUrl(...)` 호출. 응답 `{ uploadUrl, token, key, publicUrl }`
+- [x] f: `apps/api/src/app.module.ts` — `UploadModule` import 추가
+- [x] g: `apps/api/src/common/utils/image-key.util.ts` 신규 — `validateImageKeyOwnership(key: string, userId: string): boolean` 함수. key의 첫 세그먼트가 userId와 일치하는지 체크. `apps/api/src/post/post.service.ts#create` 및 `comment.service.ts#create` 트랜잭션 안에서 각 `dto.images`를 순회하며 검증, 불일치 시 `BadRequestException` throw
 
 ## v21. shared-types 타입 확장
 
 > 백엔드 DTO 변경과 맞물려 프론트에서 바로 타입 참조할 수 있도록 shared-types에 `images` 필드 반영.
 
-- [ ] a: `packages/shared-types/src/post.ts` — `PostResponse` 인터페이스에 `images: string[]` 필드 추가 (content 다음)
-- [ ] b: `packages/shared-types/src/comment.ts` — `CommentResponse` 및 `CommentReplyResponse` 인터페이스 각각에 `images: string[]` 필드 추가
-- [ ] c: `packages/shared-types/src/index.ts` — barrel export 변경 불필요 확인 (기존 `export *`면 자동 반영)
-- [ ] d: 필요 시 `packages/shared-types`에 `UploadSignRequest`, `UploadSignResponse` 타입 신규 추가 (프론트/백 공용): `{ scope: 'post' | 'comment', filename, mimeType, size }` / `{ uploadUrl, token, key, publicUrl }`
+- [x] a: `packages/shared-types/src/post.ts` — `PostResponse` 인터페이스에 `images: string[]` 필드 추가 (content 다음)
+- [x] b: `packages/shared-types/src/comment.ts` — `CommentResponse` 및 `CommentReplyResponse` 인터페이스 각각에 `images: string[]` 필드 추가
+- [x] c: `packages/shared-types/src/index.ts` — barrel export 변경 불필요 확인 (기존 `export *`면 자동 반영)
+- [x] d: 필요 시 `packages/shared-types`에 `UploadSignRequest`, `UploadSignResponse` 타입 신규 추가 (프론트/백 공용): `{ scope: 'post' | 'comment', filename, mimeType, size }` / `{ uploadUrl, token, key, publicUrl }`
 
 ## v22. 프론트 Supabase 클라이언트 & 업로드 훅
 

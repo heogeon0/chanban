@@ -23,6 +23,7 @@ export interface VoteHistoryResponse {
 export interface CommentReplyResponse {
   id: string;
   content: string;
+  images: string[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -39,6 +40,7 @@ export interface CommentReplyResponse {
 export interface CommentResponse {
   id: string;
   content: string;
+  images: string[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;

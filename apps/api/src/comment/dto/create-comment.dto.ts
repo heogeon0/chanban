@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsUUID, MinLength } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MinLength,
+} from 'class-validator';
 
 export class CreateCommentDto {
   @IsString()
@@ -11,4 +18,10 @@ export class CreateCommentDto {
   @IsOptional()
   @IsUUID()
   parentId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(2)
+  @IsString({ each: true })
+  images?: string[];
 }

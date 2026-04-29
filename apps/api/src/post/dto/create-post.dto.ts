@@ -1,8 +1,10 @@
 import {
-  IsString,
-  IsEnum,
+  IsArray,
   IsBoolean,
+  IsEnum,
   IsOptional,
+  IsString,
+  ArrayMaxSize,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -28,4 +30,10 @@ export class CreatePostDto {
   @IsOptional()
   @IsEnum(VoteStatus)
   creatorOpinion?: VoteStatus;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5)
+  @IsString({ each: true })
+  images?: string[];
 }

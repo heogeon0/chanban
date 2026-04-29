@@ -35,6 +35,9 @@ export class Post {
   @Column({ type: 'text', nullable: false })
   content: string;
 
+  @Column('text', { array: true, default: () => "'{}'" })
+  images: string[];
+
   @Index()
   @Column({
     type: 'enum',
