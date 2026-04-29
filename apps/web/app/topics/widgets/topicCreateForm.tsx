@@ -2,6 +2,8 @@
 
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { ImageUploader } from "@/shared/components/imageUploader/imageUploader";
+import { MAX_POST_IMAGES } from "@/shared/constants/image";
 import { PostTag, TAGS, VoteStatus } from "@chanban/shared-types";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -35,6 +37,7 @@ export function TopicCreateForm() {
   const [tag, setTag] = useState<PostTag>(PostTag.OTHER);
   const [showCreatorOpinion, setShowCreatorOpinion] = useState(false);
   const [creatorOpinion, setCreatorOpinion] = useState<VoteStatus>(VoteStatus.AGREE);
+  const [images, setImages] = useState<string[]>([]);
 
   const { mutate: createPost, isPending } = useCreatePost();
 
@@ -81,6 +84,7 @@ export function TopicCreateForm() {
       tag,
       showCreatorOpinion,
       creatorOpinion: showCreatorOpinion ? creatorOpinion : undefined,
+      images: images.length > 0 ? images : undefined,
     });
   };
 
@@ -164,6 +168,19 @@ export function TopicCreateForm() {
             </div>
           </LexicalComposer>
         </div>
+      </div>
+
+      {/* 이미지 첨부 */}
+      <div className="space-y-2">
+        <label className="text-label-default block font-semibold">
+          이미지 (선택, 최대 {MAX_POST_IMAGES}장)
+        </label>
+        <ImageUploader
+          value={images}
+          onChange={setImages}
+          maxCount={MAX_POST_IMAGES}
+          scope="post"
+        />
       </div>
 
       {/* 글쓴이 의견 공개 옵션 */}

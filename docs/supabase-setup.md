@@ -77,7 +77,21 @@ ALTER TABLE posts ADD COLUMN images text[] DEFAULT '{}' NOT NULL;
 ALTER TABLE comments ADD COLUMN images text[] DEFAULT '{}' NOT NULL;
 ```
 
-## 8. 동작 확인
+## 8. 고아(orphan) 파일 운영 메모
+
+**MVP**: 게시글/댓글 삭제(soft delete) 시 Supabase Storage 파일은 **즉시 삭제하지 않음**.
+- 이유: soft delete만 하므로 복구 가능성을 남김, 그리고 동일 URL을 다른 장소에서 참조 중일 위험 회피.
+- 결과: Storage에 참조되지 않는 파일이 누적될 수 있음 (orphan).
+
+**향후 정리 방안**:
+1. **cron 스크립트** (Railway cron 또는 별도 워커) — 매주 1회, Posts/Comments에서 참조되지 않는 파일 + 24시간 이상 지난 파일 삭제
+2. **hard delete 시점 정리** — `deletedAt < NOW() - 30일` 인 row의 images URL을 정리
+
+훅 지점 후보:
+- `apps/api/src/post/post.service.ts#remove`
+- `apps/api/src/comment/comment.service.ts#remove`
+
+## 9. 동작 확인
 
 1. NestJS 부팅 시 `ConfigService.get('supabase')` 가 정상 객체 반환
 2. `POST /api/uploads/sign` 호출 → `{ uploadUrl, token, key, publicUrl }` 응답

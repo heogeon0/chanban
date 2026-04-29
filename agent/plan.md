@@ -205,75 +205,75 @@
 
 > 프론트에서 signed URL을 받아 Supabase Storage에 PUT하는 로직을 재사용 가능한 훅으로 추출.
 
-- [ ] a: `apps/web/package.json` — `@supabase/supabase-js` 의존성 추가 (`pnpm add @supabase/supabase-js --filter web`)
-- [ ] b: `apps/web/lib/supabase.ts` 신규 — `createClient(NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)` 싱글턴 export. `auth: { persistSession: false }` (이 프로젝트는 자체 JWT라 Supabase auth 비활성)
-- [ ] c: `apps/web/shared/queries/upload.ts` 신규 — `uploadDomains.signUpload({ scope, filename, mimeType, size })` 함수: `httpClient.post('/api/uploads/sign', body)` 호출해 `{ uploadUrl, token, key, publicUrl }` 반환
-- [ ] d: `apps/web/shared/hooks/useImageUpload.ts` 신규 — `useImageUpload(scope: 'post' | 'comment')` 훅. 내부 상태: `{ uploading: boolean, progress: number, error: string | null }`. `upload(file: File): Promise<{ key, publicUrl }>` 메서드 노출. 흐름: ① 클라이언트 검증(MIME 화이트리스트, 2MB 이하) ② `uploadDomains.signUpload(...)` 호출 ③ `supabase.storage.from(bucket).uploadToSignedUrl(key, token, file)` ④ publicUrl 반환. 에러 메시지는 사용자 친화적으로
-- [ ] e: `apps/web/shared/hooks/useImageUpload.ts` — 개수/크기 상수를 `shared/constants/image.ts`로 분리: `MAX_POST_IMAGES=5`, `MAX_COMMENT_IMAGES=2`, `MAX_IMAGE_SIZE=2*1024*1024`, `ALLOWED_IMAGE_MIME_TYPES=['image/jpeg','image/png','image/webp','image/gif']`
+- [x] a: `apps/web/package.json` — `@supabase/supabase-js` 의존성 추가 (`pnpm add @supabase/supabase-js --filter web`)
+- [x] b: `apps/web/lib/supabase.ts` 신규 — `createClient(NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)` 싱글턴 export. `auth: { persistSession: false }` (이 프로젝트는 자체 JWT라 Supabase auth 비활성)
+- [x] c: `apps/web/shared/queries/upload.ts` 신규 — `uploadDomains.signUpload({ scope, filename, mimeType, size })` 함수: `httpClient.post('/api/uploads/sign', body)` 호출해 `{ uploadUrl, token, key, publicUrl }` 반환
+- [x] d: `apps/web/shared/hooks/useImageUpload.ts` 신규 — `useImageUpload(scope: 'post' | 'comment')` 훅. 내부 상태: `{ uploading: boolean, progress: number, error: string | null }`. `upload(file: File): Promise<{ key, publicUrl }>` 메서드 노출. 흐름: ① 클라이언트 검증(MIME 화이트리스트, 2MB 이하) ② `uploadDomains.signUpload(...)` 호출 ③ `supabase.storage.from(bucket).uploadToSignedUrl(key, token, file)` ④ publicUrl 반환. 에러 메시지는 사용자 친화적으로
+- [x] e: `apps/web/shared/hooks/useImageUpload.ts` — 개수/크기 상수를 `shared/constants/image.ts`로 분리: `MAX_POST_IMAGES=5`, `MAX_COMMENT_IMAGES=2`, `MAX_IMAGE_SIZE=2*1024*1024`, `ALLOWED_IMAGE_MIME_TYPES=['image/jpeg','image/png','image/webp','image/gif']`
 
 ## v23. 공통 ImageUploader UI 컴포넌트
 
 > 게시글/댓글 양쪽에서 재사용할 순수 UI 업로더. 드래그&드롭 + 클릭 선택 + 프리뷰 + 삭제 + 개수/크기 검증. widgets 레이어가 아닌 shared/components (공용)로 둔다.
 
-- [ ] a: `apps/web/shared/components/imageUploader/imageUploader.tsx` 신규 — Props: `{ value: string[], onChange: (urls: string[]) => void, maxCount: number, scope: 'post' | 'comment' }`. 내부에서 `useImageUpload(scope)` 사용. 업로드 완료된 publicUrl을 `onChange`로 부모에 전달
-- [ ] b: `apps/web/shared/components/imageUploader/imageUploader.tsx` — UI 구조: 상단 `<div>` 프리뷰 그리드 (업로드 완료 이미지 썸네일 + X 삭제 버튼, 업로드 중 이미지는 스피너 오버레이), 하단 `<button>` "+ 이미지 추가" (나머지 슬롯 수 표시 `2/5`). `<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>` 내장
-- [ ] c: `apps/web/shared/components/imageUploader/imageUploader.tsx` — 드래그&드롭 지원: `onDragOver`, `onDrop` 핸들러. 드래그 시 `border-dashed border-primary` 시각적 피드백
-- [ ] d: `apps/web/shared/components/imageUploader/imagePreview.tsx` 신규 — 프리뷰 카드 컴포넌트 분리 (썸네일 + 삭제 버튼 + 업로드 중 스피너)
-- [ ] e: `apps/web/shared/components/imageUploader/imageUploader.tsx` — 검증 실패(MIME/size/개수) 시 toast 또는 인라인 에러 문구 표시. 기존 toast 유틸 재사용
-- [ ] f: `apps/web/shared/components/imageUploader/index.ts` 신규 — barrel export
+- [x] a: `apps/web/shared/components/imageUploader/imageUploader.tsx` 신규 — Props: `{ value: string[], onChange: (urls: string[]) => void, maxCount: number, scope: 'post' | 'comment' }`. 내부에서 `useImageUpload(scope)` 사용. 업로드 완료된 publicUrl을 `onChange`로 부모에 전달
+- [x] b: `apps/web/shared/components/imageUploader/imageUploader.tsx` — UI 구조: 상단 `<div>` 프리뷰 그리드 (업로드 완료 이미지 썸네일 + X 삭제 버튼, 업로드 중 이미지는 스피너 오버레이), 하단 `<button>` "+ 이미지 추가" (나머지 슬롯 수 표시 `2/5`). `<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>` 내장
+- [x] c: `apps/web/shared/components/imageUploader/imageUploader.tsx` — 드래그&드롭 지원: `onDragOver`, `onDrop` 핸들러. 드래그 시 `border-dashed border-primary` 시각적 피드백
+- [x] d: `apps/web/shared/components/imageUploader/imagePreview.tsx` 신규 — 프리뷰 카드 컴포넌트 분리 (썸네일 + 삭제 버튼 + 업로드 중 스피너)
+- [x] e: `apps/web/shared/components/imageUploader/imageUploader.tsx` — 검증 실패(MIME/size/개수) 시 toast 또는 인라인 에러 문구 표시. 기존 toast 유틸 재사용
+- [x] f: `apps/web/shared/components/imageUploader/index.ts` 신규 — barrel export
 
 ## v24. 게시글 작성 폼 이미지 업로더 통합
 
 > `topicCreateForm.tsx`에 ImageUploader를 삽입하고, `useCreatePost` 훅 경로에서 `images`를 DTO로 함께 전송한다. Lexical PlainText는 건드리지 않는다.
 
-- [ ] a: `apps/web/shared/queries/topic.ts` — `CreatePostDto` 인터페이스 (줄 106~112)에 `images?: string[]` 추가
-- [ ] b: `apps/web/app/topics/features/use-create-post.ts` — mutation fn의 payload 빌드 시 `images`를 받아 전달하도록 시그니처 확장 (`{ title, content, tag, images?, ... }`)
-- [ ] c: `apps/web/app/topics/widgets/topicCreateForm.tsx` — `const [images, setImages] = useState<string[]>([])` 상태 추가. 에디터(Lexical) 블록 아래에 `<ImageUploader value={images} onChange={setImages} maxCount={5} scope="post" />` 삽입
-- [ ] d: `apps/web/app/topics/widgets/topicCreateForm.tsx` — submit 핸들러에서 `createPost({ ..., images })` 형태로 전달
-- [ ] e: `apps/web/app/topics/widgets/topicCreateForm.tsx` — 업로드 진행 중(최소 하나라도 uploading 상태)이면 제출 버튼 `disabled` 처리. `useImageUpload`의 전역 uploading 여부를 ImageUploader가 `onUploadingChange?` 콜백으로 노출해 부모가 감지
+- [x] a: `apps/web/shared/queries/topic.ts` — `CreatePostDto` 인터페이스 (줄 106~112)에 `images?: string[]` 추가
+- [x] b: `apps/web/app/topics/features/use-create-post.ts` — mutation fn의 payload 빌드 시 `images`를 받아 전달하도록 시그니처 확장 (`{ title, content, tag, images?, ... }`)
+- [x] c: `apps/web/app/topics/widgets/topicCreateForm.tsx` — `const [images, setImages] = useState<string[]>([])` 상태 추가. 에디터(Lexical) 블록 아래에 `<ImageUploader value={images} onChange={setImages} maxCount={5} scope="post" />` 삽입
+- [x] d: `apps/web/app/topics/widgets/topicCreateForm.tsx` — submit 핸들러에서 `createPost({ ..., images })` 형태로 전달
+- [x] e: `apps/web/app/topics/widgets/topicCreateForm.tsx` — 업로드 진행 중(최소 하나라도 uploading 상태)이면 제출 버튼 `disabled` 처리. `useImageUpload`의 전역 uploading 여부를 ImageUploader가 `onUploadingChange?` 콜백으로 노출해 부모가 감지
 
 ## v25. 댓글 작성 폼 이미지 업로더 통합
 
 > `commentForm.tsx`에 동일 패턴으로 ImageUploader 추가. 최대 2장. 답글 작성에도 동일 폼을 사용 중이면 자동 반영됨.
 
-- [ ] a: `apps/web/shared/queries/comment.ts` — `CreateCommentDto` 인터페이스 (줄 85~89)에 `images?: string[]` 추가
-- [ ] b: `apps/web/app/topics/[id]/features/use-post-comment.ts` — mutation payload에 `images` 포함
-- [ ] c: `apps/web/app/topics/[id]/widgets/commentForm.tsx` — `const [images, setImages] = useState<string[]>([])` 상태 추가. 에디터 아래에 `<ImageUploader value={images} onChange={setImages} maxCount={2} scope="comment" />` 삽입 (컴팩트 variant 필요 시 Props 확장)
-- [ ] d: `apps/web/app/topics/[id]/widgets/commentForm.tsx` — submit 시 `postComment({ ..., images })`, 성공 후 `setImages([])` 초기화
-- [ ] e: `apps/web/app/topics/[id]/widgets/commentForm.tsx` — 업로드 진행 중이면 제출 버튼 disabled (v24e와 동일 패턴)
+- [x] a: `apps/web/shared/queries/comment.ts` — `CreateCommentDto` 인터페이스 (줄 85~89)에 `images?: string[]` 추가
+- [x] b: `apps/web/app/topics/[id]/features/use-post-comment.ts` — mutation payload에 `images` 포함
+- [x] c: `apps/web/app/topics/[id]/widgets/commentForm.tsx` — `const [images, setImages] = useState<string[]>([])` 상태 추가. 에디터 아래에 `<ImageUploader value={images} onChange={setImages} maxCount={2} scope="comment" />` 삽입 (컴팩트 variant 필요 시 Props 확장)
+- [x] d: `apps/web/app/topics/[id]/widgets/commentForm.tsx` — submit 시 `postComment({ ..., images })`, 성공 후 `setImages([])` 초기화
+- [x] e: `apps/web/app/topics/[id]/widgets/commentForm.tsx` — 업로드 진행 중이면 제출 버튼 disabled (v24e와 동일 패턴)
 
 ## v26. 본문/댓글 이미지 렌더링
 
 > 저장된 `images: string[]`을 각 화면에서 본문 아래 그리드/썸네일로 렌더. 클릭 시 라이트박스는 v27에서 별도 처리.
 
-- [ ] a: `apps/web/app/topics/[id]/widgets/imageGallery.tsx` 신규 — Props: `{ images: string[], onImageClick?: (index: number) => void }`. 1장: 전체폭 (`rounded-xl aspect-video object-cover`), 2장: 1:1 그리드, 3~5장: 첫 장 크게 + 나머지 썸네일. `next/image` 사용 (권장) 또는 `<img>`
-- [ ] b: `apps/web/app/topics/[id]/page.tsx` — 본문 `<p>{topic.content}</p>` (줄 141 근처) 블록 바로 아래에 `{topic.images?.length > 0 && <ImageGallery images={topic.images} />}` 삽입
-- [ ] c: `apps/web/app/topics/[id]/widgets/comment.tsx` — 본문 `<p>{comment.content}</p>` (줄 170~172 근처) 아래에 `{comment.images?.length > 0 && <ImageGallery images={comment.images} compact />}` 삽입 (compact variant = 고정 높이 100px, 썸네일 row)
-- [ ] d: `apps/web/app/topics/[id]/widgets/replyComment.tsx` — 본문 (줄 77~79 근처) 아래에 동일하게 `ImageGallery compact` 추가
-- [ ] e: `apps/web/app/topics/[id]/widgets/imageGallery.tsx` — `compact` variant props 추가: true면 `h-20 rounded-lg object-cover` 고정 썸네일 row로 렌더
+- [x] a: `apps/web/app/topics/[id]/widgets/imageGallery.tsx` 신규 — Props: `{ images: string[], onImageClick?: (index: number) => void }`. 1장: 전체폭 (`rounded-xl aspect-video object-cover`), 2장: 1:1 그리드, 3~5장: 첫 장 크게 + 나머지 썸네일. `next/image` 사용 (권장) 또는 `<img>`
+- [x] b: `apps/web/app/topics/[id]/page.tsx` — 본문 `<p>{topic.content}</p>` (줄 141 근처) 블록 바로 아래에 `{topic.images?.length > 0 && <ImageGallery images={topic.images} />}` 삽입
+- [x] c: `apps/web/app/topics/[id]/widgets/comment.tsx` — 본문 `<p>{comment.content}</p>` (줄 170~172 근처) 아래에 `{comment.images?.length > 0 && <ImageGallery images={comment.images} compact />}` 삽입 (compact variant = 고정 높이 100px, 썸네일 row)
+- [x] d: `apps/web/app/topics/[id]/widgets/replyComment.tsx` — 본문 (줄 77~79 근처) 아래에 동일하게 `ImageGallery compact` 추가
+- [x] e: `apps/web/app/topics/[id]/widgets/imageGallery.tsx` — `compact` variant props 추가: true면 `h-20 rounded-lg object-cover` 고정 썸네일 row로 렌더
 
 ## v27. 이미지 라이트박스 (클릭 확대)
 
 > 이미지 클릭 시 전체 화면 모달로 확대 보기. 좌우 키/버튼으로 네비게이션. shared 컴포넌트로 분리해 게시글/댓글 공용.
 
-- [ ] a: `apps/web/shared/components/imageLightbox/imageLightbox.tsx` 신규 — Props: `{ images: string[], initialIndex: number, isOpen: boolean, onClose: () => void }`. 구조: `fixed inset-0 z-50 bg-black/90 flex items-center justify-center`, 중앙 이미지 + 좌우 `<ChevronLeft/ChevronRight>` 버튼 + 우상단 `<X>` 닫기
-- [ ] b: `apps/web/shared/components/imageLightbox/imageLightbox.tsx` — 키보드: Escape = close, ArrowLeft/Right = prev/next. 터치 스와이프는 MVP 범위 밖 (후속 개선)
-- [ ] c: `apps/web/app/topics/[id]/widgets/imageGallery.tsx` — 내부에서 `const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)` 상태 관리, 이미지 클릭 시 `setLightboxIndex(i)`, `<ImageLightbox images={images} initialIndex={lightboxIndex ?? 0} isOpen={lightboxIndex !== null} onClose={() => setLightboxIndex(null)} />` 렌더
-- [ ] d: `apps/web/shared/components/imageLightbox/index.ts` 신규 — barrel export
+- [x] a: `apps/web/shared/components/imageLightbox/imageLightbox.tsx` 신규 — Props: `{ images: string[], initialIndex: number, isOpen: boolean, onClose: () => void }`. 구조: `fixed inset-0 z-50 bg-black/90 flex items-center justify-center`, 중앙 이미지 + 좌우 `<ChevronLeft/ChevronRight>` 버튼 + 우상단 `<X>` 닫기
+- [x] b: `apps/web/shared/components/imageLightbox/imageLightbox.tsx` — 키보드: Escape = close, ArrowLeft/Right = prev/next. 터치 스와이프는 MVP 범위 밖 (후속 개선)
+- [x] c: `apps/web/app/topics/[id]/widgets/imageGallery.tsx` — 내부에서 `const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)` 상태 관리, 이미지 클릭 시 `setLightboxIndex(i)`, `<ImageLightbox images={images} initialIndex={lightboxIndex ?? 0} isOpen={lightboxIndex !== null} onClose={() => setLightboxIndex(null)} />` 렌더
+- [x] d: `apps/web/shared/components/imageLightbox/index.ts` 신규 — barrel export
 
 ## v28. Next.js 이미지 최적화 설정
 
 > `next/image`로 Supabase Storage 이미지를 렌더하려면 `remotePatterns` 설정 필수.
 
-- [ ] a: `apps/web/next.config.mjs` — 현재 빈 객체 `nextConfig = {}` 를 `nextConfig = { images: { remotePatterns: [{ protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' }] } }` 로 확장. 환경별 도메인은 env에서 읽는 방식으로 추후 개선 가능
-- [ ] b: `apps/web/next.config.mjs` — 이미지 기본 포맷에 `formats: ['image/webp']` 추가 (최적화)
-- [ ] c: (확인 작업) `next/image` 사용 여부 재확인 — v26a에서 `next/image` 채택 시 이 v28이 필수, `<img>` 태그면 선택. 팀 컨벤션에 맞춰 통일
+- [x] a: `apps/web/next.config.mjs` — 현재 빈 객체 `nextConfig = {}` 를 `nextConfig = { images: { remotePatterns: [{ protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' }] } }` 로 확장. 환경별 도메인은 env에서 읽는 방식으로 추후 개선 가능
+- [x] b: `apps/web/next.config.mjs` — 이미지 기본 포맷에 `formats: ['image/webp']` 추가 (최적화)
+- [x] c: (확인 작업) `next/image` 사용 여부 재확인 — v26a에서 `next/image` 채택 시 이 v28이 필수, `<img>` 태그면 선택. 팀 컨벤션에 맞춰 통일
 
 ## v29. 고아 파일 정리 & 운영 메모 (MVP 범위 외 기록)
 
 > MVP에선 orphan 허용, 추후 cron/hard-delete 시점에 정리. 여기선 운영 참고사항을 기록만 하고 실제 cron 구현은 별도 이슈로 분리.
 
-- [ ] a: `docs/supabase-setup.md` (v18f에서 생성) 하단에 "고아 파일 정리 전략" 섹션 추가 — 1) 업로드 후 10분 내 DB 연결 안 된 key 삭제하는 Supabase Edge Function 예제, 2) 게시글/댓글 hard delete 시점에 `storage.remove([keys])` 호출하는 훅 지점(서비스 레이어 어디에 추가할지) 명시
-- [ ] b: `apps/api/src/post/post.service.ts` — `remove(id)` (soft delete) 메서드 주석으로 "TODO: hard delete 시점에 supabase storage에서 images 배열 삭제" 표기
-- [ ] c: `apps/api/src/comment/comment.service.ts` — `remove(id)` 메서드 동일 주석 추가
-- [ ] d: (선택) `apps/api/src/upload/upload.service.ts` — `deleteImages(scope, keys: string[])` 메서드 스텁 추가 (구현은 추후). 호출부는 비워두되 시그니처만 준비
+- [x] a: `docs/supabase-setup.md` (v18f에서 생성) 하단에 "고아 파일 정리 전략" 섹션 추가 — 1) 업로드 후 10분 내 DB 연결 안 된 key 삭제하는 Supabase Edge Function 예제, 2) 게시글/댓글 hard delete 시점에 `storage.remove([keys])` 호출하는 훅 지점(서비스 레이어 어디에 추가할지) 명시
+- [x] b: `apps/api/src/post/post.service.ts` — `remove(id)` (soft delete) 메서드 주석으로 "TODO: hard delete 시점에 supabase storage에서 images 배열 삭제" 표기
+- [x] c: `apps/api/src/comment/comment.service.ts` — `remove(id)` 메서드 동일 주석 추가
+- [x] d: (선택) `apps/api/src/upload/upload.service.ts` — `deleteImages(scope, keys: string[])` 메서드 스텁 추가 (구현은 추후). 호출부는 비워두되 시그니처만 준비

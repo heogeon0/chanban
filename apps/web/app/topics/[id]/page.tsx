@@ -9,6 +9,7 @@ import { TAG_MAP } from "../domains/constants";
 import { formatRelativeTime } from "./widgets/commentUtils";
 import { TopicDetailContent } from "./widgets/topicDetailContent";
 import { FollowButton } from "@/shared/components/follow-button";
+import { ImageGallery } from "@/shared/components/imageGallery/imageGallery";
 
 /**
  * 특정 토픽의 상세 정보를 조회합니다.
@@ -141,6 +142,11 @@ export default async function TopicDetailPage(props: {
           <p className="text-[14px] leading-relaxed text-muted-foreground whitespace-pre-wrap">
             {topic.content}
           </p>
+        )}
+
+        {/* 본문 이미지 */}
+        {topic.images && topic.images.length > 0 && (
+          <ImageGallery images={topic.images} className="mt-3" />
         )}
       </div>
 
