@@ -239,3 +239,34 @@
 - [x] e: `apps/web/app/topics/[id]/widgets/` 내 VoteStatus enum 사용처 전반 grep — NEUTRAL 선택 UI(셀렉트, 필터 등) 잔존 여부 확인. 단, `VoteHistoryBadge`/댓글 `stanceColor` fallback은 NEUTRAL 색을 유지(레거시 및 미투표 표시용)
 - [x] f: `apps/web/app/my/widgets/voteFilter.tsx` — "중립" 필터 pill 버튼 제거 (전체/찬성/반대 3개로 축소). counts 타입에서 `neutral` 키 제거 또는 무시. 단 `MyVoteCard` 내 상태 배지는 NEUTRAL도 렌더 가능하도록 유지(과거 데이터)
 - [x] g: `apps/web/app/my/widgets/myVotesTab.tsx` — counts reduce 로직에서 neutral 집계 제거, 필터 state 타입 `VoteStatus.AGREE | VoteStatus.DISAGREE | 'all'`로 축소
+
+## v27. TOP 댓글 좋아요 isLiked 정확도
+
+> 현재 `findTopByPostId`가 `isLiked: false` 하드코딩 → 새로고침 시 내가 누른 좋아요가 회색으로 돌아옴. 피드는 추가만 가능, 취소 미지원 상태.
+> Optional auth 라우트로 변경하고 userId 있으면 CommentLike 일괄 조회로 isLiked를 정확히 채운다. 프론트는 토글 양방향으로 확장.
+
+- [x] a: `apps/api/src/comment/comment.controller.ts` — `OptionalJwtAuthGuard` 신규 추가 후 `@Get('posts/:postId/top')`에 적용. `@CurrentUser()`로 user 추출, 비로그인 호환 유지
+- [x] b: `apps/api/src/comment/comment.service.ts::findTopByPostId` — `userId?: string` 추가. userId 있으면 `commentLikeRepository`에서 commentId IN + userId 조건으로 일괄 조회 → Set으로 매핑해 응답의 `isLiked` 채움
+- [x] c: `apps/web/app/topics/features/use-top-comment-like.ts` — 토글 양방향 지원. 낙관 업데이트에서 `isLiked` 반전 + `likeCount ± 1` (Math.max로 0 클램프)
+- [x] d: `apps/web/app/widgets/officialFeedCard.tsx` — `likedCommentIds` 로컬 set 제거. `c.isLiked` 응답 값 직접 사용. 클릭 시 `mutate({ commentId, postId, isLiked: c.isLiked })`로 토글
+
+## v28. 피드 빈/로딩/에러 상태 디자인
+
+> 빈 댓글, 빈 피드, 무한스크롤 트리거, 에러, 초기 로딩 모두 임시 텍스트 수준. 디자인 톤을 카드와 일관되게 정리.
+
+- [x] a: `apps/web/app/widgets/officialFeedCard.tsx` — TOP 댓글 0건일 때 "첫 댓글을 남겨보세요" placeholder(MessageCircle + muted bg) 노출해 카드 하단 공백 제거
+- [x] b: `apps/web/app/widgets/officialFeedList.tsx` — 빈 피드: Inbox 아이콘 + 제목 + 서브 텍스트, admin이면 "공식 투표 작성" CTA
+- [x] c: `apps/web/app/widgets/officialFeedList.tsx` — 무한스크롤 트리거를 `<Loader2 animate-spin />`로 교체, 마지막 도달 시 라인 + "모두 불러왔습니다" 미니멀 표기
+- [x] d: `apps/web/app/widgets/officialFeedList.tsx` — 에러 상태에 `<AlertCircle />` + 안내 + `refetch()` 버튼
+- [x] e: `apps/web/app/widgets/officialFeedSkeleton.tsx` (신규) — `OfficialFeedCardSkeleton` + `OfficialFeedListSkeleton({count})` 두 컴포넌트 export
+- [x] f: `app/page.tsx` — Suspense fallback을 `<OfficialFeedListSkeleton count={3} />`로 교체. RSC 초기 fetch 동안 카드 스켈레톤 노출
+
+## v29. 메인 피드 비주얼 언어 정리
+
+> 위계 혼잡: 공식 배지(파란 fill) / 카테고리 pill(중립) / 찬성 버튼(파란 fill)이 모두 파란 계열이라 공식성과 찬성 액션이 시각적으로 충돌. 공식 배지를 다른 색 계열로 분리.
+
+- [x] a: `apps/web/app/widgets/officialFeedCard.tsx` — 공식 배지를 `bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-sm` + `dark:from-violet-400 dark:to-indigo-400`로 교체. 찬성 버튼(파랑)과 시각 충돌 해소
+- [x] b: 카테고리 pill 중립 톤(`bg-muted text-muted-foreground`) 유지 확정. 추가 변경 없음
+- [x] c: 텍스트 사이즈 검토 완료. 11(배지/카운트)/12(메타)/13(헤더·댓글닉)/14(본문·댓글본문)/15(투표 버튼)/lg(제목) 6단계가 명확한 위계를 형성하고 있어 추가 통일 불필요로 결정
+- [x] d: padding 검토 완료. 헤더 `pt-4 pb-2` → 제목 `pb-3` → 본문(border-top) `pt-3 pb-3` → 하단(border-top) `pt-3 pb-4`는 진입 강조 / 콘텐츠 / 액션 영역의 의도된 차이라 그대로 유지
+- [x] e: 그라데이션이 현재 공식 배지 한 곳에서만 사용되어 토큰 추출은 보류 (향후 재사용처 생기면 그때 추출)

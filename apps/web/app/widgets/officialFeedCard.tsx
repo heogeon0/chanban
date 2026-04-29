@@ -107,7 +107,7 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
       <article className="flex flex-col rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         {/* 헤더 */}
         <header className="flex items-center gap-2 px-4 pt-4 pb-2 shrink-0">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary text-primary-foreground">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-sm dark:from-violet-400 dark:to-indigo-400">
             <ShieldCheck className="w-3 h-3" />
             공식
           </span>
