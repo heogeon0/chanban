@@ -15,9 +15,8 @@ interface OfficialFeedListProps {
 }
 
 /**
- * 인스타형 공식 투표 피드 리스트.
- * 한 스크롤당 카드 1장 (`snap-y mandatory`) + 무한스크롤.
- * 상단 헤더(57px) / 하단 탭바(~76px) 제외한 viewport 높이를 컨테이너로 사용.
+ * 공식 투표 피드 리스트.
+ * 세로 스크롤 + 무한스크롤. 카드 높이는 콘텐츠에 따라 가변.
  */
 export function OfficialFeedList({ initialData }: OfficialFeedListProps) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isError } =
@@ -54,11 +53,7 @@ export function OfficialFeedList({ initialData }: OfficialFeedListProps) {
   }
 
   return (
-    <div
-      // layout의 `main.pb-24`를 상쇄(-mb-24)해 스냅 컨테이너 높이를 정확히 맞춘다.
-      // 상단 sticky header(57px) + 하단 tabbar(~76px) 제외.
-      className="-mb-24 h-[calc(100dvh-57px)] overflow-y-auto snap-y snap-mandatory scrollbar-hide"
-    >
+    <div className="flex flex-col gap-3 px-3 py-3">
       {posts.map((post) => (
         <OfficialFeedCard key={post.id} post={post} />
       ))}
@@ -72,7 +67,7 @@ export function OfficialFeedList({ initialData }: OfficialFeedListProps) {
       )}
 
       {!hasNextPage && posts.length > 0 && (
-        <div className="text-center py-20 text-sm text-muted-foreground">
+        <div className="text-center py-8 text-sm text-muted-foreground">
           모든 투표를 불러왔습니다
         </div>
       )}
