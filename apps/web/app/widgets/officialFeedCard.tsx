@@ -10,7 +10,7 @@ import { PostResponse, VoteStatus } from "@chanban/shared-types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, Heart, MessageCircle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { MouseEvent, useState } from "react";
+import { MouseEvent } from "react";
 
 interface OfficialFeedCardProps {
   post: PostResponse;
@@ -57,9 +57,8 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
 
   const voteMutation = usePostVote();
   const likeMutation = useTopCommentLike(post.id, 5);
-  const [likedCommentIds, setLikedCommentIds] = useState<Set<string>>(new Set());
 
-  const handleCommentLike = (e: MouseEvent, commentId: string) => {
+  const handleCommentLike = (e: MouseEvent, commentId: string, isLiked: boolean) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -67,16 +66,9 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
       openLoginModal();
       return;
     }
-    if (likedCommentIds.has(commentId) || likeMutation.isPending) return;
+    if (likeMutation.isPending) return;
 
-    likeMutation.mutate(
-      { commentId, postId: post.id, isLiked: false },
-      {
-        onSuccess: () => {
-          setLikedCommentIds((prev) => new Set(prev).add(commentId));
-        },
-      },
-    );
+    likeMutation.mutate({ commentId, postId: post.id, isLiked });
   };
 
   const total = voteCount.agreeCount + voteCount.disagreeCount;
@@ -276,17 +268,17 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
                       </div>
                       <button
                         type="button"
-                        onClick={(e) => handleCommentLike(e, c.id)}
-                        disabled={likedCommentIds.has(c.id) || likeMutation.isPending}
-                        aria-label={likedCommentIds.has(c.id) ? "좋아요 완료" : "좋아요"}
+                        onClick={(e) => handleCommentLike(e, c.id, c.isLiked)}
+                        disabled={likeMutation.isPending}
+                        aria-label={c.isLiked ? "좋아요 취소" : "좋아요"}
                         className={`mt-0.5 flex items-center gap-0.5 text-[12px] shrink-0 transition-colors disabled:cursor-default ${
-                          likedCommentIds.has(c.id)
+                          c.isLiked
                             ? "text-rose-500"
                             : "text-muted-foreground hover:text-rose-500"
                         }`}
                       >
                         <Heart
-                          className={`w-3.5 h-3.5 ${likedCommentIds.has(c.id) ? "fill-rose-500" : ""}`}
+                          className={`w-3.5 h-3.5 ${c.isLiked ? "fill-rose-500" : ""}`}
                         />
                         {c.likeCount}
                       </button>

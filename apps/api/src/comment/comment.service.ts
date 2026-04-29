@@ -284,10 +284,15 @@ export class CommentService {
 
   /**
    * 피드 카드 미리보기용 인기 댓글 TOP N (비로그인 public)
-   * 답글/isLiked 제외, 최상위 댓글만 likeCount DESC 순.
-   * voteHistory에는 "해당 post에 대한 작성자 투표" 한 건만 담아 피드 dot 표시에 사용.
+   * 최상위 댓글만 likeCount DESC 순. 답글은 제외.
+   * - voteHistory: "해당 post에 대한 작성자 투표" 한 건만 담아 피드 dot 표시에 사용
+   * - isLiked: 요청 userId가 있을 때만 CommentLike 일괄 조회로 채움
    */
-  async findTopByPostId(postId: string, limit = 5): Promise<CommentResponse[]> {
+  async findTopByPostId(
+    postId: string,
+    limit = 5,
+    userId?: string,
+  ): Promise<CommentResponse[]> {
     const comments = await this.commentRepository
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.user', 'user')
@@ -301,13 +306,25 @@ export class CommentService {
 
     if (comments.length === 0) return [];
 
-    const userIds = [...new Set(comments.map((c) => c.user.id))];
+    const commentIds = comments.map((c) => c.id);
+    const authorIds = [...new Set(comments.map((c) => c.user.id))];
+
     const votes = await this.voteRepository
       .createQueryBuilder('v')
       .where('v.postId = :postId', { postId })
-      .andWhere('v.userId IN (:...userIds)', { userIds })
+      .andWhere('v.userId IN (:...userIds)', { userIds: authorIds })
       .getMany();
     const voteByUserId = new Map(votes.map((v) => [v.userId, v]));
+
+    let likedSet = new Set<string>();
+    if (userId) {
+      const likes = await this.commentLikeRepository
+        .createQueryBuilder('cl')
+        .where('cl.userId = :userId', { userId })
+        .andWhere('cl.commentId IN (:...commentIds)', { commentIds })
+        .getMany();
+      likedSet = new Set(likes.map((l) => l.commentId));
+    }
 
     return comments.map((c) => {
       const userVote = voteByUserId.get(c.user.id);
@@ -336,7 +353,7 @@ export class CommentService {
         parentId: c.parentId,
         replies: [],
         totalReplies: 0,
-        isLiked: false,
+        isLiked: likedSet.has(c.id),
         likeCount: c.likeCount,
       };
     });

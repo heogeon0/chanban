@@ -9,8 +9,7 @@ interface OptimisticContext {
 
 /**
  * 피드 카드의 TOP 인기 댓글 전용 좋아요 mutation.
- * 피드 미리보기에서는 추가만 지원 (취소는 상세에서). TOP 쿼리 캐시를 낙관적으로 +1 한다.
- * 중복 방지는 호출부에서 로컬 state로 처리.
+ * 토글 양방향 지원 — 변수의 `isLiked`(현재 상태)를 받아 반전된 상태로 캐시를 낙관 업데이트.
  */
 export function useTopCommentLike(postId: string, limit = 5) {
   const queryClient = useQueryClient();
@@ -22,11 +21,17 @@ export function useTopCommentLike(postId: string, limit = 5) {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<CommentResponse[]>(queryKey);
       if (previous) {
+        const nextIsLiked = !variables.isLiked;
+        const delta = nextIsLiked ? 1 : -1;
         queryClient.setQueryData<CommentResponse[]>(
           queryKey,
           previous.map((c) =>
             c.id === variables.commentId
-              ? { ...c, likeCount: c.likeCount + 1, isLiked: true }
+              ? {
+                  ...c,
+                  isLiked: nextIsLiked,
+                  likeCount: Math.max(0, c.likeCount + delta),
+                }
               : c,
           ),
         );
