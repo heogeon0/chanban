@@ -104,6 +104,7 @@ export interface CreateCommentDto {
   content: string;
   postId: string;
   parentId?: string;
+  images?: string[];
 }
 
 export interface CommentLikeDto {

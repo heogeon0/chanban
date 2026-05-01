@@ -8,6 +8,8 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
 import { Button } from "@/shared/ui/button";
 import { useAuth } from "@/shared/contexts/auth-context";
+import { ImageUploader } from "@/shared/components/imageUploader/imageUploader";
+import { MAX_COMMENT_IMAGES } from "@/shared/constants/image";
 import { $getRoot, EditorState, FOCUS_COMMAND, COMMAND_PRIORITY_LOW } from "lexical";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -78,6 +80,7 @@ export function CommentForm({
 }: CommentFormProps) {
   const [content, setContent] = useState("");
   const [clearTrigger, setClearTrigger] = useState(0);
+  const [images, setImages] = useState<string[]>([]);
   const { mutate: postComment, isPending } = usePostComment();
 
   /**
@@ -108,12 +111,14 @@ export function CommentForm({
         content: trimmedContent,
         postId: topicId,
         parentId,
+        images: images.length > 0 ? images : undefined,
       },
       {
         onSuccess: () => {
           // 제출 성공 시 에디터 초기화
           setClearTrigger((prev) => prev + 1);
           setContent("");
+          setImages([]);
           onSubmit?.(trimmedContent);
         },
         onError: (error) => {
@@ -162,6 +167,14 @@ export function CommentForm({
           <AuthCheckOnFocusPlugin />
         </div>
       </LexicalComposer>
+
+      {/* 이미지 첨부 */}
+      <ImageUploader
+        value={images}
+        onChange={setImages}
+        maxCount={MAX_COMMENT_IMAGES}
+        scope="comment"
+      />
 
       {/* 제출 버튼 */}
       <div className="flex justify-end">

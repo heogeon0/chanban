@@ -15,6 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, IsNull, Repository } from 'typeorm';
 import { z } from 'zod';
 import { ResponseWithMeta } from '../common/dto/response.dto';
+import { isOwnedImageUrl } from '../common/utils/image-key.util';
 import { CommentLike } from '../entities/comment-like.entity';
 import { Comment } from '../entities/comment.entity';
 import { VoteHistory } from '../entities/vote-history.entity';
@@ -27,6 +28,7 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 const ReplyRawSchema = z.object({
   reply_id: z.string(),
   reply_content: z.string(),
+  reply_images: z.array(z.string()),
   reply_createdAt: z.date(),
   reply_updatedAt: z.date(),
   reply_deletedAt: z.date().nullable(),
@@ -107,6 +109,7 @@ export class CommentService {
       .select([
         'reply.id',
         'reply.content',
+        'reply.images',
         'reply.createdAt',
         'reply.updatedAt',
         'reply.deletedAt',
@@ -143,6 +146,7 @@ export class CommentService {
         repliesByParentId.get(parentId)!.push({
           id: reply.reply_id,
           content: reply.reply_content,
+          images: reply.reply_images,
           createdAt: reply.reply_createdAt,
           updatedAt: reply.reply_updatedAt,
           deletedAt: reply.reply_deletedAt,
@@ -255,6 +259,7 @@ export class CommentService {
       return {
         id: comment.id,
         content: comment.content,
+        images: comment.images,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
         deletedAt: comment.deletedAt,
@@ -341,6 +346,7 @@ export class CommentService {
       return {
         id: c.id,
         content: c.content,
+        images: c.images,
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
         deletedAt: c.deletedAt,
@@ -438,6 +444,7 @@ export class CommentService {
     const items: CommentReplyResponse[] = replies.map((reply) => ({
       id: reply.id,
       content: reply.content,
+      images: reply.images,
       createdAt: reply.createdAt,
       updatedAt: reply.updatedAt,
       deletedAt: reply.deletedAt,
@@ -462,7 +469,18 @@ export class CommentService {
   }
 
   async create(createCommentDto: CreateCommentDto, userId: string): Promise<Comment> {
-    const { content, postId, parentId } = createCommentDto;
+    const { content, postId, parentId, images } = createCommentDto;
+
+    // 이미지 소유권 검증: path prefix가 본인 userId인지 확인
+    if (images?.length) {
+      for (const url of images) {
+        if (!isOwnedImageUrl(url, userId)) {
+          throw new BadRequestException({
+            code: ErrorCode.BAD_REQUEST,
+          });
+        }
+      }
+    }
 
     // parentId가 있으면 답글 작성
     if (parentId) {
@@ -495,6 +513,7 @@ export class CommentService {
     // 댓글/답글 생성
     const comment = this.commentRepository.create({
       content,
+      images: images ?? [],
       postId,
       parentId: parentId || null,
       userId: userId,

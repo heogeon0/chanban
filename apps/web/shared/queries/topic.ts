@@ -118,6 +118,7 @@ export interface CreatePostDto {
   tag: PostTag;
   showCreatorOpinion?: boolean;
   creatorOpinion?: VoteStatus;
+  images?: string[];
 }
 
 export interface PostCreateResponse {

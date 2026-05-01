@@ -6,17 +6,19 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
 import databaseConfig from './config/database.config';
+import supabaseConfig from './config/supabase.config';
 import { PostModule } from './post/post.module';
 import { SummaryModule } from './summary/summary.module';
 import { UserModule } from './user/user.module';
 import { VoteModule } from './vote/vote.module';
 import { FollowModule } from './follow/follow.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig],
+      load: [databaseConfig, supabaseConfig],
       envFilePath: ['.env.local', '.env'],
     }),
     TypeOrmModule.forRootAsync({
@@ -31,6 +33,7 @@ import { FollowModule } from './follow/follow.module';
     UserModule,
     FollowModule,
     SummaryModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

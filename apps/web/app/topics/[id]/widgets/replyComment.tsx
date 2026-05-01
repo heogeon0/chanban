@@ -5,6 +5,7 @@ import { Button } from "@/shared/ui/button";
 import { Heart } from "lucide-react";
 import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
 import { FollowButton } from "@/shared/components/follow-button";
+import { ImageGallery } from "@/shared/components/imageGallery/imageGallery";
 import Link from "next/link";
 
 interface ReplyCommentProps {
@@ -77,6 +78,15 @@ export function ReplyComment({ reply, onLike }: ReplyCommentProps) {
         <p className="text-[12px] leading-relaxed whitespace-pre-wrap break-words mb-1.5">
           {reply.content}
         </p>
+
+        {/* 답글 이미지 */}
+        {reply.images && reply.images.length > 0 && (
+          <ImageGallery
+            images={reply.images}
+            variant="compact"
+            className="mb-1.5"
+          />
+        )}
 
         {/* 좋아요 버튼 */}
         <button

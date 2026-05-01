@@ -157,6 +157,126 @@
 - [x] c: `apps/web/app/my/page.tsx` — TabType을 `'votes' | 'comments' | 'topics'`로 확장. 탭 버튼 3개로 변경("내 투표 목록" / "내 의견" / "내 토픽 목록"). 조건부 렌더링에 `activeTab === 'comments' ? <MyCommentsTab /> : ...` 추가
 - [x] d: `apps/web/app/my/page.tsx` — 프로필 통계에 댓글 수 추가: `userQueries.userComments(user.id, 1)` 쿼리로 `meta.total` 획득, ProfileSection에 전달 (백엔드 변경 불필요)
 
+## v18. Supabase 프로젝트 셋업 & 환경변수
+
+> 이미지 업로드 기능 전반의 인프라 준비 단계. 사용자가 Supabase 대시보드에서 수동으로 버킷을 만들고 키를 확보한 뒤, 코드 레벨에선 env 변수 스키마와 문서를 정리한다.
+
+- [x] a: (수동 작업 — README에 명시) Supabase 프로젝트 생성 후 `post-images`, `comment-images` 두 개의 public 버킷을 대시보드에서 생성. 각 버킷 File size limit = 2MB, Allowed MIME types = `image/jpeg,image/png,image/webp,image/gif`로 설정
+- [x] b: (수동 작업 — README에 명시) Supabase Storage의 RLS 정책으로 `auth.uid()::text = (storage.foldername(name))[1]` 조건의 INSERT 정책 추가 (프론트가 anon key로 직접 업로드할 경우 대비). 현재는 서버에서 signed URL을 발급하므로 선택적이지만 이중 방어 차원 — 자체 JWT 환경이라 스킵
+- [x] c: `apps/api/.env.example` 신규 생성 또는 기존 파일에 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_POST_BUCKET=post-images`, `SUPABASE_COMMENT_BUCKET=comment-images` 추가. 주석으로 "Service Role Key는 절대 프론트에 노출 금지" 명시
+- [x] d: `apps/web/.env.example` 신규 생성 또는 기존 파일에 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가 (프론트는 anon key만 사용 — signed URL 업로드 시 필요)
+- [x] e: `apps/api/src/config/` 하위에 `supabase.config.ts` 신규 생성 — `registerAs('supabase', () => ({ url, serviceRoleKey, postBucket, commentBucket }))` 패턴으로 `ConfigModule.forRoot` 에 등록. `apps/api/src/app.module.ts`의 `ConfigModule.forRoot({ load: [...] })`에 추가
+- [x] f: README 또는 `docs/` 하위에 `supabase-setup.md` 신규 — 버킷 생성 방법, 키 획득 절차, 로컬 .env 세팅 순서, 프로덕션 env 주입(Railway 환경변수) 기록 (주석으로 `ALTER TABLE posts ADD COLUMN images text[] DEFAULT '{}' NOT NULL;` / `ALTER TABLE comments ADD COLUMN images text[] DEFAULT '{}' NOT NULL;` SQL도 포함)
+
+## v19. 백엔드 엔티티 & DTO 확장
+
+> Post / Comment 엔티티에 `images text[]` 컬럼 추가, Create DTO 및 Response 매핑도 함께 확장. `synchronize: true`라 부팅 시 자동 반영되지만 `ValidationPipe { forbidNonWhitelisted: true }` 때문에 DTO에 반드시 선언해야 한다.
+
+- [x] a: `apps/api/src/entities/post.entity.ts` — `@Column('text', { array: true, default: () => "'{}'" }) images: string[];` 필드 추가 (content 필드 다음 적절한 위치)
+- [x] b: `apps/api/src/entities/comment.entity.ts` — 동일하게 `@Column('text', { array: true, default: () => "'{}'" }) images: string[];` 필드 추가
+- [x] c: `apps/api/src/post/dto/create-post.dto.ts` — `@IsOptional() @IsArray() @ArrayMaxSize(5) @IsString({ each: true }) images?: string[];` 추가. `class-validator`에서 `ArrayMaxSize`, `IsArray`, `IsString` import
+- [x] d: `apps/api/src/comment/dto/create-comment.dto.ts` — 동일 패턴으로 `@IsOptional() @IsArray() @ArrayMaxSize(2) @IsString({ each: true }) images?: string[];` 추가
+- [x] e: `apps/api/src/post/dto/post-response.dto.ts` (또는 매핑 지점) — `images: string[]` 필드 노출 확인. 엔티티 그대로 반환하는 경로면 무변경, 별도 매퍼 있으면 명시 추가
+- [x] f: `apps/api/src/comment/comment.service.ts` 줄 107~118 — `findByPostId`의 `.select([...])` 배열에 `'reply.images'` 추가 (누락 시 답글 이미지 필드가 API 응답에서 빠짐). 같은 메서드에서 원 댓글 select 항목에도 `'comment.images'` 추가
+- [x] g: `apps/api/src/post/post.service.ts` — `create(dto, user)` 메서드에서 `images: dto.images ?? []`를 엔티티 생성 시 포함. AI 요약 등 기존 로직엔 영향 없음 확인
+
+## v20. 소유권 검증 유틸 & Signed Upload URL 엔드포인트
+
+> 프론트 직접 업로드(A안)를 안전하게 쓰기 위한 서버측 발급/검증 로직. path prefix = userId를 강제해 소유권을 보장한다.
+
+- [x] a: `apps/api/package.json` — `@supabase/supabase-js` 의존성 추가 (pnpm workspace 루트에서 `pnpm add @supabase/supabase-js --filter api`)
+- [x] b: `apps/api/src/upload/upload.module.ts` 신규 — `UploadController` + `UploadService` 등록, `ConfigModule` import
+- [x] c: `apps/api/src/upload/upload.service.ts` 신규 — `createSupabaseClient()` (service role key 사용), `createSignedUploadUrl(scope, userId, filename, mimeType)` 메서드. 로직: MIME 화이트리스트 검증(`image/jpeg|png|webp|gif`), 확장자 추출, `key = \`${userId}/${yyyy}/${mm}/${uuid}.${ext}\``, `supabase.storage.from(bucket).createSignedUploadUrl(key)` 호출 후 `{ uploadUrl, token, publicUrl, key }` 반환. bucket은 scope별로 `post-images` / `comment-images` 선택
+- [x] d: `apps/api/src/upload/dto/sign-upload.dto.ts` 신규 — `@IsIn(['post', 'comment']) scope`, `@IsString() @MaxLength(200) filename`, `@IsIn(['image/jpeg','image/png','image/webp','image/gif']) mimeType`, `@IsInt() @Max(2 * 1024 * 1024) size` 필드
+- [x] e: `apps/api/src/upload/upload.controller.ts` 신규 — `@Controller('uploads')` + `@UseGuards(JwtAuthGuard)` + `@Post('sign')` 엔드포인트. `@CurrentUser() user` 받아서 `uploadService.createSignedUploadUrl(...)` 호출. 응답 `{ uploadUrl, token, key, publicUrl }`
+- [x] f: `apps/api/src/app.module.ts` — `UploadModule` import 추가
+- [x] g: `apps/api/src/common/utils/image-key.util.ts` 신규 — `validateImageKeyOwnership(key: string, userId: string): boolean` 함수. key의 첫 세그먼트가 userId와 일치하는지 체크. `apps/api/src/post/post.service.ts#create` 및 `comment.service.ts#create` 트랜잭션 안에서 각 `dto.images`를 순회하며 검증, 불일치 시 `BadRequestException` throw
+
+## v21. shared-types 타입 확장
+
+> 백엔드 DTO 변경과 맞물려 프론트에서 바로 타입 참조할 수 있도록 shared-types에 `images` 필드 반영.
+
+- [x] a: `packages/shared-types/src/post.ts` — `PostResponse` 인터페이스에 `images: string[]` 필드 추가 (content 다음)
+- [x] b: `packages/shared-types/src/comment.ts` — `CommentResponse` 및 `CommentReplyResponse` 인터페이스 각각에 `images: string[]` 필드 추가
+- [x] c: `packages/shared-types/src/index.ts` — barrel export 변경 불필요 확인 (기존 `export *`면 자동 반영)
+- [x] d: 필요 시 `packages/shared-types`에 `UploadSignRequest`, `UploadSignResponse` 타입 신규 추가 (프론트/백 공용): `{ scope: 'post' | 'comment', filename, mimeType, size }` / `{ uploadUrl, token, key, publicUrl }`
+
+## v22. 프론트 Supabase 클라이언트 & 업로드 훅
+
+> 프론트에서 signed URL을 받아 Supabase Storage에 PUT하는 로직을 재사용 가능한 훅으로 추출.
+
+- [x] a: `apps/web/package.json` — `@supabase/supabase-js` 의존성 추가 (`pnpm add @supabase/supabase-js --filter web`)
+- [x] b: `apps/web/lib/supabase.ts` 신규 — `createClient(NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)` 싱글턴 export. `auth: { persistSession: false }` (이 프로젝트는 자체 JWT라 Supabase auth 비활성)
+- [x] c: `apps/web/shared/queries/upload.ts` 신규 — `uploadDomains.signUpload({ scope, filename, mimeType, size })` 함수: `httpClient.post('/api/uploads/sign', body)` 호출해 `{ uploadUrl, token, key, publicUrl }` 반환
+- [x] d: `apps/web/shared/hooks/useImageUpload.ts` 신규 — `useImageUpload(scope: 'post' | 'comment')` 훅. 내부 상태: `{ uploading: boolean, progress: number, error: string | null }`. `upload(file: File): Promise<{ key, publicUrl }>` 메서드 노출. 흐름: ① 클라이언트 검증(MIME 화이트리스트, 2MB 이하) ② `uploadDomains.signUpload(...)` 호출 ③ `supabase.storage.from(bucket).uploadToSignedUrl(key, token, file)` ④ publicUrl 반환. 에러 메시지는 사용자 친화적으로
+- [x] e: `apps/web/shared/hooks/useImageUpload.ts` — 개수/크기 상수를 `shared/constants/image.ts`로 분리: `MAX_POST_IMAGES=5`, `MAX_COMMENT_IMAGES=2`, `MAX_IMAGE_SIZE=2*1024*1024`, `ALLOWED_IMAGE_MIME_TYPES=['image/jpeg','image/png','image/webp','image/gif']`
+
+## v23. 공통 ImageUploader UI 컴포넌트
+
+> 게시글/댓글 양쪽에서 재사용할 순수 UI 업로더. 드래그&드롭 + 클릭 선택 + 프리뷰 + 삭제 + 개수/크기 검증. widgets 레이어가 아닌 shared/components (공용)로 둔다.
+
+- [x] a: `apps/web/shared/components/imageUploader/imageUploader.tsx` 신규 — Props: `{ value: string[], onChange: (urls: string[]) => void, maxCount: number, scope: 'post' | 'comment' }`. 내부에서 `useImageUpload(scope)` 사용. 업로드 완료된 publicUrl을 `onChange`로 부모에 전달
+- [x] b: `apps/web/shared/components/imageUploader/imageUploader.tsx` — UI 구조: 상단 `<div>` 프리뷰 그리드 (업로드 완료 이미지 썸네일 + X 삭제 버튼, 업로드 중 이미지는 스피너 오버레이), 하단 `<button>` "+ 이미지 추가" (나머지 슬롯 수 표시 `2/5`). `<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>` 내장
+- [x] c: `apps/web/shared/components/imageUploader/imageUploader.tsx` — 드래그&드롭 지원: `onDragOver`, `onDrop` 핸들러. 드래그 시 `border-dashed border-primary` 시각적 피드백
+- [x] d: `apps/web/shared/components/imageUploader/imagePreview.tsx` 신규 — 프리뷰 카드 컴포넌트 분리 (썸네일 + 삭제 버튼 + 업로드 중 스피너)
+- [x] e: `apps/web/shared/components/imageUploader/imageUploader.tsx` — 검증 실패(MIME/size/개수) 시 toast 또는 인라인 에러 문구 표시. 기존 toast 유틸 재사용
+- [x] f: `apps/web/shared/components/imageUploader/index.ts` 신규 — barrel export
+
+## v24. 게시글 작성 폼 이미지 업로더 통합
+
+> `topicCreateForm.tsx`에 ImageUploader를 삽입하고, `useCreatePost` 훅 경로에서 `images`를 DTO로 함께 전송한다. Lexical PlainText는 건드리지 않는다.
+
+- [x] a: `apps/web/shared/queries/topic.ts` — `CreatePostDto` 인터페이스 (줄 106~112)에 `images?: string[]` 추가
+- [x] b: `apps/web/app/topics/features/use-create-post.ts` — mutation fn의 payload 빌드 시 `images`를 받아 전달하도록 시그니처 확장 (`{ title, content, tag, images?, ... }`)
+- [x] c: `apps/web/app/topics/widgets/topicCreateForm.tsx` — `const [images, setImages] = useState<string[]>([])` 상태 추가. 에디터(Lexical) 블록 아래에 `<ImageUploader value={images} onChange={setImages} maxCount={5} scope="post" />` 삽입
+- [x] d: `apps/web/app/topics/widgets/topicCreateForm.tsx` — submit 핸들러에서 `createPost({ ..., images })` 형태로 전달
+- [x] e: `apps/web/app/topics/widgets/topicCreateForm.tsx` — 업로드 진행 중(최소 하나라도 uploading 상태)이면 제출 버튼 `disabled` 처리. `useImageUpload`의 전역 uploading 여부를 ImageUploader가 `onUploadingChange?` 콜백으로 노출해 부모가 감지
+
+## v25. 댓글 작성 폼 이미지 업로더 통합
+
+> `commentForm.tsx`에 동일 패턴으로 ImageUploader 추가. 최대 2장. 답글 작성에도 동일 폼을 사용 중이면 자동 반영됨.
+
+- [x] a: `apps/web/shared/queries/comment.ts` — `CreateCommentDto` 인터페이스 (줄 85~89)에 `images?: string[]` 추가
+- [x] b: `apps/web/app/topics/[id]/features/use-post-comment.ts` — mutation payload에 `images` 포함
+- [x] c: `apps/web/app/topics/[id]/widgets/commentForm.tsx` — `const [images, setImages] = useState<string[]>([])` 상태 추가. 에디터 아래에 `<ImageUploader value={images} onChange={setImages} maxCount={2} scope="comment" />` 삽입 (컴팩트 variant 필요 시 Props 확장)
+- [x] d: `apps/web/app/topics/[id]/widgets/commentForm.tsx` — submit 시 `postComment({ ..., images })`, 성공 후 `setImages([])` 초기화
+- [x] e: `apps/web/app/topics/[id]/widgets/commentForm.tsx` — 업로드 진행 중이면 제출 버튼 disabled (v24e와 동일 패턴)
+
+## v26. 본문/댓글 이미지 렌더링
+
+> 저장된 `images: string[]`을 각 화면에서 본문 아래 그리드/썸네일로 렌더. 클릭 시 라이트박스는 v27에서 별도 처리.
+
+- [x] a: `apps/web/app/topics/[id]/widgets/imageGallery.tsx` 신규 — Props: `{ images: string[], onImageClick?: (index: number) => void }`. 1장: 전체폭 (`rounded-xl aspect-video object-cover`), 2장: 1:1 그리드, 3~5장: 첫 장 크게 + 나머지 썸네일. `next/image` 사용 (권장) 또는 `<img>`
+- [x] b: `apps/web/app/topics/[id]/page.tsx` — 본문 `<p>{topic.content}</p>` (줄 141 근처) 블록 바로 아래에 `{topic.images?.length > 0 && <ImageGallery images={topic.images} />}` 삽입
+- [x] c: `apps/web/app/topics/[id]/widgets/comment.tsx` — 본문 `<p>{comment.content}</p>` (줄 170~172 근처) 아래에 `{comment.images?.length > 0 && <ImageGallery images={comment.images} compact />}` 삽입 (compact variant = 고정 높이 100px, 썸네일 row)
+- [x] d: `apps/web/app/topics/[id]/widgets/replyComment.tsx` — 본문 (줄 77~79 근처) 아래에 동일하게 `ImageGallery compact` 추가
+- [x] e: `apps/web/app/topics/[id]/widgets/imageGallery.tsx` — `compact` variant props 추가: true면 `h-20 rounded-lg object-cover` 고정 썸네일 row로 렌더
+
+## v27. 이미지 라이트박스 (클릭 확대)
+
+> 이미지 클릭 시 전체 화면 모달로 확대 보기. 좌우 키/버튼으로 네비게이션. shared 컴포넌트로 분리해 게시글/댓글 공용.
+
+- [x] a: `apps/web/shared/components/imageLightbox/imageLightbox.tsx` 신규 — Props: `{ images: string[], initialIndex: number, isOpen: boolean, onClose: () => void }`. 구조: `fixed inset-0 z-50 bg-black/90 flex items-center justify-center`, 중앙 이미지 + 좌우 `<ChevronLeft/ChevronRight>` 버튼 + 우상단 `<X>` 닫기
+- [x] b: `apps/web/shared/components/imageLightbox/imageLightbox.tsx` — 키보드: Escape = close, ArrowLeft/Right = prev/next. 터치 스와이프는 MVP 범위 밖 (후속 개선)
+- [x] c: `apps/web/app/topics/[id]/widgets/imageGallery.tsx` — 내부에서 `const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)` 상태 관리, 이미지 클릭 시 `setLightboxIndex(i)`, `<ImageLightbox images={images} initialIndex={lightboxIndex ?? 0} isOpen={lightboxIndex !== null} onClose={() => setLightboxIndex(null)} />` 렌더
+- [x] d: `apps/web/shared/components/imageLightbox/index.ts` 신규 — barrel export
+
+## v28. Next.js 이미지 최적화 설정
+
+> `next/image`로 Supabase Storage 이미지를 렌더하려면 `remotePatterns` 설정 필수.
+
+- [x] a: `apps/web/next.config.mjs` — 현재 빈 객체 `nextConfig = {}` 를 `nextConfig = { images: { remotePatterns: [{ protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' }] } }` 로 확장. 환경별 도메인은 env에서 읽는 방식으로 추후 개선 가능
+- [x] b: `apps/web/next.config.mjs` — 이미지 기본 포맷에 `formats: ['image/webp']` 추가 (최적화)
+- [x] c: (확인 작업) `next/image` 사용 여부 재확인 — v26a에서 `next/image` 채택 시 이 v28이 필수, `<img>` 태그면 선택. 팀 컨벤션에 맞춰 통일
+
+## v29. 고아 파일 정리 & 운영 메모 (MVP 범위 외 기록)
+
+> MVP에선 orphan 허용, 추후 cron/hard-delete 시점에 정리. 여기선 운영 참고사항을 기록만 하고 실제 cron 구현은 별도 이슈로 분리.
+
+- [x] a: `docs/supabase-setup.md` (v18f에서 생성) 하단에 "고아 파일 정리 전략" 섹션 추가 — 1) 업로드 후 10분 내 DB 연결 안 된 key 삭제하는 Supabase Edge Function 예제, 2) 게시글/댓글 hard delete 시점에 `storage.remove([keys])` 호출하는 훅 지점(서비스 레이어 어디에 추가할지) 명시
+- [x] b: `apps/api/src/post/post.service.ts` — `remove(id)` (soft delete) 메서드 주석으로 "TODO: hard delete 시점에 supabase storage에서 images 배열 삭제" 표기
+- [x] c: `apps/api/src/comment/comment.service.ts` — `remove(id)` 메서드 동일 주석 추가
+- [x] d: (선택) `apps/api/src/upload/upload.service.ts` — `deleteImages(scope, keys: string[])` 메서드 스텁 추가 (구현은 추후). 호출부는 비워두되 시그니처만 준비
 ## v18. shared-types & 엔티티 확장 (UserRole / isOfficial)
 
 - [x] a: `packages/shared-types/src/enums.ts` — `UserRole` enum 추가 (`USER = 'user'`, `ADMIN = 'admin'`). export 배럴(`index.ts`) 확인 후 재노출

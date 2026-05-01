@@ -10,6 +10,7 @@ import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
 import { ReplyComment } from "./replyComment";
 import { CommentForm } from "./commentForm";
 import { FollowButton } from "@/shared/components/follow-button";
+import { ImageGallery } from "@/shared/components/imageGallery/imageGallery";
 import Link from "next/link";
 
 interface CommentProps {
@@ -170,6 +171,15 @@ export function Comment({ comment, topicId, onLike }: CommentProps) {
           <p className="text-[13px] leading-relaxed whitespace-pre-wrap break-words mb-2">
             {comment.content}
           </p>
+
+          {/* 댓글 이미지 */}
+          {comment.images && comment.images.length > 0 && (
+            <ImageGallery
+              images={comment.images}
+              variant="compact"
+              className="mb-2"
+            />
+          )}
 
           {/* 액션 버튼 */}
           <div className="flex items-center gap-3">

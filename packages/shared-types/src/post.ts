@@ -13,6 +13,7 @@ export interface PostResponse {
   creator: UserResponse;
   title: string;
   content: string;
+  images: string[];
   tag: PostTag;
   isOfficial: boolean;
   showCreatorOpinion: boolean;

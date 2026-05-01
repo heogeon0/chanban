@@ -15,6 +15,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, IsNull, Repository } from 'typeorm';
 import { ResponseWithMeta } from '../common/dto/response.dto';
+import { isOwnedImageUrl } from '../common/utils/image-key.util';
 import { Post } from '../entities/post.entity';
 import { User } from '../entities/user.entity';
 import { Vote } from '../entities/vote.entity';
@@ -194,11 +195,23 @@ export class PostService {
       });
     }
 
+    // 이미지 소유권 검증: path prefix가 본인 userId인지 확인
+    if (postData.images?.length) {
+      for (const url of postData.images) {
+        if (!isOwnedImageUrl(url, user.id)) {
+          throw new BadRequestException({
+            code: ErrorCode.BAD_REQUEST,
+          });
+        }
+      }
+    }
+
     // Transaction으로 Post 생성 + Vote 생성
     const createdPost = await this.dataSource.transaction(async (manager) => {
       // Post 생성
       const post = manager.create(Post, {
         ...postData,
+        images: postData.images ?? [],
         showCreatorOpinion: showCreatorOpinion ?? false,
         isOfficial,
         creatorId: user.id,

@@ -52,6 +52,9 @@ export class Comment {
   @Column({ type: 'text', nullable: false })
   content: string;
 
+  @Column('text', { array: true, default: () => "'{}'" })
+  images: string[];
+
   @Column({ type: 'integer', default: 0 })
   likeCount: number;
 
