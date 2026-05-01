@@ -58,10 +58,9 @@ export function MyVoteCard({ vote, majorityStatus }: MyVoteCardProps) {
   if (!post) return null;
 
   const statusConfig = VOTE_STATUS_CONFIG[vote.currentStatus];
-  const total = post.agreeCount + post.disagreeCount + post.neutralCount;
-  const agreePercent = total === 0 ? 33 : Math.round((post.agreeCount / total) * 100);
-  const neutralPercent = total === 0 ? 34 : Math.round((post.neutralCount / total) * 100);
-  const disagreePercent = total === 0 ? 33 : 100 - agreePercent - neutralPercent;
+  const total = post.agreeCount + post.disagreeCount;
+  const agreePercent = total === 0 ? 50 : Math.round((post.agreeCount / total) * 100);
+  const disagreePercent = total === 0 ? 50 : 100 - agreePercent;
 
   return (
     <Link
@@ -95,12 +94,8 @@ export function MyVoteCard({ vote, majorityStatus }: MyVoteCardProps) {
             style={{ flex: agreePercent }}
           />
           <div
-            className="h-2 bg-opinion-disagree"
+            className="h-2 bg-opinion-disagree rounded-r-full"
             style={{ flex: disagreePercent }}
-          />
-          <div
-            className="h-2 bg-muted rounded-r-full"
-            style={{ flex: neutralPercent }}
           />
         </div>
 

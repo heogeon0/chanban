@@ -1,4 +1,4 @@
-import { PostTag } from '@chanban/shared-types';
+import { PostTag, UserRole } from '@chanban/shared-types';
 import {
   Body,
   Controller,
@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 import { User } from 'src/entities';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
@@ -33,6 +35,21 @@ export class PostController {
   @Get('search')
   searchPosts(@Query() searchQueryDto: SearchQueryDto) {
     return this.postService.searchPosts(searchQueryDto);
+  }
+
+  @Get('official')
+  findOfficialPosts(@Query() paginationQuery: PaginationQueryDto) {
+    return this.postService.findOfficialPosts(paginationQuery);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('official')
+  createOfficial(
+    @Body() createPostDto: CreatePostDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.postService.create(createPostDto, user, { isOfficial: true });
   }
 
   @Get('/tags/:tag')

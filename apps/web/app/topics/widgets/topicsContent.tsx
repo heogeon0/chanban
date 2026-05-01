@@ -32,7 +32,7 @@ export async function TopicsContent({
             <TopicCard key={post.id} post={post} />
           ))}
         </div>
-        <TopicList tag="hot" initialMeta={initialPosts.meta} />
+        <TopicList tag="hot" initialPage={initialPosts} />
       </div>
     );
   }
@@ -73,7 +73,7 @@ export async function TopicsContent({
           <TopicCard key={post.id} post={post} />
         ))}
       </div>
-      <TopicList tag={selectedTag} initialMeta={latestPosts.meta} excludeIds={hotIds} />
+      <TopicList tag={selectedTag} initialPage={latestPosts} excludeIds={hotIds} />
     </div>
   );
 }

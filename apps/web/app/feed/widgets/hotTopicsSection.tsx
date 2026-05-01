@@ -21,10 +21,9 @@ const formatCount = (num: number): string => {
  * 인기 1위 토픽을 풀-와이드 히어로 배너로 표시하는 컴포넌트
  */
 function HeroBanner({ post }: { post: PostResponse }) {
-  const total = post.agreeCount + post.disagreeCount + post.neutralCount;
-  const agreePercent = total === 0 ? 33 : Math.round((post.agreeCount / total) * 100);
-  const neutralPercent = total === 0 ? 34 : Math.round((post.neutralCount / total) * 100);
-  const disagreePercent = total === 0 ? 33 : 100 - agreePercent - neutralPercent;
+  const total = post.agreeCount + post.disagreeCount;
+  const agreePercent = total === 0 ? 50 : Math.round((post.agreeCount / total) * 100);
+  const disagreePercent = total === 0 ? 50 : 100 - agreePercent;
 
   const tagInfo = TAG_MAP[post.tag] || { name: post.tag };
 
@@ -65,16 +64,10 @@ function HeroBanner({ post }: { post: PostResponse }) {
           {agreePercent > 15 && <span className="text-[12px] font-bold text-white">{agreePercent}%</span>}
         </div>
         <div
-          className="h-[28px] flex items-center justify-end bg-opinion-disagree"
+          className="h-[28px] flex items-center justify-end bg-opinion-disagree rounded-r-lg"
           style={{ flex: disagreePercent, paddingRight: disagreePercent > 15 ? '8px' : '2px' }}
         >
           {disagreePercent > 15 && <span className="text-[12px] font-bold text-white">{disagreePercent}%</span>}
-        </div>
-        <div
-          className="h-[28px] flex items-center justify-center bg-muted rounded-r-lg"
-          style={{ flex: neutralPercent }}
-        >
-          {neutralPercent > 8 && <span className="text-[12px] font-semibold text-muted-foreground">{neutralPercent}%</span>}
         </div>
       </div>
 

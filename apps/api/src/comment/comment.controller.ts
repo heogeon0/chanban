@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from 'src/auth/guards/optional-jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/entities';
 import { PaginationQueryDto } from '../post/dto/pagination-query.dto';
@@ -21,6 +22,19 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 @Controller('comments')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
+
+  /** 피드 카드 미리보기용 인기 댓글 TOP N — 비로그인도 조회 가능. 로그인 시 isLiked 채움. */
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get('posts/:postId/top')
+  findTopByPostId(
+    @Param('postId') postId: string,
+    @Query('limit') limit?: string,
+    @CurrentUser() user?: User | null,
+  ) {
+    const parsed = limit ? parseInt(limit, 10) : 5;
+    const safeLimit = Number.isFinite(parsed) ? Math.min(Math.max(parsed, 1), 20) : 5;
+    return this.commentService.findTopByPostId(postId, safeLimit, user?.id);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('posts/:postId')

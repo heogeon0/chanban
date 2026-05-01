@@ -4,6 +4,8 @@ import { ProtectedRoute } from '@/shared/components/protected-route';
 import { userQueries } from '@/shared/queries';
 import { useAuth } from '@/shared/contexts/auth-context';
 import { useQuery } from '@tanstack/react-query';
+import { ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import { MyTopicsTab } from './widgets/myTopicsTab';
 import { MyVotesTab } from './widgets/myVotesTab';
@@ -26,7 +28,7 @@ const TABS: { id: TabType; label: string }[] = [
 export default function MyPage() {
   const [activeTab, setActiveTab] = useState<TabType>('votes');
   const [followSheet, setFollowSheet] = useState<'followers' | 'following' | null>(null);
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const { data: votesData } = useQuery(userQueries.myVotes(1));
   const { data: postsData } = useQuery(userQueries.myPosts(1));
@@ -48,6 +50,16 @@ export default function MyPage() {
           totalComments={totalComments}
           onFollowSheetOpen={setFollowSheet}
         />
+
+        {isAdmin && (
+          <Link
+            href="/admin/posts/create"
+            className="mx-4 mb-4 flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            공식 투표 작성
+          </Link>
+        )}
 
         <div>
           {/* 탭 네비게이션 */}

@@ -13,6 +13,7 @@ import { $getRoot, EditorState } from "lexical";
 import { useState } from "react";
 import { VoteButtons } from "../[id]/widgets/voteButtons";
 import { useCreatePost } from "../features";
+import { useCreateOfficialPost } from "@/app/admin/features/use-create-official-post";
 
 const TAG_LABELS: Record<PostTag, string> = {
   [PostTag.POLITICS]: "정치",
@@ -24,19 +25,30 @@ const TAG_LABELS: Record<PostTag, string> = {
   [PostTag.OTHER]: "기타",
 };
 
+interface TopicCreateFormProps {
+  /**
+   * 'community' — 일반 유저 토픽 작성 (기본)
+   * 'official' — 관리자 공식 투표 작성
+   */
+  variant?: "community" | "official";
+}
+
 /**
  * 토픽 작성 폼 컴포넌트
  * Lexical editor를 사용하여 토픽을 작성합니다.
- * 제목, 내용, 태그, 글쓴이 의견을 입력받습니다.
+ * variant에 따라 일반 토픽 / 관리자 공식 투표로 분기됩니다.
  */
-export function TopicCreateForm() {
+export function TopicCreateForm({ variant = "community" }: TopicCreateFormProps = {}) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tag, setTag] = useState<PostTag>(PostTag.OTHER);
   const [showCreatorOpinion, setShowCreatorOpinion] = useState(false);
   const [creatorOpinion, setCreatorOpinion] = useState<VoteStatus>(VoteStatus.AGREE);
 
-  const { mutate: createPost, isPending } = useCreatePost();
+  const communityMutation = useCreatePost();
+  const officialMutation = useCreateOfficialPost();
+  const { mutate: createPost, isPending } =
+    variant === "official" ? officialMutation : communityMutation;
 
   /**
    * 에디터 상태 변경 시 호출되는 핸들러
@@ -201,7 +213,11 @@ export function TopicCreateForm() {
         size="lg"
         disabled={isSubmitDisabled}
       >
-        {isPending ? "작성 중..." : "토픽 작성하기"}
+        {isPending
+          ? "작성 중..."
+          : variant === "official"
+            ? "공식 투표 게시하기"
+            : "토픽 작성하기"}
       </Button>
     </form>
   );

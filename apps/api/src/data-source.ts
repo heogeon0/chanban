@@ -7,6 +7,8 @@ import { Vote } from './entities/vote.entity';
 import { VoteHistory } from './entities/vote-history.entity';
 import { Comment } from './entities/comment.entity';
 import { CommentLike } from './entities/comment-like.entity';
+import { Follow } from './entities/follow.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 import { MainSeeder } from './database/seeds/main.seeder';
 
 // .env 파일 로드
@@ -19,7 +21,7 @@ const options: DataSourceOptions & SeederOptions = {
   username: process.env.DATABASE_USER || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'chanban',
-  entities: [User, Post, Vote, VoteHistory, Comment, CommentLike],
+  entities: [User, Post, Vote, VoteHistory, Comment, CommentLike, Follow, RefreshToken],
   synchronize: true, // 테이블 자동 생성
   logging: true,
 
