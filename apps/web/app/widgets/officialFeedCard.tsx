@@ -242,7 +242,7 @@ export function OfficialFeedCard({ post }: OfficialFeedCardProps) {
                 <MessageCircle className="w-4 h-4" />
                 인기 댓글 TOP {topComments.length}
               </div>
-              <ul className="flex flex-col gap-2.5">
+              <ul className="flex flex-col gap-1.5">
                 {topComments.map((c) => {
                   const stance = c.user.voteHistory.at(-1)?.toStatus;
                   const stanceLabel =
