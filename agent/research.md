@@ -1,376 +1,284 @@
-# Research - 찬반 토론 앱의 검색/탐색 페이지 UI 개선
+# Project Research — 찬반 (Chanban)
 
-작성일: 2026-04-03
+최종 고정 섹션 갱신일: 2026-04-13
 
 ---
 
 ## 아키텍처
 
-### 디렉토리 구조 (apps/web/app 기준)
+### 모노레포 구성
+
+pnpm + Turborepo 기반 모노레포.
 
 ```
-apps/web/app/
-├── page.tsx                    # 홈 페이지 (태그 필터 + 토픽 목록)
-├── layout.tsx                  # 루트 레이아웃 (헤더, 탭바, 메인 컨테이너)
-├── search/                     # 검색/탐색 페이지 (신규)
-│   ├── page.tsx               # 검색 페이지 메인
-│   └── widgets/
-│       ├── searchBar.tsx       # 검색 입력 바
-│       └── categoryGrid.tsx    # 카테고리 탐색 그리드
-├── topics/                     # 토픽 상세 페이지 및 피드
-│   ├── page.tsx               # 리다이렉트 (/?tag=... 형식으로)
-│   ├── domains/               # API 데이터 레이어
-│   │   ├── index.ts          # topicDomains 객체 (API 클라이언트)
-│   │   └── constants.ts       # 상수 (TAG_MAP, CATEGORY_FILTERS)
-│   ├── features/              # React Query 훅
-│   │   ├── use-infinite-topics.ts
-│   │   └── use-create-post.ts
-│   ├── [id]/                  # 토픽 상세 페이지
-│   ├── create/                # 토픽 작성 페이지
-│   └── widgets/               # 공용 컴포넌트
-│       ├── topicCard.tsx      # 토픽 카드 (메인 컴포넌트)
-│       ├── topicsContent.tsx  # RSC - 태그별 콘텐츠 (HOT + 최신)
-│       ├── categoryFilter.tsx # 카테고리 필터 탭
-│       ├── topicList.tsx      # 무한스크롤 리스트
-│       └── topicsListSkeleton.tsx
-├── auth/, users/, my/, notifications/ # 기타 페이지
-└── shared/components/
-    ├── bottom-tab-bar.tsx     # 하단 탭 네비게이션
-    └── (기타 공용 컴포넌트)
+/
+├── apps/
+│   ├── web/      # Next.js 15 (App Router) 프론트엔드
+│   └── api/      # NestJS 백엔드 (TypeORM + PostgreSQL)
+├── packages/
+│   ├── shared-types/       # 프론트/백 공용 타입/enum
+│   ├── eslint-config/
+│   └── typescript-config/
+├── docker-compose.yml      # 로컬 DB
+├── railway.toml            # 배포 설정
+├── turbo.json
+└── pnpm-workspace.yaml
 ```
 
-### 데이터 흐름 패턴
+### 기술 스택
 
-**RSC (React Server Components) → Client Components → React Query**
+**Frontend (`apps/web`)**
+- Next.js 15 App Router (RSC + Client Components)
+- TypeScript
+- TailwindCSS + OKLch 디자인 토큰 (`apps/web/styles/globals.css`)
+- React Query (TanStack Query) — 서버 상태 관리
+- shadcn/ui 기반 UI 컴포넌트 (`apps/web/shared/ui/`)
+- `lucide-react` 아이콘
+- 인증 컨텍스트(`apps/web/shared/contexts/auth-context`) + JWT(쿠키/헤더)
+- Google Analytics (`@next/third-parties/google`)
 
-1. **RSC 레벨** (서버에서 한 번만 실행)
-   - `page.tsx`: searchParams 받음
-   - `TopicsContent.tsx`: 초기 데이터 fetch (await)
-   - 초기 페이지 데이터만 서버에서 가져옴
+**Backend (`apps/api`)**
+- NestJS
+- TypeORM + PostgreSQL
+- JWT 인증 (`@nestjs/passport`) + Kakao OAuth
+- `class-validator` 기반 DTO 검증
+- Jest (spec.ts 테스트)
 
-2. **Client Component 레벨**
-   - `TopicList.tsx`: "use client" - 무한스크롤 로직
-   - `useGetInfiniteTopics()` 훅: 다음 페이지부터 fetch
+**Shared (`packages/shared-types`)**
+- `enums.ts`: `PostTag`, `VoteStatus`, `PostSortBy`, `SortOrder`
+- `post.ts`, `vote.ts`, `comment.ts`, `follow.ts`, `api-response.ts`, `errors.ts`
 
-3. **React Query**
-   - `topicQueries.list()`: 각 페이지 요청
-   - 캐싱 및 상태 관리
+### 프론트엔드 레이어 컨벤션 (widgets/features/domains/shared)
 
-### 주요 파일 목록 (검색 페이지 관련)
+각 라우트(`app/<route>/`)는 내부에 기능 레이어를 가진다:
 
-| 파일 경로 | 역할 |
-|---------|------|
-| `apps/web/app/search/page.tsx` | 검색 페이지 메인 |
-| `apps/web/app/search/widgets/searchBar.tsx` | 검색 입력 바 |
-| `apps/web/app/search/widgets/categoryGrid.tsx` | 카테고리 그리드 |
-| `apps/web/app/topics/widgets/topicCard.tsx` | 토픽 카드 (재사용) |
-| `apps/web/app/topics/domains/index.ts` | API 클라이언트 |
-| `apps/web/shared/components/bottom-tab-bar.tsx` | 하단 탭 네비 |
-| `apps/web/styles/globals.css` | 디자인 토큰 |
-| `apps/api/src/post/post.controller.ts` | API 엔드포인트 |
+- `domains/` — API 클라이언트 함수 + 상수 (httpClient 래핑)
+- `features/` — React Query 훅 (use-*.ts, 해당 도메인에만 쓰이는 비즈니스 훅)
+- `widgets/` — 해당 라우트 전용 UI 컴포넌트 (컴포지션 단위)
+- `page.tsx` / `[id]/page.tsx` — 진입점 (주로 RSC)
+
+전역 공용 레이어: `apps/web/shared/`
+- `shared/components/` — 전역 UI 컴포넌트 (bottom-tab-bar, user-menu, theme-toggle, protected-route, follow-button, kakao-login-button, create-topic-button)
+- `shared/ui/` — shadcn 기반 순수 UI 프리미티브
+- `shared/queries/` — 여러 라우트에서 공용으로 쓰는 React Query 키/훅 (`keys.ts`, `topic.ts`, `vote.ts`, `user.ts`, `comment.ts`, `follow.ts`)
+- `shared/contexts/` — auth-context 등 전역 컨텍스트
+- `shared/providers.tsx` — React Query/Theme 등 프로바이더 조합
+
+기타 전역: `apps/web/lib/` (httpClient 등), `apps/web/hooks/`, `apps/web/assets/`, `apps/web/styles/`.
+
+### 앱 라우팅 (`apps/web/app/`)
+
+```
+app/
+├── layout.tsx               # 루트 레이아웃: 헤더 + main + BottomTabBar + @modal
+├── page.tsx                 # 홈 = 토픽 피드 (CategoryFilter + TopicsContent)
+├── @modal/                  # Parallel route (모달용)
+├── auth/
+│   ├── login/               # 로그인 페이지
+│   ├── signup/              # 회원가입 (닉네임 설정)
+│   └── kakao/               # Kakao OAuth 콜백
+├── topics/
+│   ├── page.tsx             # /?tag=... 로 리다이렉트
+│   ├── create/              # 토픽 작성
+│   ├── [id]/                # 토픽 상세 (투표/댓글)
+│   ├── domains/             # topicDomains (post API 클라이언트)
+│   ├── features/            # use-infinite-topics, use-create-post
+│   └── widgets/             # topicCard, topicsContent, topicList, categoryFilter, topicsListSkeleton, topicCreateForm, listToggle
+├── search/
+│   ├── page.tsx             # 탐색(검색 + 카테고리 그리드 + 인기 토픽)
+│   └── widgets/             # searchBar, categoryGrid
+├── feed/
+│   └── widgets/             # hotTopicsSection, latestTopicsSection, topicCarousel, tagTopicsSection, myTopicsSection, myVotesSection, feedSectionHeader, loginCtaBanner
+├── my/                      # 마이페이지 (내 토픽 탭 / 내 투표 탭)
+├── users/[id]/               # 타 유저 공개 프로필 (profile, 작성 토픽, 댓글)
+└── notifications/           # 알림 페이지 (UI 스텁)
+```
+
+하단 탭바(`bottom-tab-bar.tsx`)는 5탭: 홈(`/`) / 탐색(`/search`) / 글쓰기 FAB(`/topics/create`, protected) / 알림(`/notifications`, protected) / 마이(`/my`, protected).
+
+### 백엔드 모듈 구성 (`apps/api/src/`)
+
+`AppModule`에 등록된 피처 모듈:
+
+- `AuthModule` — Kakao OAuth 로그인, JWT 발급/갱신, RefreshToken 관리
+  - `auth.controller.ts`, `auth.service.ts`, `kakao.service.ts`, `refresh-token.service.ts`
+  - `guards/jwt-auth.guard.ts` (JwtAuthGuard가 유일한 가드 — **Role 기반 가드 없음**)
+  - `strategies/` (passport JWT 전략)
+- `UserModule` — 내 프로필/투표/토픽, 타 유저 프로필/토픽/댓글 조회, 닉네임 수정
+- `PostModule` — 토픽(게시글) CRUD + 조회 (recent/search/tags/:tag/:id/vote-count)
+- `VoteModule` — 투표 생성/변경 (Vote + VoteHistory)
+- `CommentModule` — 댓글 CRUD + 좋아요
+- `FollowModule` — 유저 팔로우/언팔로우
+- `SummaryModule` — AI 요약 (entities 내부 보유)
+
+공통 레이어:
+- `common/decorators/` — `@CurrentUser()` 등
+- `common/dto/` — 공용 DTO (PaginationQuery 등)
+- `common/filters/` — HttpException 필터
+- `common/interceptors/` — Response 래핑
+- `config/database.config.ts` — TypeORM 설정
+- `entities/index.ts` — 모든 엔티티 export (data-source.ts / 모듈에서 사용)
+
+### 데이터베이스 엔티티 (`apps/api/src/entities/`)
+
+- `user.entity.ts` — User (id, kakaoId, nickname, profileImageUrl, softDelete). **role/admin 필드 없음.**
+- `post.entity.ts` — Post (id, creatorId, title, content, tag(PostTag), showCreatorOpinion, agreeCount, disagreeCount, neutralCount, commentCount, viewCount, popularityScore, softDelete)
+- `vote.entity.ts` — Vote (postId+userId unique, currentStatus, changeCount, firstVotedAt, lastChangedAt)
+- `vote-history.entity.ts` — VoteHistory (fromStatus, toStatus, changedAt)
+- `comment.entity.ts` — Comment
+- `comment-like.entity.ts` — CommentLike
+- `follow.entity.ts` — Follow (follower/following)
+- `refresh-token.entity.ts` — JWT 리프레시 토큰
 
 ---
 
-## 디자인 토큰 (globals.css)
+## 데이터 흐름
 
-### 타이포그래피
+### 인증 흐름
 
-- **Display** (22px, 28px line-height, 800 weight) - 앱 로고
-- **Heading-lg** (20px, 700 weight)
-- **Heading-md** (15px, 600 weight) - 섹션 제목
-- **Heading-sm** (14px, 600 weight)
-- **Body-md** (14px, 400 weight)
-- **Body-sm** (13px, 400 weight)
-- **Label-md** (13px, 500 weight) - 작성자명, 태그
-- **Label-sm** (12px, 400 weight)
-- **Micro-md** (11px, 500 weight) - footer, 배지
-- **Micro-sm** (10px, 500 weight)
+1. 사용자가 `/auth/login` → Kakao OAuth → `/auth/kakao` 콜백
+2. 백엔드 `AuthService`가 카카오 유저 정보로 User 조회/생성, JWT accessToken + refreshToken 발급
+3. 프론트 `auth-context`가 토큰 저장 및 사용자 상태 관리
+4. `httpClient`(`apps/web/lib/httpClient`)가 모든 API 요청에 토큰 첨부, 만료 시 refresh
+5. 보호 라우트: 탭바에서 `protected: true` 플래그로 비로그인 시 로그인 페이지 리다이렉트 (`ProtectedRoute` 컴포넌트도 존재)
 
-### 컬러 토큰
+백엔드 쪽은 라우트 단위로 `@UseGuards(JwtAuthGuard)` + `@CurrentUser()` 데코레이터 조합. **관리자 전용 가드/role 체크 없음.**
 
-**Light Mode:**
-- `--primary`: oklch(0.591 0.207 253) - 주 색상 (보라색)
-- `--background`: oklch(0.976 0.003 247) - 배경
-- `--card`: oklch(1 0 0) - 카드 배경
-- `--border`: oklch(0.955 0.004 247)
-- `--muted`: oklch(0.961 0.003 247)
-- `--muted-foreground`: oklch(0.52 0.014 264)
+### 토픽 피드 데이터 흐름 (홈 `/`)
 
-**Opinion Colors (찬반 의견):**
-- `--opinion-agree`: oklch(0.532 0.159 251.406) - 찬성 (파란색)
-- `--opinion-disagree`: oklch(0.578 0.218 27.325) - 반대 (빨간색)
-- `--opinion-neutral`: oklch(0.556 0.014 264.052) - 중립 (회색)
-
-**Dark Mode:** (약간 밝혀진 톤)
-- `--primary`: 동일
-- `--background`: oklch(0.12 0 0)
-- `--card`: oklch(0.17 0.005 264)
-
-### 라디우스
-- `--radius`: 0.625rem (10px)
-
----
-
-## 현재 검색 페이지 상태 (2026-04-03)
-
-### SearchBar 컴포넌트
-- **상태**: 구현 완료 (기본 UI)
-- **기능**:
-  - 텍스트 입력 받음
-  - 포커스 시 "취소" 버튼 표시
-  - 입력값 있을 때 X 버튼으로 초기화
-  - 현재 텍스트 검색 API 미지원 (placeholder)
-- **스타일**: 
-  - 포커스 시: border + ring-2 primary 스타일
-  - muted 배경에서 card + border로 전환
-
-### CategoryGrid 컴포넌트
-- **상태**: 구현 완료
-- **기능**: 
-  - 7개 카테고리 (정치, 경제, 기술, 사회, 연예, 스포츠, 기타)
-  - 각 카테고리별 emoji + 그라데이션 배경
-  - 클릭 시 `/?tag=CATEGORY` 로 홈페이지로 이동
-- **레이아웃**: 2열 그리드 (grid-cols-2)
-- **각 카테고리 색상**:
-  - 정치: 블루
-  - 경제: 에메랄드
-  - 기술: 바이올렛
-  - 사회: 오렌지
-  - 연예: 핑크
-  - 스포츠: 라임
-  - 기타: 슬레이트
-
-### 페이지 전체 구조
 ```
-/search
-├── 고정 헤더 (sticky top-[57px])
-│   └── SearchBar
-├── 섹션: "카테고리 탐색"
-│   └── CategoryGrid
-└── 섹션: "지금 인기 토픽" (Suspense + TopicCard 목록)
+(URL) /?tag=politics&sort=recent
+    ↓
+app/page.tsx (RSC)
+  - searchParams 파싱 → topicDomains.parseSortSearchParams()
+  - CategoryFilter (Link 기반 탭, sticky)
+  - <Suspense fallback={TopicsListSkeleton}>
+      <TopicsContent selectedTag selectedSort />  ← RSC, 초기 데이터 fetch
+    </Suspense>
+    ↓
+TopicsContent (RSC)
+  - tag === "all" ? getAllPosts() : getHotPostsByTag() + getLatestPostsByTag()
+  - 섹션 헤더 + <TopicList initialData={...} />
+    ↓
+TopicList ("use client")
+  - useGetInfiniteTopics() (React Query useInfiniteQuery)
+  - IntersectionObserver 기반 무한스크롤
 ```
 
-### 현재 UI 구현 패턴
-- **sticky header**: top-[57px] z-40 (헤더 높이 고려)
-- **섹션 구조**: 아이콘 + 타이틀 + 콘텐츠
-- **TopicCard 재사용**: 토픽 피드와 동일한 카드 사용
-- **스켈레톤 로딩**: TopicsListSkeleton 사용
+- 초기 1페이지는 RSC에서 서버 fetch → HTML에 포함
+- 이후 페이지는 클라이언트 React Query가 페치
+- 검색 페이지(`/search`)는 RSC prerender 비활성(`force-dynamic`)으로 처리되어 있음 (최근 커밋 참고)
+
+### 투표/댓글 흐름
+
+- 상세 페이지(`/topics/[id]`)에서 투표 버튼 클릭 → `POST /api/votes`
+- 투표 변경 시 Vote 엔티티의 `currentStatus` 갱신 + VoteHistory 레코드 추가 + Post 집계 카운트 업데이트
+- 투표와 댓글은 완전 독립 도메인(투표 시 의견 코멘트 없음)
+- 댓글 컴포넌트는 작성자의 최신 투표(`user.voteHistory`)를 좌측 컬러바로 간접 표시
+
+### 상태 관리 패턴
+
+- **서버 상태**: React Query (`@tanstack/react-query`)
+  - 쿼리 키 관리: `apps/web/shared/queries/keys.ts`
+  - 공용 훅: `apps/web/shared/queries/{topic, vote, user, comment, follow}.ts`
+  - 라우트별 훅: 각 라우트의 `features/use-*.ts`
+- **클라이언트 UI 상태**: React `useState` / URL searchParams (필터/정렬은 대부분 URL 기반)
+- **전역 클라이언트 상태**: `auth-context` (사용자), theme-provider
+- **폼**: 라우트별 로컬 state 또는 간단한 제어 컴포넌트 패턴
+
+### API 응답 포맷
+
+- 단일: `ApiResponse<T> = { data: T }`
+- 목록: `PaginatedResponse<T> = { data: T[], meta: { total, page, limit, totalPages } }`
+- 백엔드 `ResponseWithMeta` 클래스로 래핑, 전역 인터셉터가 통일
 
 ---
 
-## API 현황
+## 주요 파일
 
-### 사용 가능한 엔드포인트 (post.controller.ts)
+### 프론트 진입점 & 레이아웃
 
-| 메소드 | 경로 | 설명 | 파라미터 |
-|-------|------|------|---------|
-| GET | `/api/posts/recent` | 최신 게시글 (정렬 가능) | sort, page, limit |
-| GET | `/api/posts/tags/:tag` | 태그별 게시글 | tag, page, limit, sort |
-| GET | `/api/posts/:id` | 게시글 상세 | id |
-| GET | `/api/posts/:id/vote-count` | 투표 수 조회 | id |
-| POST | `/api/posts/create` | 게시글 작성 | (인증 필요) |
-| PATCH | `/api/posts/:id` | 게시글 수정 | id |
-| DELETE | `/api/posts/:id` | 게시글 삭제 | id |
+| 파일 | 역할 |
+|---|---|
+| `apps/web/app/layout.tsx` | 루트 레이아웃(헤더/로고/ThemeToggle/UserMenu/BottomTabBar/@modal 슬롯) |
+| `apps/web/app/page.tsx` | **홈 = 토픽 피드** (CategoryFilter + TopicsContent) — 유저 목록 아님 |
+| `apps/web/shared/providers.tsx` | React Query / Theme / Auth Providers 조합 |
+| `apps/web/shared/components/bottom-tab-bar.tsx` | 5탭 하단 네비 (홈/탐색/글쓰기FAB/알림/마이) |
+| `apps/web/shared/contexts/auth-context.tsx` | 사용자 인증 컨텍스트 |
+| `apps/web/lib/httpClient.ts` | 공용 fetch 래퍼(토큰 첨부/refresh) |
+| `apps/web/styles/globals.css` | Tailwind + OKLch 디자인 토큰 |
 
-### 쿼리 파라미터 지원
+### 프론트 토픽 도메인
 
-**PaginationQueryDto & PostQueryDto:**
-- `page`: 페이지 번호 (기본 1)
-- `limit`: 페이지당 개수 (기본 20, 최대 100)
-- `sort`: PostSortBy 열거형 (RECENT 또는 POPULAR)
-- `order`: SortOrder (ASC 또는 DESC, 기본 DESC)
+| 파일 | 역할 |
+|---|---|
+| `apps/web/app/topics/domains/index.ts` | topicDomains (getAllPosts, getLatestPostsByTag, getHotPostsByTag, searchPosts, parseSortSearchParams) |
+| `apps/web/app/topics/domains/constants.ts` | TAG_MAP, CATEGORY_FILTERS |
+| `apps/web/app/topics/features/use-infinite-topics.ts` | 토픽 무한스크롤 훅 |
+| `apps/web/app/topics/features/use-create-post.ts` | 토픽 작성 뮤테이션 |
+| `apps/web/app/topics/widgets/topicCard.tsx` | 토픽 카드(전역 재사용: 홈/검색/마이/피드) |
+| `apps/web/app/topics/widgets/topicsContent.tsx` | RSC: HOT + 최신 섹션 조합 |
+| `apps/web/app/topics/widgets/topicList.tsx` | 클라 무한스크롤 리스트 |
+| `apps/web/app/topics/widgets/categoryFilter.tsx` | 카테고리 탭(가로 스크롤 pill) |
+| `apps/web/app/topics/[id]/page.tsx` | 토픽 상세 |
+| `apps/web/app/topics/create/` | 토픽 작성 페이지 |
 
-### 검색 기능 현황
-- **텍스트 검색**: API 미지원
-- **카테고리 필터**: 완전 지원 (tag 파라미터)
-- **정렬**: 최신순/인기순 지원
-- **페이지네이션**: 무한스크롤 지원
+### 기타 라우트
 
-### 프론트 API 클라이언트 (topicDomains)
+| 파일 | 역할 |
+|---|---|
+| `apps/web/app/search/page.tsx` | 탐색 페이지 (검색바 + 카테고리 그리드 + 인기토픽) |
+| `apps/web/app/my/page.tsx` | 마이페이지 (내 토픽 / 내 투표 탭) |
+| `apps/web/app/users/[id]/page.tsx` | 타 유저 공개 프로필 |
+| `apps/web/app/feed/widgets/*` | 홈/피드 섹션 컴포넌트 모음 (현재 `/`에서 일부 사용) |
+| `apps/web/app/notifications/page.tsx` | 알림 (스텁) |
 
-```typescript
-topicDomains = {
-  parseSortSearchParams(searchParams),  // 파라미터 파싱
-  getAllPosts(),                        // 전체 인기 포스트
-  getLatestPostsByTag(tag),             // 태그별 최신
-  getHotPostsByTag(tag, limit),         // 태그별 인기
-}
-```
+### 백엔드 진입점 & 설정
 
----
+| 파일 | 역할 |
+|---|---|
+| `apps/api/src/main.ts` | Nest 부트스트랩 |
+| `apps/api/src/app.module.ts` | 루트 모듈 (Post/Comment/Vote/Auth/User/Follow/Summary 등록) |
+| `apps/api/src/config/database.config.ts` | TypeORM 설정 |
+| `apps/api/src/data-source.ts` | CLI용 DataSource (마이그레이션) |
+| `apps/api/src/entities/index.ts` | 엔티티 배럴 |
 
-## 기존 컴포넌트 패턴 분석
+### 백엔드 피처 모듈 핵심
 
-### TopicCard 패턴
+| 파일 | 역할 |
+|---|---|
+| `apps/api/src/post/post.controller.ts` | `GET /api/posts/{recent,search,tags/:tag,:id,:id/vote-count}`, `POST /create`, `PATCH/DELETE :id` |
+| `apps/api/src/post/post.service.ts` | 토픽 CRUD + 검색(QueryBuilder, ILIKE) + 페이지네이션 |
+| `apps/api/src/post/dto/{create-post,update-post,post-query,pagination-query,search-query}.dto.ts` | DTO들 |
+| `apps/api/src/vote/vote.controller.ts` / `vote.service.ts` | 투표 생성·변경, VoteHistory 적재, Post 카운트 증감 |
+| `apps/api/src/comment/` | 댓글 CRUD + 좋아요 |
+| `apps/api/src/user/user.controller.ts` | `/users/me/{posts,votes}`, `PATCH /users/me`, `/users/:id/{profile,posts,comments}` |
+| `apps/api/src/auth/auth.controller.ts` | Kakao OAuth 콜백, 토큰 refresh |
+| `apps/api/src/auth/guards/jwt-auth.guard.ts` | **유일한 가드 (Role 가드 없음)** |
+| `apps/api/src/follow/follow.controller.ts` | 팔로우/언팔로우 |
+| `apps/api/src/summary/summary.service.ts` | AI 요약 |
 
-**재사용되는 곳:**
-- 홈페이지 (전체/카테고리별)
-- 검색 페이지 (인기 토픽)
-- 사용자 페이지
+### 공용 타입
 
-**주요 요소:**
-1. **헤더**: 카테고리 배지 + HOT 배지 + 작성자 의견 + 시간
-2. **제목**: line-clamp-2 (2줄 제한)
-3. **찬반 분포 바**: 실시간 %.with 인렬 조율
-4. **푸터**: 투표수 + 댓글수 + 내 선택
-
-**Props:**
-- `post: PostResponse`
-- `myVote?: VoteStatus`
-- `isHot?: boolean`
-
-### 섹션 헤더 패턴 (topicsContent.tsx)
-
-```tsx
-<div className="px-5 pt-3 pb-1 flex items-center gap-1.5">
-  <Icon className="w-4 h-4" />  // Flame, Clock, TrendingUp 등
-  <span className="text-[14px] font-bold">섹션명</span>
-</div>
-```
-
-### 카테고리 필터 패턴 (categoryFilter.tsx)
-
-- **레이아웃**: 가로 스크롤 (overflow-x-auto)
-- **활성 상태**: primary 배경 + primary-foreground 텍스트
-- **비활성**: muted 배경
-- **구조**: Link 탭 (searchParams 기반 라우팅)
-
-### 하단 탭 네비게이션 (bottom-tab-bar.tsx)
-
-- **5탭**: 홈 / 탐색 / 글쓰기(FAB) / 알림 / 마이
-- **FAB**: 중앙에 +12px offset (-mt-4)
-- **인증 처리**: protected 탭은 로그인 체크 후 로그인 페이지로
-- **active 상태**: primary 텍스트 컬러
+| 파일 | 역할 |
+|---|---|
+| `packages/shared-types/src/enums.ts` | PostTag, VoteStatus, PostSortBy, SortOrder |
+| `packages/shared-types/src/post.ts` | PostResponse, CreatePost 등 |
+| `packages/shared-types/src/vote.ts` | VoteResponse, VoteHistoryResponse |
+| `packages/shared-types/src/api-response.ts` | ApiResponse, PaginatedResponse |
+| `packages/shared-types/src/errors.ts` | ErrorCode enum |
 
 ---
 
-## 개선 포인트 & 분석
+## 작업별 분석
 
-### 현재 검색 페이지의 부족한 부분
+### [2026-04-03] 검색/탐색 페이지 UI 개선 (레거시)
 
-1. **텍스트 검색 기능 미지원**
-   - SearchBar는 UI만 구현 (handleSubmit에서 주석 처리)
-   - API 레벨: 텍스트 검색 엔드포인트 없음
-   - 개선 방안:
-     - API에서 `GET /api/posts/search?q=keyword` 추가 필요
-     - SearchBar에서 검색 결과 페이지로 이동 또는 결과 표시
+(요약) 검색 페이지 기본 UI(SearchBar, CategoryGrid, 인기토픽) 완료. 텍스트 검색 API는 이후 2026-04-06에 구현됨. 디자인 토큰/섹션 헤더 패턴/카테고리 필터 패턴 등 세부는 본 파일 이전 버전 기준 일관성 유지.
 
-2. **카테고리 그리드 UX**
-   - 현재 2열 그리드로 7개 카테고리 표시
-   - 모바일에서 약간 비효율적일 수 있음
-   - 개선 안:
-     - 3열 그리드 고려 (카드 크기 조정)
-     - 카테고리 별도 "모두 보기" 섹션
-     - 최근 보던 카테고리 상단 고정
-
-3. **홈페이지와의 일관성**
-   - 검색 페이지: SearchBar + CategoryGrid + 인기토픽
-   - 홈페이지: CategoryFilter(탭) + TopicsContent
-   - **개선**: CategoryGrid 클릭 → 홈의 CategoryFilter 탭과 동일하게 동작
-   - 이미 구현됨 (`/?tag=${tag}` 링크)
-
-4. **검색 결과 컨테이너 부재**
-   - SearchBar에 입력했을 때 결과를 어디에 표시할지 미정
-   - 개선 안:
-     - 현재 페이지에서 인기토픽 대신 검색 결과 표시
-     - 또는 `/search/results?q=keyword` 새 페이지
-
-### 다른 페이지와의 디자인 일관성 체크
-
-| 항목 | 검색 페이지 | 홈 페이지 | 상세 페이지 | 평가 |
-|-----|----------|---------|----------|------|
-| 헤더 sticky | ✓ | ✓ | ✓ | 일관성 good |
-| 섹션 아이콘 | ✓ | ✓ | - | 일관성 good |
-| TopicCard | ✓ | ✓ | 다름 | 일관성 good |
-| 카테고리 필터 | 그리드 | 탭 | - | 다름 (의도적) |
-| 탭바 | ✓ | ✓ | ✓ | 일관성 good |
-
-**결론**: 전반적으로 일관성 있게 구현됨. CategoryGrid는 탐색 목적이므로 탭과 다르게 설계하는 것이 적절.
-
-### 검색 기능 추가 가능성 (API 레벨)
-
-**현재 상태:**
-- GET `/api/posts/recent` - 최신순/인기순
-- GET `/api/posts/tags/:tag` - 카테고리 필터
-- **텍스트 검색 미지원**
-
-**추가 가능 엔드포인트:**
-```
-GET /api/posts/search?q=keyword&tag=politics&sort=recent&page=1
-```
-
-**DTO 확장 (PostQueryDto):**
-```typescript
-@IsOptional()
-@MinLength(1)
-@MaxLength(200)
-q?: string;  // 검색 키워드
-```
-
-**구현 복잡도**: 낮음 (DB Full-Text Search 또는 LIKE 쿼리 추가)
-
----
-
-## 권장 개선 사항 (우선순위)
-
-### P0 (필수)
-1. ✓ SearchBar 기본 UI 완료
-2. ✓ CategoryGrid 완료
-3. ✓ 인기토픽 피드 완료
-4. [ ] 텍스트 검색 API 구현 (백엔드)
-5. [ ] SearchBar 검색 기능 연동 (프론트)
-
-### P1 (권장)
-1. [ ] 검색 결과 페이지 레이아웃 구성
-2. [ ] 최근 검색 기록 (localStorage 또는 DB)
-3. [ ] 인기 검색어 섹션
-4. [ ] CategoryGrid 카드 UX 개선 (호버 애니메이션)
-
-### P2 (추가 고도화)
-1. [ ] 검색 필터 (카테고리, 정렬)
-2. [ ] 검색 자동완성
-3. [ ] 검색 분석 및 인기 검색어 수집
-
----
-
-## 파일 경로 요약
-
-### 검색 페이지 구현
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/web/app/search/page.tsx`
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/web/app/search/widgets/searchBar.tsx`
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/web/app/search/widgets/categoryGrid.tsx`
-
-### 재사용 컴포넌트
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/web/app/topics/widgets/topicCard.tsx`
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/web/app/topics/widgets/topicsContent.tsx`
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/web/app/topics/widgets/categoryFilter.tsx`
-
-### 디자인 토큰 & 스타일
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/web/styles/globals.css`
-
-### API
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/api/src/post/post.controller.ts`
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/api/src/post/dto/post-query.dto.ts`
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/apps/web/app/topics/domains/index.ts`
-
-### 타입 정의
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/packages/shared-types/src/enums.ts`
-- `/Users/heogeonnyeong/.superset/worktrees/chanban/heogeon0/design/packages/shared-types/src/post.ts`
-
----
-
-## 결론
-
-검색/탐색 페이지는 **기본 UI 구현이 완료**되었으며, 다음 단계로 나아가기 위해서는:
-
-1. **백엔드**: 텍스트 검색 API 엔드포인트 구현 필요
-2. **프론트**: SearchBar에서 검색 결과 표시 로직 추가
-3. **UX**: CategoryGrid 카드의 호버/활성 상태 시각화 강화
-4. **선택사항**: 최근 검색 기록, 인기 검색어 등 고도화
-
-현재 디자인 토큰, 컴포넌트 패턴, API 구조 모두 일관성 있게 설계되어 있어 추가 기능 구현이 용이한 상태입니다.
-
----
+주요 파일:
+- `apps/web/app/search/page.tsx`, `apps/web/app/search/widgets/{searchBar,categoryGrid}.tsx`
+- 재사용: `apps/web/app/topics/widgets/{topicCard,topicsContent,categoryFilter}.tsx`
 
 ### [2026-04-06] 검색 API 백엔드 구현
 
@@ -378,140 +286,111 @@ q?: string;  // 검색 키워드
 - `title` varchar(100) — 검색 대상
 - `content` text — 검색 대상
 - `creator` ManyToOne(User) — leftJoin으로 nickname 접근
-- `deletedAt` — soft delete, WHERE `IS NULL` 필수
-- `popularityScore` float (Index) — 인기순 정렬에 사용
-- `createdAt` — 최신순 정렬 기본값
+- `deletedAt` — soft delete, WHERE IS NULL 필수
+- `popularityScore` float (Index) — 인기순 정렬
+- `createdAt` — 최신순 기본
 
-#### User 엔티티 (작성자 검색)
-- `nickname` varchar unique — 작성자 검색 대상
-- Post와 OneToMany 관계 (Post.creator로 접근)
-
-#### 기존 서비스 패턴
-- `findRecentPosts`, `findPostsByTag` 모두 `findAndCount` + `where` 오브젝트 사용
-- 검색은 OR 조건 + JOIN 필요 → `createQueryBuilder` 사용
-- `leftJoinAndSelect('post.creator', 'creator')` — relations 처리와 JOIN 조건을 동시에 해결
-- `getManyAndCount()` — `[items, total]` 반환 형태 (`findAndCount`와 동일)
-
-#### Pagination 처리
-- `skip = (page - 1) * limit`
-- `new ResponseWithMeta(items, { total, page, limit, totalPages })` 로 반환
-- 프론트 `PaginatedResponse<PostResponse>` 타입과 호환
-
-#### 검색 구현 시 고려사항
-- `ILIKE`: PostgreSQL 대소문자 무시 (MySQL이면 `LIKE`로 변경)
+#### 구현 포인트
+- `createQueryBuilder` + `leftJoinAndSelect('post.creator', 'creator')`
+- OR 조건(title/content/nickname) + ILIKE (PostgreSQL)
 - 라우팅 순서: `recent` → `search` → `tags/:tag` → `:id` (충돌 방지)
-- `SearchType` enum: `ALL`(title+content+nickname), `CONTENT`(title+content), `AUTHOR`(nickname)
-- `q` 필드는 필수 — 빈 검색 요청 자체를 막음 (`MinLength(1)`)
+- `SearchType` enum: `ALL` / `CONTENT` / `AUTHOR`
+- `q`는 필수(`MinLength(1)`)
+- `ResponseWithMeta(items, { total, page, limit, totalPages })`로 반환
 
-### [2026-04-10] 마이페이지 내 투표 목록 디자인 개선
+### [2026-04-10] 마이페이지 내 투표 목록 디자인
 
-#### 1. 투표 데이터 구조
+- `VoteResponse`: id, postId, userId, currentStatus, changeCount, firstVotedAt, lastChangedAt
+- `VoteStatus`: AGREE | DISAGREE | NEUTRAL
+- Vote 엔티티: postId+userId Unique, history OneToMany(VoteHistory)
+- **CreateVoteDto에 comment/의견 필드 없음** — 투표 시 코멘트 기능 부재
+- `GET /api/users/me/votes` → `PaginatedResponse<MyVoteResponse>` (post + post.creator 포함), `firstVotedAt DESC` 고정, 필터/정렬 파라미터 미지원
+- `MyVotesTab`: `TopicCard + myVote=currentStatus`. footer 우측 11px 텍스트로만 "내 선택" 표시 — 강조 필요
+- 디자인 시스템: 4px spacing, rounded-xl 카드, border-only(overlay만 shadow), OKLch opinion 컬러(agree/disagree/neutral), Pretendard
 
-**VoteResponse** (`packages/shared-types/src/vote.ts`):
-```typescript
-interface VoteResponse {
-  id: string;
-  postId: string;
-  userId: string;
-  currentStatus: VoteStatus;  // 'agree' | 'disagree' | 'neutral'
-  changeCount: number;         // 투표 변경 횟수
-  firstVotedAt: Date;          // 최초 투표 시각
-  lastChangedAt: Date | null;  // 마지막 변경 시각
-}
+### [2026-04-13] 메인 페이지 투표 피드 전환 분석
+
+#### 1. 현재 메인 페이지가 실제로 보여주는 것
+
+`apps/web/app/page.tsx`는 **유저 목록이 아니라 토픽(게시글) 피드**이다.
+
+```tsx
+// apps/web/app/page.tsx
+<CategoryFilter ... />
+<Suspense fallback={<TopicsListSkeleton />}>
+  <TopicsContent selectedTag={selectedTag} selectedSort={selectedSort} />
+</Suspense>
 ```
 
-**VoteStatus** (`packages/shared-types/src/enums.ts`):
-- `AGREE = 'agree'`
-- `DISAGREE = 'disagree'`
-- `NEUTRAL = 'neutral'`
+- 상단 sticky 영역: `CategoryFilter` (가로 스크롤 pill 탭: 전체/정치/사회/경제/기술/연예/스포츠/기타)
+- 본문: `TopicsContent` (RSC) — `tag === "all"`이면 `getAllPosts()` 인기순, 그 외엔 `getHotPostsByTag()` + `getLatestPostsByTag()` 조합
+- 카드: 공용 `TopicCard` (topics/widgets)
+- URL: `/?tag=politics&sort=recent` 형태, `/topics`는 홈으로 리다이렉트
 
-**Vote 엔티티** (`apps/api/src/entities/vote.entity.ts`):
-- `postId`, `userId` (Unique 제약: 1인 1투표)
-- `currentStatus: VoteStatus`
-- `changeCount: number` (default 0)
-- `firstVotedAt: Date` (CreateDateColumn)
-- `lastChangedAt: Date | null`
-- relations: `post (ManyToOne Post)`, `user (ManyToOne User)`, `history (OneToMany VoteHistory)`
+즉 사용자가 "유저 목록이 메인"으로 인식한 것은 **오해**이며, 실제로는 이미 **토픽 피드**다. 유저 목록 전용 메인 페이지는 존재하지 않고, 유저 관련 화면은 `/users/[id]` 공개 프로필 뿐이다.
 
-**VoteHistory 엔티티** (`apps/api/src/entities/vote-history.entity.ts`):
-- `fromStatus: VoteStatus | null` (최초 투표 시 null)
-- `toStatus: VoteStatus`
-- `changedAt: Date`
-- 투표 변경 이력 추적용
+#### 2. 관리자 역할(role) 체계
 
-**CreateVoteDto** (`apps/api/src/vote/dto/create-vote.dto.ts`):
-- `postId: string` + `status: VoteStatus` 만 전달
-- **의견(comment) 필드 없음** — 투표 시 의견을 함께 남기는 기능은 존재하지 않음
+**현재 없음.**
 
-#### 2. API 응답: myVotes
+- `apps/api/src/entities/user.entity.ts`의 User에 `role`, `isAdmin`, `permissions` 등 어떤 관리자 플래그도 없다. 필드 전부: `id, kakaoId, nickname, profileImageUrl, createdAt, updatedAt, deletedAt` + relations.
+- `shared-types`의 enums에도 `UserRole` 없음.
+- 백엔드 가드도 `JwtAuthGuard` 하나뿐, `RolesGuard`/`AdminGuard` 등 없음.
+- 현재 토픽 작성은 `POST /api/posts/create`에 `JwtAuthGuard`만 붙어 있어 **로그인한 누구나** 작성 가능(`apps/api/src/post/post.controller.ts:46-50`).
 
-**엔드포인트**: `GET /api/users/me/votes?page=1&limit=10`
+따라서 "관리자만 메인 투표를 올린다"는 정책은 신규로 구축 필요.
 
-**프론트 쿼리** (`apps/web/shared/queries/user.ts`):
-```typescript
-interface MyVoteResponse extends VoteResponse {
-  post: PostResponse;  // post + post.creator 관계 포함
-}
-// 반환: PaginatedResponse<MyVoteResponse>
-```
+#### 3. 기존 Post/Vote 모델 재사용 가능성
 
-**백엔드 서비스** (`apps/api/src/user/user.service.ts` — `findMyVotes`):
-- `voteRepository.findAndCount({ where: { userId }, order: { firstVotedAt: 'DESC' }, relations: ['post', 'post.creator'] })`
-- 정렬: `firstVotedAt DESC` (최초 투표일 기준 내림차순)
-- **현재 필터/정렬 파라미터 미지원** (page, limit만)
+Post 엔티티는 이미 투표 피드에 필요한 필드를 전부 보유:
+- `title`, `content`, `tag`, `showCreatorOpinion`, `agreeCount/disagreeCount/neutralCount`, `commentCount`, `viewCount`, `popularityScore`, soft delete
+- Vote/VoteHistory도 1인 1투표 + 변경 이력 완비
 
-**프론트 무한스크롤 훅** (`apps/web/app/my/features/use-infinite-my-votes.ts`):
-- `useInfiniteQuery` 사용, pageParam 기반 페이지네이션
-- 페이지당 10개
+**권장**: 별도 "AdminVote" 엔티티를 새로 만들지 말고, **기존 Post 엔티티에 관리자/피쳐드 구분 필드를 추가**하는 것이 최소 변경으로 충분하다. 이유:
+- 투표/댓글/검색/마이페이지 전부 이미 Post 기반으로 붙어 있어 재사용성 극대화
+- TopicCard, VoteButtons, CommentList 등 UI 컴포넌트 그대로 사용 가능
+- 필터로 "관리자 올린 것만" 구분 가능
 
-#### 3. 투표 기능 흐름 (투표 시 의견 남기기 여부)
+대안 (분리형)은 오버엔지니어링 위험.
 
-**투표 버튼** (`apps/web/app/topics/[id]/widgets/voteButtons.tsx`):
-- 찬성/반대/중립 3개 버튼, 선택 시 `onVote(status)` 호출
-- `onShowCommentForm` 콜백 prop 존재하나 **현재 사용되지 않음** (topicDetailContent.tsx에서 전달하지 않음)
-- 투표와 댓글은 완전히 **분리된 기능** — 투표 후 별도로 댓글 작성 가능
+#### 4. "관리자 투표 피드" 전환 시 필요한 변경점
 
-**댓글과 투표의 관계**:
-- 댓글 자체에는 투표 상태 필드가 없음
-- 댓글 작성자의 투표 이력은 `user.voteHistory: VoteHistoryResponse[]`로 간접 참조
-- 댓글 컴포넌트에서 `latestVote = comment.user.voteHistory.at(-1)?.toStatus`로 작성자의 최신 투표 상태를 좌측 컬러바에 표시
+**DB / 엔티티**
+- `User`에 `role` 컬럼 추가 (`enum UserRole { USER, ADMIN }`, default USER)
+  - 또는 최소안: `isAdmin: boolean` 컬럼
+- (선택) `Post`에 `isOfficial: boolean` 또는 `isFeatured: boolean` 컬럼 추가 — 메인 피드에서 노출할 "공식 투표"만 필터링하기 위함
+  - 이유: 관리자가 일반 토픽과 구분되는 "대표 투표"만 메인에 올리고 싶을 수 있음. role만으로 필터할 수도 있으나, 관리자가 일반 토픽도 올릴 가능성이 있으니 플래그가 안전.
+- `shared-types/src/enums.ts`에 `UserRole` 추가, `post.ts`에 `isOfficial` 반영
 
-#### 4. 현재 내 투표 탭 구현 분석
+**백엔드 (`apps/api`)**
+- `common/decorators/roles.decorator.ts` + `common/guards/roles.guard.ts` 신설 (NestJS 표준 패턴)
+- `@Roles(UserRole.ADMIN)` + `@UseGuards(JwtAuthGuard, RolesGuard)` 조합
+- `POST /api/posts/create` 현행 유지(일반 사용자용)하거나, 별도 `POST /api/posts/official` 엔드포인트 신설 (관리자 전용, `isOfficial=true`로 저장)
+- 조회: `GET /api/posts/official?page=...` 신설 또는 기존 `PostQueryDto`에 `isOfficial` 쿼리 추가
+- 최초 관리자 지정: 마이그레이션 스크립트 또는 수동 SQL로 특정 kakaoId/nickname의 role을 ADMIN으로 세팅
 
-**MyVotesTab** (`apps/web/app/my/widgets/myVotesTab.tsx`):
-- `useInfiniteMyVotes()` → `allVotes.map(vote => <TopicCard post={vote.post} myVote={vote.currentStatus} />)`
-- TopicCard를 그대로 재사용 — **투표 관련 추가 정보(투표 시각, 변경 횟수 등) 미표시**
-- 카드 레이아웃: `flex flex-col gap-3 px-3 pb-3`
-- 빈 상태: 센터 텍스트 "투표한 내역이 없습니다."
+**프론트엔드 (`apps/web`)**
+- `app/page.tsx`의 데이터 소스를 `topicDomains.getAllPosts()` → 신규 `getOfficialPosts()`로 교체
+- `topicDomains`에 `getOfficialPosts()` 추가 (또는 기존 함수에 `isOfficial` 옵션)
+- 카테고리 필터는 유지하되, 쿼리 조건에 `isOfficial=true` 상수 고정
+- 관리자 전용 작성 화면: `/admin/topics/create` 또는 기존 `/topics/create`에서 role 체크 후 `isOfficial` 토글 노출
+- `auth-context`에 `user.role` 포함되도록 타입/응답 확장
+- 탭바의 FAB(글쓰기)는 일반 유저용 유지, 관리자에게만 별도 진입점 노출(또는 동일 화면에서 체크박스)
 
-**TopicCard에서 myVote 표시** (`apps/web/app/topics/widgets/topicCard.tsx`):
-- 카드 footer 맨 오른쪽에 `내 선택: {찬성|반대|중립}` 텍스트 (11px, font-semibold)
-- `ml-auto`로 우측 정렬
-- opinion-agree/disagree/neutral 색상 적용
-- **매우 작고 눈에 띄지 않음** — 투표 목록 전용 카드에서는 더 강조 필요
+**라우팅 전략 (두 가지 선택지)**
 
-#### 5. 현재 필터 UI 패턴
+A. 홈만 "관리자 투표 피드"로 바꾸고, 일반 유저 토픽은 탐색/검색으로 밀어 넣기
+  - `/` = 관리자 공식 투표 피드
+  - `/search` 또는 `/community` = 일반 유저 토픽
+  - 변경 범위 큼, 사이트 성격 자체가 바뀜
 
-**CategoryFilter** (`apps/web/app/topics/widgets/categoryFilter.tsx`):
-- 가로 스크롤 pill 버튼 (`overflow-x-auto`)
-- 활성: `bg-primary text-primary-foreground`
-- 비활성: `bg-muted text-muted-foreground hover:text-foreground`
-- `rounded-full text-xs font-semibold`
-- Link 기반 (searchParams 라우팅)
+B. 홈 상단에 "공식 투표" 섹션, 하단에 "커뮤니티 토픽" 섹션을 병행
+  - 변경 범위 작음, 기존 UX 유지
+  - `app/feed/widgets/`의 섹션 컴포넌트 패턴과 궁합 좋음
 
-**댓글 정렬 토글** (`topicDetailContent.tsx`):
-- pill 형태 `bg-muted` 컨테이너 안에 인기/최신 버튼
-- 활성: `bg-card shadow-sm text-foreground`
-- 비활성: `text-muted-foreground`
-- `rounded-full text-xs font-medium`
-- 클라이언트 state 기반
+사용자의 의도("메인을 관리자 투표 피드로 바꾸고 싶다")를 정확히 확인 후 A/B 결정 필요.
 
-**마이페이지 탭** (`apps/web/app/my/page.tsx`):
-- 2탭 (내 투표 목록 / 내 토픽 목록)
-- 활성: `border-b-2 border-opinion-agree text-opinion-agree`
-- 비활성: `border-transparent text-muted-foreground`
-- `text-sm font-bold`
-- 클라이언트 state 기반 (`useState<TabType>`)
+#### 5. 요약
 
 #### 6. 카드/리스트 아이템 패턴
 
@@ -733,3 +612,7 @@ interface MyVoteResponse extends VoteResponse {
 7. **next.config.mjs**: `images.remotePatterns`에 Supabase 도메인 추가 (`next/image` 도입 시).
 8. **소유권 검증**: `PostService.create` / `CommentService.create` 트랜잭션 안에 key path userId 매칭 검증.
 9. **운영**: 고아 파일 정리 cron (선택, 1차 PR 범위 밖으로 분리 권장).
+- 현재 메인은 토픽 피드(사용자가 올린 Post 목록)이며, 유저 목록이 아니다.
+- User 엔티티에 role 필드 없음 → 관리자 체계는 0부터 구축 필요.
+- Post/Vote 엔티티는 그대로 재사용 가능. 신규 "관리자 투표" 엔티티 분리는 불필요, `User.role` + `Post.isOfficial` 플래그 추가가 최소/안전한 방향.
+- 가드는 `RolesGuard`를 신설해 작성/수정 API에 role 체크를 덧붙이는 것이 NestJS 컨벤션.

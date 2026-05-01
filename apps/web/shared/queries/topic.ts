@@ -74,6 +74,15 @@ export const topicQueries = {
   }),
 
   /**
+   * 공식(관리자) 투표 피드 쿼리 옵션
+   * @param page - 페이지 번호
+   */
+  official: (page: number) => ({
+    queryKey: queryKeys.topic.official(page),
+    queryFn: async () => topicDomains.getOfficialPosts(page),
+  }),
+
+  /**
    * 토픽 상세 조회 쿼리 옵션
    * @param postId - 게시물 ID
    */

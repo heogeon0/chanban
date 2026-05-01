@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Seeder } from 'typeorm-extension';
-import { PostTag, VoteStatus } from '@chanban/shared-types';
+import { PostTag, UserRole, VoteStatus } from '@chanban/shared-types';
 import { User } from '../../entities/user.entity';
 import { Post } from '../../entities/post.entity';
 import { Vote } from '../../entities/vote.entity';
@@ -62,6 +62,24 @@ export class MainSeeder implements Seeder {
     }
 
     console.log(`✅ 총 ${users.length}명의 사용자 사용`);
+
+    // 1-2. 관리자(공식 투표 작성자) 계정 보장
+    let adminUser = await userRepository.findOne({
+      where: { kakaoId: 'admin_official' },
+    });
+    if (!adminUser) {
+      adminUser = await userRepository.save({
+        kakaoId: 'admin_official',
+        nickname: '찬반 공식',
+        profileImageUrl: 'https://via.placeholder.com/150',
+        role: UserRole.ADMIN,
+      });
+      console.log('✅ 관리자 계정(찬반 공식) 생성');
+    } else if (adminUser.role !== UserRole.ADMIN) {
+      adminUser.role = UserRole.ADMIN;
+      await userRepository.save(adminUser);
+      console.log('✅ 관리자 계정 role 동기화');
+    }
 
     // 2. 게시글 생성
     const posts = await postRepository.save([
@@ -275,6 +293,37 @@ export class MainSeeder implements Seeder {
         viewCount: 12000,
         popularityScore: 68,
       },
+      // === 공식 투표 (메인 피드 노출용) ===
+      {
+        creatorId: adminUser.id,
+        isOfficial: true,
+        title: '[공식] 주 4.5일 근무제 단계 도입, 지지하시나요?',
+        content:
+          '정부가 주 4.5일 근무제의 단계적 도입을 검토하겠다고 발표했습니다.\n\n생산성 향상·워라밸 개선 vs 인건비 부담·업종 불균형 — 국민 여러분의 의견을 수렴합니다.\n\n찬성/반대 한 표로 의사를 표현해 주세요.',
+        tag: PostTag.ECONOMY,
+        showCreatorOpinion: false,
+        creatorOpinion: null,
+        agreeCount: 12840,
+        disagreeCount: 7621,
+        neutralCount: 0,
+        viewCount: 184320,
+        popularityScore: 99,
+      },
+      {
+        creatorId: adminUser.id,
+        isOfficial: true,
+        title: '[공식] AI 생성 콘텐츠 표시 의무화, 찬성하시나요?',
+        content:
+          'SNS·포털에 올라오는 AI 생성 이미지/영상에 "AI 제작" 라벨을 강제 부착하도록 하는 법안이 논의 중입니다.\n\n허위정보 방지 vs 창작 자유 위축 — 여러분의 선택은?',
+        tag: PostTag.TECHNOLOGY,
+        showCreatorOpinion: false,
+        creatorOpinion: null,
+        agreeCount: 18452,
+        disagreeCount: 4320,
+        neutralCount: 0,
+        viewCount: 231450,
+        popularityScore: 100,
+      },
     ]);
 
     console.log(`✅ ${posts.length}개의 게시글 생성 완료`);
@@ -338,6 +387,78 @@ export class MainSeeder implements Seeder {
         content: '생산성이 높아진다면 충분히 가능하다고 생각해요!',
         likeCount: 0,
       },
+      // === 공식 투표 1 (posts[15]): 주 4.5일 근무제 ===
+      {
+        postId: posts[15].id,
+        userId: users[0].id,
+        parentId: null,
+        content: '직원 복지 향상, 이직률 감소는 결국 기업에도 이득입니다. 찬성!',
+        likeCount: 842,
+      },
+      {
+        postId: posts[15].id,
+        userId: users[2].id,
+        parentId: null,
+        content: '서비스업·제조업 현장 인력 구조상 도입이 쉽지 않아 보입니다.',
+        likeCount: 617,
+      },
+      {
+        postId: posts[15].id,
+        userId: users[3].id,
+        parentId: null,
+        content: '생산성 대비 근무 시간이 너무 길다는 통계가 계속 나오잖아요. 축소 필요.',
+        likeCount: 531,
+      },
+      {
+        postId: posts[15].id,
+        userId: users[1].id,
+        parentId: null,
+        content: '단계적 도입이라는 게 핵심. 일괄 강제가 아니면 합의할 만 합니다.',
+        likeCount: 408,
+      },
+      {
+        postId: posts[15].id,
+        userId: users[4].id,
+        parentId: null,
+        content: '중소기업은 인건비 부담 때문에 오히려 고용 축소로 이어질 겁니다.',
+        likeCount: 352,
+      },
+      // === 공식 투표 2 (posts[16]): AI 콘텐츠 라벨 의무화 ===
+      {
+        postId: posts[16].id,
+        userId: users[2].id,
+        parentId: null,
+        content: '딥페이크 피해가 이미 심각한데 표시는 당연히 필요합니다.',
+        likeCount: 1204,
+      },
+      {
+        postId: posts[16].id,
+        userId: users[0].id,
+        parentId: null,
+        content: '창작물 전체에 적용하면 예술 영역까지 위축시킬 위험이 큽니다.',
+        likeCount: 876,
+      },
+      {
+        postId: posts[16].id,
+        userId: users[3].id,
+        parentId: null,
+        content: '허위정보 유포 목적에 한정해서 처벌 강화가 맞는 방향.',
+        likeCount: 712,
+      },
+      {
+        postId: posts[16].id,
+        userId: users[1].id,
+        parentId: null,
+        content: '기술적으로 100% 탐지는 불가능해서 실효성 의문입니다.',
+        likeCount: 589,
+      },
+      {
+        postId: posts[16].id,
+        userId: users[4].id,
+        parentId: null,
+        content: '플랫폼 자율 표시부터 시작해서 점진적 확대가 현실적.',
+        likeCount: 421,
+      },
     ]);
 
     console.log(`✅ ${comments.length}개의 댓글 생성 완료`);
@@ -358,6 +479,9 @@ export class MainSeeder implements Seeder {
     await postRepository.update(posts[12].id, { commentCount: 234 });
     await postRepository.update(posts[13].id, { commentCount: 890 });
     await postRepository.update(posts[14].id, { commentCount: 123 });
+    // 공식 투표
+    await postRepository.update(posts[15].id, { commentCount: 3420 });
+    await postRepository.update(posts[16].id, { commentCount: 5102 });
 
     console.log('✅ 모든 초기 데이터 생성 완료!');
   }

@@ -104,6 +104,33 @@ export class PostService {
     });
   }
 
+  async findOfficialPosts(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<ResponseWithMeta<Post[], PaginationMeta>> {
+    const { page = 1, limit = 20, sort = PostSortBy.RECENT } = paginationQuery;
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await this.postRepository.findAndCount({
+      where: { isOfficial: true, deletedAt: IsNull() },
+      order:
+        sort === PostSortBy.POPULAR
+          ? { popularityScore: 'DESC' }
+          : { createdAt: 'DESC' },
+      skip,
+      take: limit,
+      relations: ['creator'],
+    });
+
+    const totalPages = Math.ceil(total / limit);
+
+    return new ResponseWithMeta(items, {
+      total,
+      page,
+      limit,
+      totalPages,
+    });
+  }
+
   async searchPosts(
     searchQueryDto: SearchQueryDto,
   ): Promise<ResponseWithMeta<Post[], PaginationMeta>> {
@@ -150,8 +177,16 @@ export class PostService {
     return new ResponseWithMeta(items, { total, page, limit, totalPages });
   }
 
-  async create(createPostDto: CreatePostDto, user: User): Promise<Post> {
-    const { creatorOpinion, showCreatorOpinion, ...postData } = createPostDto;
+  async create(
+    createPostDto: CreatePostDto,
+    user: User,
+    options: { isOfficial?: boolean } = {},
+  ): Promise<Post> {
+    // 클라이언트가 DTO에 보낸 isOfficial은 무시하고, 호출측(컨트롤러)이
+    // options.isOfficial로 명시적으로 지정해야만 공식 투표로 저장됨
+    const { creatorOpinion, showCreatorOpinion, isOfficial: _ignored, ...postData } =
+      createPostDto;
+    const isOfficial = options.isOfficial === true;
 
     // 비즈니스 로직 검증: 작성자 의견 공개 시 의견 필수
     if (showCreatorOpinion && !creatorOpinion) {
@@ -178,6 +213,7 @@ export class PostService {
         ...postData,
         images: postData.images ?? [],
         showCreatorOpinion: showCreatorOpinion ?? false,
+        isOfficial,
         creatorId: user.id,
       });
 

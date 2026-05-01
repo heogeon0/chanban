@@ -1,5 +1,5 @@
 import { ErrorCode, VoteStatus } from '@chanban/shared-types';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Post } from '../entities/post.entity';
@@ -21,6 +21,11 @@ export class VoteService {
 
   async upsertVote(createVoteDto: CreateVoteDto, userId: string): Promise<Vote> {
     const { postId, status } = createVoteDto;
+
+    // 중립 투표는 더 이상 허용하지 않음 (DTO에서 이미 차단하나 서비스 레벨 이중 검증)
+    if (status === VoteStatus.NEUTRAL) {
+      throw new BadRequestException({ code: ErrorCode.BAD_REQUEST });
+    }
 
     // 포스트 존재 확인
     const post = await this.postRepository.findOne({

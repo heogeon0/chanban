@@ -1,16 +1,16 @@
 "use client";
 
 import { useAuth } from "@/shared/contexts/auth-context";
-import { Bell, Home, Plus, Search, User } from "lucide-react";
+import { Bell, Home, Search, User, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 const TABS = [
   {
-    label: "홈",
-    href: "/",
-    icon: Home,
-    isActive: (pathname: string) => pathname === "/",
+    label: "커뮤니티",
+    href: "/topics",
+    icon: Users,
+    isActive: (pathname: string) => pathname.startsWith("/topics"),
     protected: false,
     isFab: false,
   },
@@ -23,11 +23,11 @@ const TABS = [
     isFab: false,
   },
   {
-    label: "글쓰기",
-    href: "/topics/create",
-    icon: Plus,
-    isActive: (pathname: string) => pathname === "/topics/create",
-    protected: true,
+    label: "홈",
+    href: "/",
+    icon: Home,
+    isActive: (pathname: string) => pathname === "/",
+    protected: false,
     isFab: true,
   },
   {
@@ -83,7 +83,11 @@ export function BottomTabBar() {
                 onClick={(e) => handleClick(e, href, isProtected)}
                 className="flex-1 flex flex-col items-center -mt-4"
               >
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+                <div
+                  className={`w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30 transition-transform ${
+                    active ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-background" : ""
+                  }`}
+                >
                   <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
                 </div>
               </Link>

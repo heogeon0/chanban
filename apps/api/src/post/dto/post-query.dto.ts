@@ -1,5 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, Min, Max } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsInt, IsOptional, Min, Max } from 'class-validator';
 import { PostSortBy, SortOrder } from '@chanban/shared-types';
 
 export class PostQueryDto {
@@ -23,4 +23,9 @@ export class PostQueryDto {
   @IsOptional()
   @IsEnum(SortOrder)
   order?: SortOrder = SortOrder.DESC;
+
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  isOfficial?: boolean;
 }

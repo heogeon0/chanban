@@ -1,32 +1,15 @@
-import { PostTag } from "@chanban/shared-types";
 import { Suspense } from "react";
-import { topicDomains } from "./topics/domains";
-import { CategoryFilter } from "./topics/widgets/categoryFilter";
-import { TopicsContent } from "./topics/widgets/topicsContent";
-import { TopicsListSkeleton } from "./topics/widgets/topicsListSkeleton";
+import { OfficialFeedContent } from "./widgets/officialFeedContent";
+import { OfficialFeedListSkeleton } from "./widgets/officialFeedSkeleton";
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tag?: PostTag | "all"; sort?: string }>;
-}) {
-  const params = await searchParams;
-  const { tag: selectedTag, sortType: selectedSort } =
-    topicDomains.parseSortSearchParams(params);
+// 공식 피드는 항상 최신을 보여줘야 하고, RSC가 빌드 시점에 백엔드 API를
+// 호출하려다 CI 환경에서 ECONNREFUSED로 실패하는 문제가 있어 SSG를 차단.
+export const dynamic = "force-dynamic";
 
+export default function HomePage() {
   return (
-    <>
-      {/* 카테고리 필터 */}
-      <div className="sticky top-[57px] z-40 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="px-5 py-2.5">
-          <CategoryFilter selectedTag={selectedTag} selectedSort={selectedSort} />
-        </div>
-      </div>
-
-      {/* 토픽 리스트 */}
-      <Suspense fallback={<TopicsListSkeleton />}>
-        <TopicsContent selectedTag={selectedTag} selectedSort={selectedSort} />
-      </Suspense>
-    </>
+    <Suspense fallback={<OfficialFeedListSkeleton count={3} />}>
+      <OfficialFeedContent />
+    </Suspense>
   );
 }

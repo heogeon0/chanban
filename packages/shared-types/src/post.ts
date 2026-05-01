@@ -1,9 +1,10 @@
-import { PostTag, VoteStatus } from './enums';
+import { PostTag, UserRole, VoteStatus } from './enums';
 
 export interface UserResponse {
   id: string;
   nickname: string;
   profileImageUrl: string | null;
+  role?: UserRole;
 }
 
 export interface PostResponse {
@@ -14,6 +15,7 @@ export interface PostResponse {
   content: string;
   images: string[];
   tag: PostTag;
+  isOfficial: boolean;
   showCreatorOpinion: boolean;
   creatorVote?: VoteStatus | null;
   agreeCount: number;

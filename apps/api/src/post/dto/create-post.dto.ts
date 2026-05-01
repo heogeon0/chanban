@@ -1,10 +1,11 @@
 import {
+  ArrayMaxSize,
   IsArray,
   IsBoolean,
   IsEnum,
+  IsIn,
   IsOptional,
   IsString,
-  ArrayMaxSize,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -28,8 +29,12 @@ export class CreatePostDto {
   showCreatorOpinion?: boolean;
 
   @IsOptional()
-  @IsEnum(VoteStatus)
+  @IsIn([VoteStatus.AGREE, VoteStatus.DISAGREE])
   creatorOpinion?: VoteStatus;
+
+  @IsOptional()
+  @IsBoolean()
+  isOfficial?: boolean;
 
   @IsOptional()
   @IsArray()

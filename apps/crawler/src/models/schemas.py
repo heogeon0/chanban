@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -30,6 +31,7 @@ class Persona(BaseModel):
     jwt_token: str
     description: str
     system_prompt: str
+    tags: list[str] = Field(default_factory=list)
 
 
 class Article(BaseModel):
@@ -49,6 +51,18 @@ class Comment(BaseModel):
     disagree_count: int = 0
 
 
+class CommunityPost(BaseModel):
+    """커뮤니티에서 크롤링한 게시글."""
+
+    url: str
+    title: str
+    content: str
+    comments: list[Comment] = Field(default_factory=list)
+    source: str
+    category: str = "other"
+    reaction_count: int = 0
+
+
 class AnalysisLLMOutput(BaseModel):
     """LLM이 직접 반환하는 분석 결과 스키마 (with_structured_output 전용)."""
 
@@ -66,6 +80,30 @@ class AnalysisResult(BaseModel):
     tag: PostTag
     show_creator_opinion: bool = True
     creator_opinion: VoteStatus
+
+
+class PersonaSelectionLLMOutput(BaseModel):
+    """LLM이 직접 반환하는 페르소나 선발 결과 (with_structured_output 전용).
+
+    Gemini structured output에 친화적이도록 제약을 느슨하게 두고,
+    PersonaSelectionResult로 변환할 때 검증/보정한다.
+    """
+
+    writer: str = Field(..., description="작성자 페르소나 이름")
+    participants: list[str] = Field(..., description="댓글 참여자 페르소나 이름 2~5명")
+    reply_rounds: int = Field(..., description="대댓글 라운드 수 (1~3)")
+    controversy_level: str = Field(..., description="찬반 강도: low | medium | high")
+    reason: str = Field(..., description="선발 이유 한 줄")
+
+
+class PersonaSelectionResult(BaseModel):
+    """LangChain 페르소나 선발 결과 (앱 검증용)."""
+
+    writer: str
+    participants: list[str] = Field(..., min_length=2, max_length=5)
+    reply_rounds: int = Field(..., ge=1, le=3)
+    controversy_level: Literal["low", "medium", "high"]
+    reason: str
 
 
 class CommentResult(BaseModel):

@@ -1,7 +1,7 @@
 
 
 import { httpClient } from "@/lib/httpClient";
-import { PaginatedResponse, PostResponse, PostTag, TAGS } from "@chanban/shared-types";
+import { ApiResponse, PaginatedResponse, PostResponse, PostTag, TAGS } from "@chanban/shared-types";
 
 
 /** 정렬 타입 */
@@ -76,10 +76,39 @@ async function searchPosts(q: string, type: SearchType = 'all', page = 1) {
   );
 }
 
+/**
+ * 공식(관리자) 투표 피드를 조회합니다.
+ * @param page - 페이지 번호
+ * @param limit - 페이지당 개수
+ */
+async function getOfficialPosts(page = 1, limit = 20) {
+  return await httpClient.get<PaginatedResponse<PostResponse>>(
+    `/api/posts/official?page=${page}&limit=${limit}`
+  );
+}
+
+/**
+ * 관리자 전용 공식 투표 생성
+ */
+async function createOfficialPost(dto: {
+  title: string;
+  content: string;
+  tag: PostTag;
+  showCreatorOpinion?: boolean;
+  creatorOpinion?: import("@chanban/shared-types").VoteStatus;
+}) {
+  return await httpClient.post<ApiResponse<PostResponse>, typeof dto>(
+    "/api/posts/official",
+    dto
+  );
+}
+
 export const topicDomains = {
   parseSortSearchParams,
   getAllPosts,
   getLatestPostsByTag,
   getHotPostsByTag,
   searchPosts,
+  getOfficialPosts,
+  createOfficialPost,
 }

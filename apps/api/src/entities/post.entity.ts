@@ -46,6 +46,10 @@ export class Post {
   })
   tag: PostTag;
 
+  @Index()
+  @Column({ type: 'boolean', default: false })
+  isOfficial: boolean;
+
   @Column({ type: 'boolean', default: false })
   showCreatorOpinion: boolean;
 
