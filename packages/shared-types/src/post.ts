@@ -32,3 +32,15 @@ export interface VoteCountResponse {
   disagreeCount: number;
   neutralCount: number;
 }
+
+/**
+ * 메인 피드 RSC + Client Island 구조에서 client가 fresh fetch하는 동적 카운트 묶음.
+ * RSC는 정적 콘텐츠만 캐싱하고, 카드의 모든 카운트는 이 응답으로 갱신한다.
+ */
+export interface PostStatsResponse {
+  agreeCount: number;
+  disagreeCount: number;
+  neutralCount: number;
+  commentCount: number;
+  viewCount: number;
+}
