@@ -19,9 +19,11 @@ import { Post } from '../entities/post.entity';
 import { User } from '../entities/user.entity';
 import { Vote } from '../entities/vote.entity';
 import { VoteHistory } from '../entities/vote-history.entity';
+import { SummaryService } from '../summary/summary.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDto } from './dto/pagination-query.dto';
 import { PostQueryDto } from './dto/post-query.dto';
+import { SearchQueryDto, SearchType } from './dto/search-query.dto';
 
 @Injectable()
 export class PostService {
@@ -33,6 +35,7 @@ export class PostService {
     @InjectRepository(VoteHistory)
     private readonly voteHistoryRepository: Repository<VoteHistory>,
     private readonly dataSource: DataSource,
+    private readonly summaryService: SummaryService,
   ) {}
 
   async findRecentPosts(
@@ -100,6 +103,52 @@ export class PostService {
     });
   }
 
+  async searchPosts(
+    searchQueryDto: SearchQueryDto,
+  ): Promise<ResponseWithMeta<Post[], PaginationMeta>> {
+    const {
+      q,
+      type = SearchType.ALL,
+      page = 1,
+      limit = 20,
+      sort = PostSortBy.RECENT,
+      order = SortOrder.DESC,
+    } = searchQueryDto;
+
+    const skip = (page - 1) * limit;
+    const keyword = `%${q}%`;
+
+    const qb = this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.creator', 'creator')
+      .where('post.deletedAt IS NULL');
+
+    if (type === SearchType.ALL) {
+      qb.andWhere(
+        '(post.title ILIKE :keyword OR post.content ILIKE :keyword OR creator.nickname ILIKE :keyword)',
+        { keyword },
+      );
+    } else if (type === SearchType.CONTENT) {
+      qb.andWhere(
+        '(post.title ILIKE :keyword OR post.content ILIKE :keyword)',
+        { keyword },
+      );
+    } else if (type === SearchType.AUTHOR) {
+      qb.andWhere('creator.nickname ILIKE :keyword', { keyword });
+    }
+
+    if (sort === PostSortBy.POPULAR) {
+      qb.orderBy('post.popularityScore', order).addOrderBy('post.createdAt', 'DESC');
+    } else {
+      qb.orderBy('post.createdAt', order);
+    }
+
+    const [items, total] = await qb.skip(skip).take(limit).getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
+
+    return new ResponseWithMeta(items, { total, page, limit, totalPages });
+  }
+
   async create(createPostDto: CreatePostDto, user: User): Promise<Post> {
     const { creatorOpinion, showCreatorOpinion, ...postData } = createPostDto;
 
@@ -111,7 +160,7 @@ export class PostService {
     }
 
     // Transaction으로 Post 생성 + Vote 생성
-    return await this.dataSource.transaction(async (manager) => {
+    const createdPost = await this.dataSource.transaction(async (manager) => {
       // Post 생성
       const post = manager.create(Post, {
         ...postData,
@@ -165,6 +214,11 @@ export class PostService {
 
       return postWithCreator;
     });
+
+    // 게시글 생성 후 본문 요약 비동기 생성 (실패해도 무관)
+    void this.summaryService.generateContentSummary(createdPost);
+
+    return createdPost;
   }
 
   findAll() {

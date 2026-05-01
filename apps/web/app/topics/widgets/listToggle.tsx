@@ -16,7 +16,7 @@ const ListToggle = ({ selectedTag, selectedSort }: Props) => {
   return (
     <div className="flex bg-muted p-1 rounded-lg">
       <Link
-        href={`/topics?tag=${selectedTag}&sort=latest`}
+        href={`/?tag=${selectedTag}&sort=latest`}
         className={cx(LinkButtonClassName.default, {
           [LinkButtonClassName.active]: selectedSort === "latest",
           [LinkButtonClassName.inactive]: selectedSort !== "latest",
@@ -25,7 +25,7 @@ const ListToggle = ({ selectedTag, selectedSort }: Props) => {
         최신
       </Link>
       <Link
-        href={`/topics?tag=${selectedTag}&sort=popular`}
+        href={`/?tag=${selectedTag}&sort=popular`}
         className={cx(LinkButtonClassName.default, {
           [LinkButtonClassName.active]: selectedSort === "popular",
           [LinkButtonClassName.inactive]: selectedSort !== "popular",

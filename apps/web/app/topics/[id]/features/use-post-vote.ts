@@ -108,7 +108,7 @@ export function usePostVote() {
       }
 
       if (isHttpError(error) && error.status === HTTP_STATUS_UNAUTHORIZED) {
-        router.push("/auth/login");
+        router.push(`/auth/login?returnUrl=${window.location.pathname}`);
       }
     },
 
@@ -119,6 +119,9 @@ export function usePostVote() {
     onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.vote.count(variables.postId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.vote.my(variables.postId),
       });
     },
   });

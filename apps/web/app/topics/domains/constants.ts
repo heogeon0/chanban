@@ -54,4 +54,7 @@ export const CATEGORY_FILTERS = [
   { id: PostTag.TECHNOLOGY, name: "기술" },
   { id: PostTag.ECONOMY, name: "경제" },
   { id: PostTag.SOCIETY, name: "사회" },
+  { id: PostTag.ENTERTAINMENT, name: "연예" },
+  { id: PostTag.SPORTS, name: "스포츠" },
+  { id: PostTag.OTHER, name: "기타" },
 ];

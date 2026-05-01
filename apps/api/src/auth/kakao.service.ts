@@ -42,6 +42,7 @@ export class KakaoService {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
           },
+          timeout: 10000,
         },
       );
       return response.data;
@@ -71,6 +72,7 @@ export class KakaoService {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
         },
+        timeout: 10000,
       });
       return response.data;
     } catch (error) {

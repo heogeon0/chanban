@@ -1,20 +1,27 @@
 "use client";
 
-import { CommentReplyResponse } from "@chanban/shared-types";
-import { UserAvatar } from "@/shared/ui/avatar";
+import { CommentReplyResponse, VoteStatus } from "@chanban/shared-types";
 import { Button } from "@/shared/ui/button";
 import { Heart } from "lucide-react";
 import { VoteHistoryBadge, formatRelativeTime } from "./commentUtils";
+import { FollowButton } from "@/shared/components/follow-button";
+import Link from "next/link";
 
 interface ReplyCommentProps {
   reply: CommentReplyResponse;
   onLike?: (commentId: string, isLiked: boolean) => void;
 }
 
+/** 투표 상태에 따른 컬러바 배경 클래스 */
+const getStanceBarClass = (vote: VoteStatus | undefined) => {
+  if (vote === VoteStatus.AGREE) return "bg-opinion-agree";
+  if (vote === VoteStatus.DISAGREE) return "bg-opinion-disagree";
+  return "bg-muted-foreground";
+};
+
 /**
  * 답글 컴포넌트
- * 개별 답글을 표시하는 간단한 컴포넌트입니다.
- * 원댓글과 달리 답글 기능이 없고, 더 간단한 구조를 가집니다.
+ * 좌측 3px 컬러바로 입장을 시각화합니다.
  *
  * @param reply - 답글 데이터
  * @param onLike - 좋아요 버튼 클릭 시 호출될 콜백
@@ -22,10 +29,8 @@ interface ReplyCommentProps {
 export function ReplyComment({ reply, onLike }: ReplyCommentProps) {
   const isDeleted = reply.deletedAt !== null;
   const latestVote = reply.user.voteHistory.at(-1)?.toStatus;
+  const stanceBarClass = getStanceBarClass(latestVote);
 
-  /**
-   * 좋아요 버튼 클릭 핸들러
-   */
   const handleLikeClick = () => {
     onLike?.(reply.id, reply.isLiked);
   };
@@ -33,57 +38,57 @@ export function ReplyComment({ reply, onLike }: ReplyCommentProps) {
   // 삭제된 답글 표시
   if (isDeleted) {
     return (
-      <div className="bg-muted/30 border border-dashed rounded-lg p-4">
-        <p className="text-muted-foreground text-sm">삭제된 답글입니다.</p>
+      <div className="flex gap-0">
+        <div className="w-[3px] rounded-l-lg shrink-0 bg-muted-foreground/30" />
+        <div className="flex-1 px-3 py-2.5 rounded-r-lg border border-l-0 border-border bg-card">
+          <p className="text-muted-foreground text-[12px]">삭제된 답글입니다.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex gap-3">
-      {/* 아바타 */}
-      <UserAvatar user={reply.user} size="sm" />
+    <div className="flex gap-0">
+      {/* 좌측 3px 컬러바 */}
+      <div className={`w-[3px] rounded-l-lg shrink-0 opacity-60 ${stanceBarClass}`} />
 
-      <div className="flex-1">
-        {/* 답글 카드 */}
-        <div className="bg-muted/50 rounded-xl p-4">
-          {/* 헤더: 사용자 정보 및 메타데이터 */}
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="font-bold text-sm">{reply.user.nickname}</span>
-            <span className="text-xs text-muted-foreground">
-              {formatRelativeTime(reply.createdAt)}
-            </span>
-
-            {/* 투표 히스토리 뱃지 */}
-            {latestVote && <VoteHistoryBadge status={latestVote} />}
-
-            {/* 수정된 답글 표시 */}
-            {reply.updatedAt !== reply.createdAt && (
-              <span className="text-muted-foreground text-xs">(수정됨)</span>
-            )}
-          </div>
-
-          {/* 답글 내용 */}
-          <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-            {reply.content}
-          </p>
+      {/* 답글 카드 */}
+      <div className="flex-1 px-3 py-2.5 rounded-r-lg border border-l-0 border-border bg-card">
+        {/* 헤더 */}
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          {/* 닉네임 첫 글자 배지 */}
+          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0 opacity-80 ${stanceBarClass}`}>
+            {reply.user.nickname.charAt(0)}
+          </span>
+          <Link href={`/users/${reply.user.id}`} className="font-semibold text-[12px] hover:underline">
+            {reply.user.nickname}
+          </Link>
+          <span className="text-[10px] text-muted-foreground">
+            {formatRelativeTime(reply.createdAt)}
+          </span>
+          {latestVote && <VoteHistoryBadge status={latestVote} />}
+          {reply.updatedAt !== reply.createdAt && (
+            <span className="text-muted-foreground text-[10px]">(수정됨)</span>
+          )}
+          <FollowButton userId={reply.user.id} />
         </div>
 
-        {/* 액션 버튼 (좋아요만) */}
-        <div className="flex items-center gap-4 mt-2 px-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 gap-1 text-xs font-bold text-muted-foreground hover:text-primary"
-            onClick={handleLikeClick}
-          >
-            <Heart
-              size={18}
-              className={reply.isLiked ? "fill-current text-red-500" : ""}
-            />
-            좋아요{reply.likeCount > 0 && ` ${reply.likeCount}`}
-          </Button>
-        </div>
+        {/* 답글 내용 */}
+        <p className="text-[12px] leading-relaxed whitespace-pre-wrap break-words mb-1.5">
+          {reply.content}
+        </p>
+
+        {/* 좋아요 버튼 */}
+        <button
+          className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+          onClick={handleLikeClick}
+        >
+          <Heart
+            size={12}
+            className={reply.isLiked ? "fill-current text-red-500" : ""}
+          />
+          <span className="text-[11px]">{reply.likeCount > 0 ? reply.likeCount : "좋아요"}</span>
+        </button>
       </div>
     </div>
   );

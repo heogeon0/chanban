@@ -7,6 +7,10 @@ export enum ErrorCode {
   COMMENT_NOT_FOUND = 'COMMENT_NOT_FOUND',
   INVALID_COMMENT_NESTING = 'INVALID_COMMENT_NESTING',
 
+  // User 관련
+  USER_NOT_FOUND = 'USER_NOT_FOUND',
+  NICKNAME_ALREADY_EXISTS = 'NICKNAME_ALREADY_EXISTS',
+
   // Common
   BAD_REQUEST = 'BAD_REQUEST',
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -61,6 +65,16 @@ export const ERROR_METADATA: Record<ErrorCode, ErrorMetadata> = {
   [ErrorCode.INTERNAL_SERVER_ERROR]: {
     message: '서버 오류가 발생했습니다',
     status: 500,
+  },
+
+  // User 관련
+  [ErrorCode.USER_NOT_FOUND]: {
+    message: '사용자를 찾을 수 없습니다',
+    status: 404,
+  },
+  [ErrorCode.NICKNAME_ALREADY_EXISTS]: {
+    message: '이미 사용 중인 닉네임입니다',
+    status: 409,
   },
 };
 

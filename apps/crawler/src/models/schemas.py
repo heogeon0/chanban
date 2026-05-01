@@ -63,6 +63,15 @@ class CommunityPost(BaseModel):
     reaction_count: int = 0
 
 
+class AnalysisLLMOutput(BaseModel):
+    """LLM이 직접 반환하는 분석 결과 스키마 (with_structured_output 전용)."""
+
+    title: str = Field(..., description="찬반 토론 제목 (50자 이내, 커뮤니티 구어체)")
+    content: str = Field(..., description="본문 (300~500자)")
+    tag: PostTag = Field(..., description="카테고리 태그")
+    creator_opinion: VoteStatus = Field(..., description="작성자 의견 (agree/disagree/neutral)")
+
+
 class AnalysisResult(BaseModel):
     """LangChain 분석 결과 — 찬반 토론 주제."""
 
@@ -73,8 +82,22 @@ class AnalysisResult(BaseModel):
     creator_opinion: VoteStatus
 
 
+class PersonaSelectionLLMOutput(BaseModel):
+    """LLM이 직접 반환하는 페르소나 선발 결과 (with_structured_output 전용).
+
+    Gemini structured output에 친화적이도록 제약을 느슨하게 두고,
+    PersonaSelectionResult로 변환할 때 검증/보정한다.
+    """
+
+    writer: str = Field(..., description="작성자 페르소나 이름")
+    participants: list[str] = Field(..., description="댓글 참여자 페르소나 이름 2~5명")
+    reply_rounds: int = Field(..., description="대댓글 라운드 수 (1~3)")
+    controversy_level: str = Field(..., description="찬반 강도: low | medium | high")
+    reason: str = Field(..., description="선발 이유 한 줄")
+
+
 class PersonaSelectionResult(BaseModel):
-    """LangChain 페르소나 선발 결과."""
+    """LangChain 페르소나 선발 결과 (앱 검증용)."""
 
     writer: str
     participants: list[str] = Field(..., min_length=2, max_length=5)

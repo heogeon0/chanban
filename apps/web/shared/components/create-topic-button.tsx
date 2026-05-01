@@ -17,7 +17,7 @@ export function CreateTopicButton() {
   const handleClick = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
       e.preventDefault();
-      router.push("/auth/login");
+      router.push("/auth/login?returnUrl=/topics/create");
     }
   };
 

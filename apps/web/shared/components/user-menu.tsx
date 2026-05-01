@@ -89,6 +89,15 @@ export function UserMenu() {
               </p>
             </div>
 
+            {/* 마이페이지 링크 */}
+            <Link
+              href="/my"
+              onClick={() => setIsOpen(false)}
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              마이페이지
+            </Link>
+
             {/* 로그아웃 버튼 */}
             <button
               onClick={handleLogout}

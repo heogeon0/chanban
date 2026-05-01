@@ -1,9 +1,20 @@
-import { CreateTopicButton } from "@/shared/components/create-topic-button";
+import { BottomTabBar } from "@/shared/components/bottom-tab-bar";
+import { ThemeToggle } from "@/shared/components/theme-toggle";
 import { UserMenu } from "@/shared/components/user-menu";
 import { Providers } from "@/shared/providers";
 import "@/styles/globals.css";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | 찬반",
+    default: "찬반 - 함께 토론하는 찬반 플랫폼",
+  },
+  description:
+    "사회, 정치, 경제, 기술 이슈에 대해 찬반 의견을 나누는 토론 플랫폼",
+};
 
 export default function RootLayout({
   children,
@@ -13,37 +24,32 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased min-h-screen flex flex-col">
+    <html lang="ko" suppressHydrationWarning>
+      <body className="font-sans antialiased min-h-screen flex flex-col bg-background">
         <Providers>
           {/* 헤더 */}
-          <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-            <div className="max-w-6xl mx-auto px-4 desktop:px-8 py-3 flex items-center justify-between">
+          <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+            <div className="max-w-4xl mx-auto px-5 py-3 flex items-center justify-between">
               {/* 로고 */}
-              <Link
-                href="/topics"
-                className="flex items-center gap-2 text-primary font-bold text-xl"
-              >
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
-                  <span className="text-sm font-black">찬</span>
-                </div>
-                <span>찬반</span>
+              <Link href="/" className="flex items-center gap-0.5">
+                <span className="text-[22px] font-extrabold tracking-tight text-foreground">찬반</span>
+                <span className="text-[22px] font-extrabold tracking-tight text-primary">토론</span>
               </Link>
 
-              {/* 네비게이션 & 액션 */}
-              <div className="flex items-center gap-4">
-                <CreateTopicButton />
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
                 <UserMenu />
               </div>
             </div>
-
           </header>
 
           {/* 메인 콘텐츠 */}
-          <main className="flex-1 flex flex-col">{children}</main>
+          <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full pb-24">
+            {children}
+          </main>
 
-          {/* 모달 슬롯 */}
           {modal}
+          <BottomTabBar />
         </Providers>
       </body>
       {process.env.NEXT_PUBLIC_GA_ID && (

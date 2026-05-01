@@ -2,7 +2,6 @@
 
 import logging
 
-from langchain_core.output_parsers import JsonOutputParser
 from langchain_google_genai import ChatGoogleGenerativeAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -14,11 +13,13 @@ from src.analyzer.prompts import (
 )
 from src.config import get_settings
 from src.models.schemas import (
+    AnalysisLLMOutput,
     AnalysisResult,
     Article,
     Comment,
     CommentResult,
     Persona,
+    PersonaSelectionLLMOutput,
     PersonaSelectionResult,
     ReplyResult,
 )
@@ -56,6 +57,14 @@ def _format_persona_list(personas: list[Persona]) -> str:
     return "\n".join(lines)
 
 
+def _normalize_controversy(level: str) -> str:
+    """controversy_level 문자열을 low/medium/high 중 하나로 정규화한다."""
+    normalized = (level or "").strip().lower()
+    if normalized not in {"low", "medium", "high"}:
+        return "medium"
+    return normalized
+
+
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
@@ -76,29 +85,43 @@ async def select_personas(
     Returns:
         PersonaSelectionResult (writer, participants, reply_rounds, controversy_level, reason).
     """
-    chain = persona_selection_prompt | _build_model() | JsonOutputParser()
+    chain = persona_selection_prompt | _build_model().with_structured_output(
+        PersonaSelectionLLMOutput
+    )
 
-    result = await chain.ainvoke({
+    llm_output: PersonaSelectionLLMOutput = await chain.ainvoke({
         "post_title": title,
         "post_summary": content[:500],
         "persona_list": _format_persona_list(available_personas),
     })
 
-    selection = PersonaSelectionResult(**result)
-
-    # 선발된 이름이 실제 페르소나 목록에 있는지 검증
     available_names = {p.name for p in available_personas}
-    if selection.writer not in available_names:
-        logger.warning("AI가 존재하지 않는 writer 선발: %s → 첫 번째 페르소나로 대체", selection.writer)
-        selection = selection.model_copy(update={"writer": available_personas[0].name})
 
-    valid_participants = [p for p in selection.participants if p in available_names]
-    if len(valid_participants) < 2:
-        fallback = [p.name for p in available_personas if p.name != selection.writer][:3]
+    writer = llm_output.writer
+    if writer not in available_names:
+        logger.warning(
+            "AI가 존재하지 않는 writer 선발: %s → 첫 번째 페르소나로 대체", writer
+        )
+        writer = available_personas[0].name
+
+    participants = [p for p in llm_output.participants if p in available_names and p != writer]
+    if len(participants) < 2:
+        fallback = [p.name for p in available_personas if p.name != writer][:3]
         logger.warning("유효한 participants 부족 → fallback: %s", fallback)
-        valid_participants = fallback
+        participants = fallback
+    elif len(participants) > 5:
+        participants = participants[:5]
 
-    selection = selection.model_copy(update={"participants": valid_participants})
+    reply_rounds = max(1, min(3, llm_output.reply_rounds))
+    controversy_level = _normalize_controversy(llm_output.controversy_level)
+
+    selection = PersonaSelectionResult(
+        writer=writer,
+        participants=participants,
+        reply_rounds=reply_rounds,
+        controversy_level=controversy_level,  # type: ignore[arg-type]
+        reason=llm_output.reason,
+    )
 
     logger.info(
         "페르소나 선발 완료 writer=%s participants=%s rounds=%d controversy=%s",
@@ -127,9 +150,9 @@ async def analyze_article(
     Returns:
         AnalysisResult (title, content, tag, creator_opinion).
     """
-    chain = debate_topic_prompt | _build_model() | JsonOutputParser()
+    chain = debate_topic_prompt | _build_model().with_structured_output(AnalysisLLMOutput)
 
-    result = await chain.ainvoke({
+    llm_output: AnalysisLLMOutput = await chain.ainvoke({
         "persona_description": persona.description,
         "persona_prompt": persona.system_prompt,
         "article_title": article.title,
@@ -137,7 +160,12 @@ async def analyze_article(
         "comments": _format_comments(comments),
     })
 
-    analysis = AnalysisResult(**result)
+    analysis = AnalysisResult(
+        title=llm_output.title,
+        content=llm_output.content,
+        tag=llm_output.tag,
+        creator_opinion=llm_output.creator_opinion,
+    )
     logger.info("게시글 분석 완료 persona=%s title=%s", persona.name, analysis.title)
     return analysis
 
@@ -164,7 +192,7 @@ async def generate_comment(
     Returns:
         CommentResult (content, vote_status).
     """
-    chain = comment_prompt | _build_model() | JsonOutputParser()
+    chain = comment_prompt | _build_model().with_structured_output(CommentResult)
 
     formatted = (
         "\n".join(f"- {c}" for c in existing_comments)
@@ -172,7 +200,7 @@ async def generate_comment(
         else "(아직 댓글 없음)"
     )
 
-    result = await chain.ainvoke({
+    result: CommentResult = await chain.ainvoke({
         "persona_description": persona.description,
         "persona_prompt": persona.system_prompt,
         "post_title": title,
@@ -180,7 +208,7 @@ async def generate_comment(
         "existing_comments": formatted,
     })
 
-    return CommentResult(**result)
+    return result
 
 
 @retry(
@@ -205,9 +233,9 @@ async def generate_reply(
     Returns:
         ReplyResult (content).
     """
-    chain = reply_prompt | _build_model() | JsonOutputParser()
+    chain = reply_prompt | _build_model().with_structured_output(ReplyResult)
 
-    result = await chain.ainvoke({
+    result: ReplyResult = await chain.ainvoke({
         "persona_description": persona.description,
         "persona_prompt": persona.system_prompt,
         "post_title": title,
@@ -215,4 +243,4 @@ async def generate_reply(
         "parent_comment": parent_comment,
     })
 
-    return ReplyResult(**result)
+    return result
