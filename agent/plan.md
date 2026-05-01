@@ -270,3 +270,35 @@
 - [x] c: 텍스트 사이즈 검토 완료. 11(배지/카운트)/12(메타)/13(헤더·댓글닉)/14(본문·댓글본문)/15(투표 버튼)/lg(제목) 6단계가 명확한 위계를 형성하고 있어 추가 통일 불필요로 결정
 - [x] d: padding 검토 완료. 헤더 `pt-4 pb-2` → 제목 `pb-3` → 본문(border-top) `pt-3 pb-3` → 하단(border-top) `pt-3 pb-4`는 진입 강조 / 콘텐츠 / 액션 영역의 의도된 차이라 그대로 유지
 - [x] e: 그라데이션이 현재 공식 배지 한 곳에서만 사용되어 토큰 추출은 보류 (향후 재사용처 생기면 그때 추출)
+
+## v30. 메인 피드 RSC + Client Island + On-demand Revalidation
+
+> 정적 컨텐츠(제목/본문/카테고리/작성자)는 RSC가 캐시, 모든 카운트(찬반/뷰/댓글)와 인터랙션은 client에서 fresh fetch.
+> 시간 기반 ISR 없이 관리자 작성/수정/삭제 시점에만 `revalidateTag('official-feed')`로 즉시 반영.
+
+### 백엔드
+- [ ] a: `apps/api/src/post/post.controller.ts` — `GET /api/posts/:id/stats` 라우트 추가. public, 인증 불필요. 라우팅 순서 `recent → search → official → :id/stats → tags/:tag → :id`
+- [ ] b: `apps/api/src/post/post.service.ts::getPostStats(postId)` — Post 엔티티에서 `agreeCount, disagreeCount, neutralCount, commentCount, viewCount` 5개 필드만 SELECT 후 반환
+- [ ] c: `packages/shared-types/src/post.ts` — `PostStatsResponse` 인터페이스 신규 export
+
+### 프론트 데이터 레이어
+- [ ] d: `apps/web/app/topics/domains/index.ts` — `getPostStats(postId)` 함수 추가
+- [ ] e: `apps/web/shared/queries/keys.ts` — `post.stats(postId)` 키 추가
+- [ ] f: `apps/web/shared/queries/post.ts` (신규 또는 기존 파일) — `postQueries.stats(postId)` queryFn 정의
+- [ ] g: `apps/web/app/topics/[id]/features/use-post-vote.ts` — onSettled invalidate 대상에 `post.stats` 키 추가 (찬반 카운트 갱신 트리거)
+- [ ] h: `apps/web/app/topics/features/use-top-comment-like.ts` — 좋아요 mutation 후 commentCount는 변하지 않음 (좋아요 ≠ 댓글 추가). stats invalidate 불필요 확인
+
+### 프론트 컴포넌트 분리
+- [ ] i: `apps/web/app/widgets/officialFeedCard.tsx` → **RSC로 전환**. `'use client'` 제거. 헤더(공식 배지/작성자/카테고리), 제목, 본문, 페이드만 렌더. 동적 영역은 자식에 위임
+- [ ] j: `apps/web/app/widgets/officialFeedCardInteractions.tsx` (신규, `'use client'`) — 찬반바, 찬/반 버튼, 메타(viewCount/commentCount), 인기 댓글 TOP 5, 좋아요 모두 이쪽으로 이동. props로 `post: PostResponse` 받고, 내부에서 `postQueries.stats`, `voteQueries.my`, `commentQueries.top` 구독
+- [ ] k: 외곽 `<Link href={/topics/${post.id}}>`는 RSC 카드 최상위에서 처리 (Next.js Link는 RSC에서도 OK). 투표/좋아요 영역의 이벤트 차단 wrapper 그대로 유지
+- [ ] l: `apps/web/app/widgets/officialFeedList.tsx` — 무한스크롤 client는 그대로 유지하되, 첫 페이지(initialData) 카드는 RSC로 그리고 추가 페이지 카드는 client에서 그리도록 분리 (둘 다 같은 `OfficialFeedCard` 사용 가능 — RSC는 SSR도 CSR도 작동)
+
+### 캐싱 / Revalidation
+- [ ] m: `apps/web/app/topics/domains/index.ts::getOfficialPosts` — Next.js fetch 옵션 `next: { tags: ['official-feed'] }` 적용. httpClient가 native fetch가 아니라면 해당 함수만 native fetch로 직접 작성하거나 `unstable_cache` wrap
+- [ ] n: `apps/web/app/page.tsx` — `export const dynamic = "force-dynamic"` 제거. tag 기반 캐싱만으로 충분
+- [ ] o: `apps/web/app/api/revalidate/route.ts` (신규) — POST 요청 받아 `revalidateTag('official-feed')` 호출. 관리자 인증(혹은 secret) 검증
+- [ ] p: `apps/web/app/admin/features/use-create-official-post.ts` (또는 동등 훅) — 작성 성공 onSettled에서 `/api/revalidate` 호출 추가. 수정/삭제 mutation에도 동일 적용 (있는 경우)
+
+### 검증
+- [ ] q: 빌드 + 타입체크 + 직접 동작 확인 — 비로그인 메인 진입 시 카드 SSR HTML 노출, 클라이언트에서 인터랙션 영역 hydrate, 카운트 fresh fetch 확인. 관리자 작성 후 즉시 새 글이 메인 피드에 노출되는지 확인
