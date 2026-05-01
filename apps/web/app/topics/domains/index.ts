@@ -82,8 +82,12 @@ async function searchPosts(q: string, type: SearchType = 'all', page = 1) {
  * @param limit - 페이지당 개수
  */
 async function getOfficialPosts(page = 1, limit = 20) {
+  // RSC가 호출하는 첫 페이지는 'official-feed' 태그로 캐싱.
+  // 관리자 작성/수정/삭제 시점에 revalidateTag('official-feed')로 즉시 무효화한다.
+  // 무한스크롤 추가 페이지는 client에서 호출되며 next 옵션이 무시되어 그대로 동작.
   return await httpClient.get<PaginatedResponse<PostResponse>>(
-    `/api/posts/official?page=${page}&limit=${limit}`
+    `/api/posts/official?page=${page}&limit=${limit}`,
+    { next: { tags: ["official-feed"] } } as RequestInit,
   );
 }
 
