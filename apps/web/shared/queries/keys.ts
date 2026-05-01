@@ -26,6 +26,9 @@ export const queryKeys = {
     count: (postId: string) => ["voteCount", postId] as const,
     my: (postId: string) => ["myVote", postId] as const,
   },
+  post: {
+    stats: (postId: string) => ["post", "stats", postId] as const,
+  },
   user: {
     myPosts: (page: number) => ["user", "posts", page] as const,
     myVotes: (page: number) => ["user", "votes", page] as const,

@@ -103,6 +103,15 @@ async function createOfficialPost(dto: {
   );
 }
 
+/**
+ * 피드 카드 client island용 카운트 묶음 조회.
+ */
+async function getPostStats(postId: string) {
+  return await httpClient.get<
+    ApiResponse<import("@chanban/shared-types").PostStatsResponse>
+  >(`/api/posts/${postId}/stats`);
+}
+
 export const topicDomains = {
   parseSortSearchParams,
   getAllPosts,
@@ -111,4 +120,5 @@ export const topicDomains = {
   searchPosts,
   getOfficialPosts,
   createOfficialPost,
+  getPostStats,
 }

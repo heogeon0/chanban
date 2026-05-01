@@ -123,6 +123,10 @@ export function usePostVote() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.vote.my(variables.postId),
       });
+      // 피드 카드 island가 구독하는 stats(찬반/뷰/댓글 묶음)도 함께 갱신
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.post.stats(variables.postId),
+      });
     },
   });
 }
