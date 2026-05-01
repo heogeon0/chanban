@@ -1,4 +1,4 @@
-.PHONY: run crawl discuss discuss-post setup test lint
+.PHONY: run crawl discuss discuss-post setup setup-bots test lint
 
 # 전체 파이프라인 (크롤링 + 글작성 + 토론)
 run:
@@ -22,6 +22,11 @@ setup:
 	python3 -m venv .venv
 	.venv/bin/pip install --upgrade pip
 	.venv/bin/pip install -e ".[dev]"
+
+# 봇 계정 15개 DB upsert + JWT 발급 + .env 자동 기록 (최초 1회)
+# 사용법: make setup-bots JWT_SECRET=xxx
+setup-bots:
+	cd ../api && JWT_SECRET=$(JWT_SECRET) node scripts/issue-bot-tokens.mjs
 
 # 테스트
 test:

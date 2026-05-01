@@ -1,9 +1,13 @@
 """chanban API 클라이언트."""
 
+import logging
+
 import httpx
 
 from src.config import get_settings
 from src.models.schemas import CreatePostPayload, Persona, VoteStatus
+
+logger = logging.getLogger(__name__)
 
 
 async def get_post(post_id: str) -> dict:
@@ -47,6 +51,11 @@ async def create_post(payload: CreatePostPayload, persona: Persona) -> dict:
 
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.post(url, json=body, headers=headers)
+        if resp.status_code >= 400:
+            logger.error(
+                "게시글 생성 실패 persona=%s status=%d body=%s",
+                persona.name, resp.status_code, resp.text[:200],
+            )
         resp.raise_for_status()
 
     return resp.json()
@@ -75,6 +84,11 @@ async def cast_vote(post_id: int, status: VoteStatus, persona: Persona) -> dict:
 
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.post(url, json=body, headers=headers)
+        if resp.status_code >= 400:
+            logger.error(
+                "투표 실패 persona=%s post_id=%d status=%d",
+                persona.name, post_id, resp.status_code,
+            )
         resp.raise_for_status()
 
     return resp.json()
@@ -111,6 +125,11 @@ async def create_comment(
 
     async with httpx.AsyncClient(timeout=30) as client:
         resp = await client.post(url, json=body, headers=headers)
+        if resp.status_code >= 400:
+            logger.error(
+                "댓글 생성 실패 persona=%s post_id=%d status=%d",
+                persona.name, post_id, resp.status_code,
+            )
         resp.raise_for_status()
 
     return resp.json()
