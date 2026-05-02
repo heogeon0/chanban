@@ -90,4 +90,10 @@ export class PostController {
   getVoteCount(@Param('id') id: string) {
     return this.postService.getVoteCount(id);
   }
+
+  /** 피드 카드 client island가 fresh로 가져가는 카운트 묶음 (찬반/중립/뷰/댓글) */
+  @Get(':id/stats')
+  getStats(@Param('id') id: string) {
+    return this.postService.getPostStats(id);
+  }
 }

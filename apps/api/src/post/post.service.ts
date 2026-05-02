@@ -2,6 +2,7 @@ import {
   ErrorCode,
   PaginationMeta,
   PostSortBy,
+  PostStatsResponse,
   PostTag,
   SortOrder,
   VoteCountResponse,
@@ -318,6 +319,31 @@ export class PostService {
       agreeCount: post?.agreeCount || 0,
       disagreeCount: post?.disagreeCount || 0,
       neutralCount: post?.neutralCount || 0,
+    };
+  }
+
+  /**
+   * 피드 카드 client island용 카운트 묶음.
+   * 5개 컬럼만 SELECT해 페이로드를 가볍게 유지한다.
+   */
+  async getPostStats(id: string): Promise<PostStatsResponse> {
+    const post = await this.postRepository.findOne({
+      where: { id },
+      select: [
+        'agreeCount',
+        'disagreeCount',
+        'neutralCount',
+        'commentCount',
+        'viewCount',
+      ],
+    });
+
+    return {
+      agreeCount: post?.agreeCount ?? 0,
+      disagreeCount: post?.disagreeCount ?? 0,
+      neutralCount: post?.neutralCount ?? 0,
+      commentCount: post?.commentCount ?? 0,
+      viewCount: post?.viewCount ?? 0,
     };
   }
 }

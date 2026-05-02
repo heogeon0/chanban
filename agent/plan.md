@@ -390,3 +390,35 @@
 - [x] c: 텍스트 사이즈 검토 완료. 11(배지/카운트)/12(메타)/13(헤더·댓글닉)/14(본문·댓글본문)/15(투표 버튼)/lg(제목) 6단계가 명확한 위계를 형성하고 있어 추가 통일 불필요로 결정
 - [x] d: padding 검토 완료. 헤더 `pt-4 pb-2` → 제목 `pb-3` → 본문(border-top) `pt-3 pb-3` → 하단(border-top) `pt-3 pb-4`는 진입 강조 / 콘텐츠 / 액션 영역의 의도된 차이라 그대로 유지
 - [x] e: 그라데이션이 현재 공식 배지 한 곳에서만 사용되어 토큰 추출은 보류 (향후 재사용처 생기면 그때 추출)
+
+## v30. 메인 피드 RSC + Client Island + On-demand Revalidation
+
+> 정적 컨텐츠(제목/본문/카테고리/작성자)는 RSC가 캐시, 모든 카운트(찬반/뷰/댓글)와 인터랙션은 client에서 fresh fetch.
+> 시간 기반 ISR 없이 관리자 작성/수정/삭제 시점에만 `revalidateTag('official-feed')`로 즉시 반영.
+
+### 백엔드
+- [x] a: `apps/api/src/post/post.controller.ts` — `GET /api/posts/:id/stats` public 라우트 추가
+- [x] b: `apps/api/src/post/post.service.ts::getPostStats(postId)` — TypeORM `select`로 5개 컬럼만 조회
+- [x] c: `packages/shared-types/src/post.ts` — `PostStatsResponse` 인터페이스 export
+
+### 프론트 데이터 레이어
+- [x] d: `apps/web/app/topics/domains/index.ts` — `getPostStats(postId)` 추가
+- [x] e: `apps/web/shared/queries/keys.ts` — `post.stats(postId)` 키 추가
+- [x] f: `apps/web/shared/queries/post.ts` 신규 + `postQueries.stats` (staleTime 30s) + `shared/queries/index.ts` 배럴 export
+- [x] g: `apps/web/app/topics/[id]/features/use-post-vote.ts::onSettled` — `post.stats` invalidate 추가
+- [x] h: 좋아요 mutation은 commentCount 변경 없음 — stats invalidate 불필요 확인됨
+
+### 프론트 컴포넌트 분리
+- [x] i: `apps/web/app/widgets/officialFeedCard.tsx` → RSC. 헤더/제목/본문/페이드만 렌더
+- [x] j: `apps/web/app/widgets/officialFeedCardInteractions.tsx` 신규 (`'use client'`) — 찬반바/버튼/메타/인기 댓글/좋아요. `postQueries.stats`를 initialData로 구독해 카운트 fresh
+- [x] k: 외곽 `<Link>`는 RSC 카드에서 처리. 이벤트 차단 wrapper는 island 내부에서 유지
+- [x] l: 같은 `OfficialFeedCard`를 RSC 첫 페이지와 client 무한스크롤 페이지에서 공용 (분기 불필요)
+
+### 캐싱 / Revalidation
+- [x] m: `getOfficialPosts`에 `next: { tags: ['official-feed'] }` 적용. httpClient가 native fetch라 옵션 그대로 통과
+- [x] n: `page.tsx`는 `force-dynamic` 유지(CI 빌드의 prerender 호출 차단). force-dynamic + fetch tag 캐싱은 호환되어 사용자 의도(on-demand 갱신)는 만족
+- [x] o: `apps/web/app/api/revalidate/route.ts` 신규 — POST 받아 허용 태그 화이트리스트 검증 후 `revalidateTag(tag, 'max')` (Next.js 16 시그니처)
+- [x] p: `useCreateOfficialPost` — 성공 시 React Query 무한쿼리 invalidate + `/api/revalidate` POST + `router.push('/')`
+
+### 검증
+- [x] q: `pnpm exec tsc --noEmit` (api/web 양쪽) + `pnpm build` (turbo 전체) 통과. 비로그인 SSR/카드 hydrate/카운트 fresh fetch/관리자 작성 즉시 반영의 dev 환경 직접 동작 확인은 PR 머지 전 사용자 검증 필요
