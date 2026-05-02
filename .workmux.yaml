@@ -1,0 +1,15 @@
+# workmux project configuration (chanban)
+# Global defaults live in ~/.config/workmux/config.yaml.
+
+#-------------------------------------------------------------------------------
+# Hooks
+#-------------------------------------------------------------------------------
+
+# Run after a new worktree is created. The "<global>" entry inherits the
+# global post_create (nvm + pnpm install). After install, build
+# @chanban/shared-types so apps/{api,web} typecheck succeeds without manual
+# intervention — see prior worker report where typecheck failed until
+# shared-types was built by hand.
+post_create:
+  - "<global>"
+  - pnpm --filter @chanban/shared-types build
