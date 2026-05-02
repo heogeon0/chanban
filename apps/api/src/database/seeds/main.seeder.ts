@@ -24,6 +24,7 @@ export class MainSeeder implements Seeder {
         kakaoId: '1234567890',
         nickname: '철수',
         profileImageUrl: 'https://via.placeholder.com/150',
+        role: UserRole.ADMIN,
       },
       {
         kakaoId: '1234567891',
