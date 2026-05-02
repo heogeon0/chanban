@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
  * 성공 시:
  * - React Query 무한쿼리 캐시 무효화
  * - Next.js RSC fetch 캐시 무효화 (`/api/revalidate`로 official-feed 태그)
- * - 메인 피드로 이동
+ * - 어드민 공식 토론 목록으로 이동
  */
 export function useCreateOfficialPost() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export function useCreateOfficialPost() {
       } catch {
         // 실패해도 client-side 무효화는 됐으니 사용자 흐름은 막지 않음
       }
-      router.push("/");
+      router.push("/admin/posts");
     },
   });
 }
