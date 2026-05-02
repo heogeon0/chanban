@@ -4,9 +4,12 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -50,6 +53,24 @@ export class PostController {
     @CurrentUser() user: User,
   ) {
     return this.postService.create(createPostDto, user, { isOfficial: true });
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Put('official/:id')
+  updateOfficial(
+    @Param('id') id: string,
+    @Body() updatePostDto: CreatePostDto,
+  ) {
+    return this.postService.updateOfficial(id, updatePostDto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Delete('official/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeOfficial(@Param('id') id: string) {
+    return this.postService.removeOfficial(id);
   }
 
   @Get('/tags/:tag')

@@ -10,6 +10,7 @@ import {
 } from '@chanban/shared-types';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -309,6 +310,54 @@ export class PostService {
 
   remove(id: number) {
     return `This action removes a #${id} post`;
+  }
+
+  /**
+   * 공식 토론(isOfficial=true)을 어드민 권한으로 수정한다.
+   * - isOfficial=false인 게시글은 ForbiddenException으로 보호.
+   * - body의 isOfficial 값은 무시하고 항상 true 유지.
+   */
+  async updateOfficial(id: string, dto: CreatePostDto): Promise<Post> {
+    const post = await this.postRepository.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+
+    if (!post) {
+      throw new NotFoundException({ code: ErrorCode.POST_NOT_FOUND });
+    }
+
+    if (!post.isOfficial) {
+      throw new ForbiddenException({ code: ErrorCode.FORBIDDEN });
+    }
+
+    const { title, content, tag, showCreatorOpinion } = dto;
+    post.title = title;
+    post.content = content;
+    post.tag = tag;
+    post.showCreatorOpinion = showCreatorOpinion ?? false;
+    post.isOfficial = true;
+
+    return this.postRepository.save(post);
+  }
+
+  /**
+   * 공식 토론을 어드민 권한으로 soft delete 한다.
+   * - isOfficial=false인 게시글은 ForbiddenException으로 보호.
+   */
+  async removeOfficial(id: string): Promise<void> {
+    const post = await this.postRepository.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+
+    if (!post) {
+      throw new NotFoundException({ code: ErrorCode.POST_NOT_FOUND });
+    }
+
+    if (!post.isOfficial) {
+      throw new ForbiddenException({ code: ErrorCode.FORBIDDEN });
+    }
+
+    await this.postRepository.softRemove(post);
   }
 
   async getVoteCount(id: string): Promise<VoteCountResponse> {
